@@ -4,37 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Technokad_Schedule.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/extensions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/activation_token.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/user.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/email_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/token_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/css/login.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/css/main.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_about.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_administration.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_guide_admin.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_guide_user.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_main.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_print.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_report.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_settings.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_shedule.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_theme.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/js/login.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/js/main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/main.html" afterDir="false" />
-    </list>
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="18.05.2026" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -105,6 +75,19 @@
       <option name="presentableId" value="Default" />
       <updated>1759922339366</updated>
     </task>
+    <task id="LOCAL-00001" summary="18.05.2026">
+      <option name="closed" value="true" />
+      <created>1779118004523</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1779118004523</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="18.05.2026" />
+    <option name="LAST_COMMIT_MESSAGE" value="18.05.2026" />
   </component>
 </project>
