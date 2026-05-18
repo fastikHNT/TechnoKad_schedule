@@ -1,0 +1,396 @@
+html, body{
+margin:0;
+font-family:Segoe UI, Arial;
+background:#f4f6f8;
+transition:0.25s;
+height:100%;
+overflow:hidden;
+}
+
+/* анимация появления страницы */
+
+body{
+opacity:0;
+animation:pageFade 0.6s ease forwards;
+}
+
+@keyframes pageFade{
+to{
+opacity:1;
+}
+}
+
+.app{
+display:flex;
+height:100vh;
+}
+
+/* sidebar */
+
+.sidebar{
+width:260px;
+background:linear-gradient(180deg,#244a61,#1c3647);
+padding:20px;
+padding-bottom:30px;
+color:white;
+display:flex;
+flex-direction:column;
+height:100%;
+box-sizing:border-box;
+
+opacity:0;
+transform:translateX(-30px);
+animation:sidebarShow 0.5s ease forwards;
+animation-delay:0.2s;
+}
+
+@keyframes sidebarShow{
+to{
+opacity:1;
+transform:translateX(0);
+}
+}
+
+/* кнопка смены темы */
+
+.theme-btn{
+margin-top:auto;
+margin-left:auto;
+margin-right:auto;
+margin-bottom:10px;
+display:flex;
+align-items:center;
+justify-content:center;
+width:60%;
+padding:10px;
+border-radius:10px;
+cursor:pointer;
+background:transparent;
+border:none;
+box-shadow:none;
+}
+
+.theme-btn:hover{
+background:rgba(255,255,255,0.14);
+}
+
+.theme-btn img{
+width:16px;
+height:16px;
+}
+
+/* меню */
+
+.menu{
+display:flex;
+flex-direction:column;
+gap:14px;
+flex:1;
+}
+
+.menu a{
+display:flex;
+align-items:center;
+gap:14px;
+padding:14px 16px;
+border-radius:10px;
+cursor:pointer;
+color:#dbe7ef;
+transition:0.2s;
+text-decoration:none;
+font-size:15.5px;
+}
+
+.menu a:hover{
+background:rgba(255,255,255,0.12);
+color:white;
+transform:scale(1.05);
+}
+
+.menu a.active{
+background:#2f6fa3;
+color:white;
+}
+
+/* иконки */
+
+.icon{
+width:20px;
+text-align:center;
+}
+
+.icon img{
+width:18px;
+height:18px;
+object-fit:contain;
+}
+
+/* контент */
+
+.content{
+flex:1;
+padding:40px 60px;
+}
+
+/* верхняя панель */
+
+.topbar{
+display:flex;
+justify-content:flex-end;
+margin-bottom:30px;
+}
+
+/* карточка страницы */
+
+.page{
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 6px 18px rgba(0,0,0,0.06);
+
+opacity:0;
+transform:translateY(15px);
+animation:pageContent 0.4s ease forwards;
+animation-delay:0.3s;
+}
+
+@keyframes pageContent{
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+/* анимация переключения разделов */
+
+.section{
+opacity:0;
+transform:translateY(15px);
+animation:sectionShow 0.35s ease forwards;
+}
+
+@keyframes sectionShow{
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.section-hide{
+animation:sectionHide 0.2s ease forwards;
+}
+
+@keyframes sectionHide{
+to{
+opacity:0;
+transform:translateY(-10px);
+}
+}
+
+/* dark mode */
+
+body.dark{
+background:#1e1e1e;
+color:#e5e5e5;
+}
+
+body.dark .page{
+background:#2b2b2b;
+}
+
+body.dark .menu a{
+color:#cfd8dc;
+}
+
+body.dark .menu a.active{
+background:#3b7bb5;
+}
+
+/* логотип */
+
+.logo{
+display:flex;
+align-items:center;
+font-family:Arial, sans-serif;
+font-size:52px;
+font-weight:600;
+transform:scale(0.85);
+transform-origin:left center;
+margin-top:25px;
+margin-bottom:50px;
+}
+
+.techno{
+color:white;
+margin-right:-10px;
+}
+
+.kad-wrap{
+position:relative;
+display:inline-block;
+}
+
+.kad{
+color:#18a7b5;
+position:relative;
+z-index:2;
+}
+
+.circle{
+position:absolute;
+left:-28px;
+top:-38px;
+width:150px;
+height:150px;
+overflow:visible;
+}
+
+.circle circle{
+fill:none;
+stroke:#18a7b5;
+stroke-width:6;
+stroke-dasharray:270 90;
+transform:rotate(207deg);
+transform-origin:60px 60px;
+}
+
+
+
+/* ---------- ТЕМЫ ---------- */
+
+/* тема 1 (как login) */
+
+body.theme1{
+background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+}
+
+.theme1 .page{
+background:white;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+.theme1 .logo-img{
+filter:drop-shadow(0 3px 8px rgba(0,0,0,0.25));
+}
+/* тема 2 (черно-белая) */
+
+body.theme2{
+background:linear-gradient(135deg,#000000,#434343);
+color:white;
+}
+
+.theme2 .sidebar{
+background:#111;
+}
+
+.theme2 .page{
+background:#1e1e1e;
+color:white;
+}
+
+.theme2 .logo-text{
+color:white;
+}
+
+.theme3 .logo-icon{
+background:linear-gradient(135deg,#1a73e8,#42a5f5);
+}
+
+.theme2 .logo-img{
+filter:brightness(1.2) drop-shadow(0 3px 8px rgba(0,0,0,0.6));
+}
+
+/* тема 3 (сине-белая фирменная) */
+
+body.theme3{
+background:linear-gradient(135deg,#2b6cb0,#63b3ed);
+}
+
+.theme3 .sidebar{
+background:linear-gradient(180deg,#1a365d,#2b6cb0);
+}
+
+.theme3 .page{
+background:white;
+}
+
+.theme3 .logo-img{
+filter:drop-shadow(0 3px 10px rgba(0,0,0,0.35));
+}
+
+
+body{
+opacity:0;
+animation:fadePage 0.6s ease forwards;
+}
+
+@keyframes fadePage{
+from{
+opacity:0;
+}
+to{
+opacity:1;
+}
+}
+
+/* выезд бокового меню */
+
+
+@keyframes showSidebar{
+to{
+transform:translateX(0);
+opacity:1;
+}
+}
+
+/* появление основного контента */
+
+.main-content{
+opacity:0;
+transform:translateY(20px);
+animation:showContent 0.6s ease forwards;
+animation-delay:0.4s;
+}
+
+@keyframes showContent{
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+/* аватар пользователя */
+
+.user-profile{
+opacity:0;
+transform:scale(0.8);
+animation:showAvatar 0.4s ease forwards;
+animation-delay:0.6s;
+}
+
+@keyframes showAvatar{
+to{
+opacity:1;
+transform:scale(1);
+}
+}
+
+.section{
+opacity:0;
+transform:translateY(15px);
+animation:sectionShow 0.35s ease forwards;
+}
+
+@keyframes sectionShow{
+from{
+opacity:0;
+transform:translateY(15px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+
+
