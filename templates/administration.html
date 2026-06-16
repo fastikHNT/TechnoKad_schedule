@@ -1,0 +1,114 @@
+{% block content %}
+
+<h2>Администрирование</h2>
+
+<div class="admin-topbar">
+
+    <!-- ФИЛЬТР -->
+    <div class="filter-box">
+        <select id="adminFilter" class="admin-filter">
+            <option value="ork">Отдел по работе с клиентами</option>
+            <option value="otp">Отдел технической поддержки</option>
+            <option value="unassigned">Нераспределённые сотрудники</option>
+            <option value="deleted">Удалённые сотрудники</option>
+        </select>
+    </div>
+
+    <!-- ПОИСК -->
+    <div class="search-box">
+        <input type="text"
+               id="searchInput"
+               placeholder="Поиск сотрудника...">
+    </div>
+</div>
+
+<div id="adminMessage" class="admin-message"></div>
+
+
+<div class="actions">
+    <div class="actions-left">
+        <button id="editBtn" class="btn btn-secondary">Редактировать</button>
+        <button id="saveBtn" class="btn btn-success hidden">Сохранить</button>
+        <button id="cancelBtn" class="btn btn-warning hidden">Отмена</button>
+    </div>
+
+    <div class="actions-right">
+        <button id="deleteBtn" class="btn btn-danger hidden">Удалить</button>
+        <button id="restoreBtn" class="btn btn-success hidden">Восстановить</button>
+    </div>
+
+</div>
+
+<div id="editIndicator" class="edit-indicator hidden">
+    🔶 Включён режим редактирования
+</div>
+
+<h3 id="tableTitle" class="table-title"></h3>
+
+<div class="admin-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Отдел</th>
+                <th>Должность</th>
+                <th>Роль</th>
+            </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+    </table>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="deleteModal" class="custom-modal hidden">
+    <div class="custom-modal-content">
+        <h3>Удаление сотрудника</h3>
+        <p id="deleteModalText">
+            Вы действительно хотите удалить сотрудника?
+        </p>
+
+        <div class="modal-actions">
+            <button id="confirmDeleteBtn" class="btn btn-danger">
+                Удалить
+            </button>
+            <button id="closeDeleteModalBtn" class="btn btn-secondary">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+<!-- RESTORE MODAL -->
+<div id="restoreModal" class="custom-modal hidden">
+    <div class="custom-modal-content">
+        <h3>Восстановление сотрудника</h3>
+        <p>Вы действительно хотите восстановить сотрудника?</p>
+
+        <div class="modal-actions">
+            <button id="confirmRestoreBtn" class="btn-success">
+                Восстановить
+            </button>
+            <button id="closeRestoreModalBtn" class="btn-secondary">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+window.userRoleId = {{
+        (current_user.role.id if current_user.is_authenticated and current_user.role else 1)
+        | tojson
+    }};
+window.userDeptId = {{
+        (current_user.department.id if current_user.is_authenticated and current_user.department else None)
+        | tojson
+    }};
+</script>
+
+<script src="{{ url_for('static', filename='js/administration.js') }}"></script>
+
+{% endblock %}

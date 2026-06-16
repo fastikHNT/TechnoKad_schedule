@@ -1,99 +1,116 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>ТехноКад</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <meta charset="UTF-8">
+    <title>ТехноКад</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/administration.css') }}">
 </head>
 
 <body class="theme1 page-enter">
 
-<div class="app">
+    <header>
+        <div class="topbar">
+            <div class="topbar-right">
+                {% include "profile.html" %}
+            </div>
+        </div>
+    </header>
 
-<aside class="sidebar">
+    <div class="app">
 
-<div class="logo">
-  <span class="techno">Техно</span>
-  <span class="kad-wrap">
-    <svg class="circle" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="50"/>
-    </svg>
-    <span class="kad">Кад</span>
-  </span>
-</div>
+        <aside class="sidebar">
 
-<nav class="menu">
+            <div class="logo">
+                <span class="techno">Техно</span>
+                <span class="kad-wrap">
+                    <svg class="circle" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="50"></circle>
+                    </svg>
+                    <span class="kad">Кад</span>
+                </span>
+            </div>
 
-<a href="#" onclick="openSection('admin')">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_administration.png') }}">
-</span>
-Администрирование
-</a>
+            <nav class="menu">
 
-<a href="#" onclick="openSection('vacation')">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_shedule.png') }}">
-</span>
-График отпусков
-</a>
+                <a href="#" data-page="admin" id="adminLink">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_administration.png') }}">
+                    </span>
+                    Администрирование
+                </a>
 
-<a href="#" onclick="openSection('reports')">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_report.png') }}">
-</span>
-Формирование отчетов
-</a>
+                <a href="#" data-page="vacation">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_shedule.png') }}">
+                    </span>
+                    График отпусков
+                </a>
 
-<a href="#" onclick="openSection('export')">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_print.png') }}">
-</span>
-Выгрузка
-</a>
+                <a href="#" data-page="reports" id="reportLink">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_report.png') }}">
+                    </span>
+                    Формирование отчетов
+                </a>
 
-<a href="#" onclick="openSection('user-guide')">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_guide_user.png') }}">
-</span>
-Руководство пользователя
-</a>
+                <a href="#" data-page="export">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_print.png') }}">
+                    </span>
+                    Выгрузка
+                </a>
 
-<a href="#" onclick="openSection('admin-guide')">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_guide_admin.png') }}">
-</span>
-Руководство администратора
-</a>
+                <a href="#" data-page="user-guide">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_guide_user.png') }}">
+                    </span>
+                    Руководство пользователя
+                </a>
 
-<a href="#" onclick="openSection('about')" class="about-link">
-<span class="icon">
-<img src="{{ url_for('static', filename='img/icon_about.png') }}">
-</span>
-О сервисе
-</a>
+                <a href="#" data-page="admin-guide" id="manualAdminLink">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_guide_admin.png') }}">
+                    </span>
+                    Руководство администратора
+                </a>
 
-</nav>
+                <a href="#" data-page="about" class="about-link">
+                    <span class="icon">
+                        <img src="{{ url_for('static', filename='img/icon_about.png') }}">
+                    </span>
+                    О сервисе
+                </a>
 
-<button id="themeToggle" class="theme-btn">
-<img src="{{ url_for('static', filename='img/icon_theme.png') }}">
-</button>
+            </nav>
 
-</aside>
+            <button id="themeToggle" class="theme-btn">
+                <img src="{{ url_for('static', filename='img/icon_theme.png') }}">
+            </button>
 
-<main class="content">
+        </aside>
 
-<div class="topbar"></div>
+        <main class="content">
+            <div id="page-content" class="page section">
+                <h2>Добро пожаловать</h2>
+            </div>
+        </main>
 
-<div id="page-content" class="page section">
-<h2>Добро пожаловать</h2>
-</div>
+    </div>
 
-</main>
+    <div id="toastContainer"></div>
 
-</div>
+    <script>
+        window.userRoleId = {{ current_user.role_id }};
+        window.userDeptId = {{ current_user.department_id }};
+    </script>
 
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/administration.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/permissions.js') }}"></script>
 
 </body>
 </html>

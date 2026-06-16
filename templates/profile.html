@@ -1,0 +1,104 @@
+
+<div class="topbar">
+
+  <div class="profile">
+
+    <div class="avatar-wrapper" onclick="toggleProfileMenu()">
+      <div class="tooltip">Профиль</div>
+
+
+      {% if current_user.avatar %}
+      <img class="avatar" src="{{ url_for('static', filename=current_user.avatar) }}">
+      {% else %}
+      <div class="avatar-initials">
+        {{ current_user.first_name[0]|upper }}{{ current_user.last_name[0]|upper }}
+      </div>
+      {% endif %}
+    </div>
+
+    <div id="profileMenu" class="profile-menu">
+
+      <div class="profile-info">
+
+  <strong>
+    {{ current_user.first_name }} {{ current_user.last_name }}
+  </strong>
+
+  <div class="email">{{ current_user.email }}</div>
+
+  {% if current_user.position %}
+  <div class="extra">Должность: {{current_user.position.name}}</div>
+  {% endif %}
+
+  {% if current_user.department %}
+  <div class="extra">Отдел: {{ current_user.department.name }}</div>
+  {% endif %}
+
+  {% if current_user.role %}
+  <div class="extra">Роль: {{ current_user.role.display_name }}</div>
+  {% endif %}
+
+</div>
+
+
+      <hr>
+
+<div class="menu-block">
+<label>Телефон</label>
+
+<input type="text" id="phone" class="input"
+value="{{ current_user.phone or '+7' }}" disabled>
+
+<button id="editPhoneBtn" class="btn-primary" onclick="togglePhoneEdit()">Изменить</button>
+
+<div id="phoneMessage" class="message"></div>
+</div>
+
+
+<div class="menu-block">
+<label>Загрузить аватар</label>
+
+<label class="file-upload">
+<input type="file" id="avatarInput">
+<span id="fileName">Выбрать изображение</span>
+</label>
+
+<button class="btn-primary" onclick="uploadAvatar()">Загрузить</button>
+
+<div id="avatarMessage" class="message"></div>
+</div>
+
+<div class="menu-block">
+<label>Смена пароля</label>
+
+
+<input type="password" id="oldPassword" class="input" placeholder="Текущий пароль">
+<div class="error" id="oldPasswordError"></div>
+
+<input type="password" id="newPassword" class="input" placeholder="Новый пароль">
+<div class="error" id="newPasswordError"></div>
+
+
+<div id="passwordMessage" class="message"></div>
+<button class="btn-primary" onclick="changePassword()">Изменить пароль</button>
+
+
+</div>
+
+<hr>
+
+<div class="menu-block">
+<a href="/logout" class="logout-btn">Выйти</a>
+
+
+</div>
+</div>
+
+
+
+</div>
+</div>
+</div>
+</div>
+
+

@@ -1,97 +1,176 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 const pages = {
 
-admin:`<h2>Администрирование</h2><p>Управление системой</p>`,
+    admin:`<h2>Администрирование</h2><p>Управление системой</p>`,
+    vacation:`<h2>График отпусков</h2><p>Здесь будет таблица графика</p>`,
+    reports:`<h2>Формирование отчетов</h2>`,
+    export:`<h2>Выгрузка данных</h2>`,
+    "user-guide":`<h2>Руководство пользователя</h2>`,
+    "admin-guide":`<h2>Руководство администратора</h2>`,
+    about:`<h2>О сервисе</h2><p>Система управления графиком отпусков.</p>`
+    }
 
-vacation:`<h2>График отпусков</h2><p>Здесь будет таблица графика</p>`,
+    const links = document.querySelectorAll(".menu a")
+    const content = document.getElementById("page-content")
 
-reports:`<h2>Формирование отчетов</h2>`,
+    /* отключаем кнопку администрирования для user */
 
-export:`<h2>Выгрузка данных</h2>`,
+    if(window.userRole === "user"){
 
-"user-guide":`<h2>Руководство пользователя</h2>`,
+        const adminLink = document.querySelector('[data-page="admin"]')
 
-"admin-guide":`<h2>Руководство администратора</h2>`,
+    if(adminLink){
+        adminLink.classList.add("menu-disabled")
+        adminLink.removeAttribute("href")
+        }
 
-about:`<h2>О сервисе</h2><p>Система управления графиком отпусков.</p>`
-}
+    }
 
-const links=document.querySelectorAll(".menu a")
+    links.forEach(link => {
 
-links.forEach(link=>{
+        const page = link.dataset.page
 
-link.addEventListener("click",()=>{
+        /* если user и это admin — не вешаем обработчик */
+        if (page === "admin" && window.userRole === "user") {
+            return
+        }
 
-links.forEach(l=>l.classList.remove("active"))
+        link.addEventListener("click", (e) => {
 
-link.classList.add("active")
+            e.preventDefault()
 
-const page=link.dataset.page
+            if (!page) return
 
-const content=document.getElementById("page-content")
+            links.forEach(l => l.classList.remove("active"))
+            link.classList.add("active")
 
-content.innerHTML=pages[page]
+            if (page === "admin") {
 
-content.classList.remove("page")
+                switchPage((wrapper) => {
 
-void content.offsetWidth
+                    fetch("/admin/")
+                        .then(r => {
 
-content.classList.add("page")
+                            if (r.status === 403) {
+                                showMessage("Доступ запрещен", "error");
+                                return null;
+                            }
+
+                            return r.text();
+                        })
+                        .then(html => {
+
+                            if (!html) return;
+
+                            wrapper.innerHTML = html
+
+                            if (typeof initAdminPage === "function") {
+                                initAdminPage()
+                            }
+
+                        })
+                        .catch(err => {
+                            console.error("Ошибка :", err)
+                            showMessage("Ошибка загрузки страницы", "error")
+                        })
+
+                })
+
+            } else if (pages[page]) {
+
+                switchPage((wrapper) => {
+                    wrapper.innerHTML = pages[page]
+                })
+
+            }
+
+        })
+
+    })
+
+    /* ТЕМЫ */
+
+    const themes = ["theme1","theme2","theme3"]
+
+    let currentTheme = 0
+
+    const savedTheme = localStorage.getItem("themeIndex")
+
+    if(savedTheme !== null){
+        currentTheme = parseInt(savedTheme)
+    }
+
+    function applyTheme(){
+
+        document.body.classList.remove(...themes)
+        document.body.classList.add(themes[currentTheme])
+
+        localStorage.setItem("themeIndex", currentTheme)
+    }
+
+        applyTheme()
+
+        const btn = document.getElementById("themeToggle")
+
+        if(btn){
+
+            btn.onclick = ()=>{
+            currentTheme++
+
+            if(currentTheme >= themes.length){
+                currentTheme = 0
+            }
+
+            applyTheme()
+            }
+        }
+
+    /* ===== АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ ===== */
+    function switchPage(renderCallback){
+
+        const wrapper = document.createElement("div")
+        wrapper.classList.add("page-anim")
+
+        renderCallback(wrapper)
+
+        content.innerHTML = ""
+
+        content.appendChild(wrapper)
+
+        requestAnimationFrame(() => {
+            wrapper.classList.add("show")
+        })
+    }
+
+    /* открытие секций */
+
+    function openSection(section){
+
+        const content = document.getElementById("page-content")
+
+        if(!content) return
+
+        content.classList.remove("section")
+        content.classList.add("section-hide")
+
+        setTimeout(()=>{
+
+        content.innerHTML = "<h2>"+section+"</h2>"
+
+        content.classList.remove("section-hide")
+        content.classList.add("section")
+
+        },200)
+    }
+
+    /* УВЕДОМЛЕНИЯ */
+
+    function saveNotifications(){
+
+        localStorage.setItem("notifications", JSON.stringify(notifications))
+        localStorage.setItem("unread", unread)
+
+    }
 
 })
-
-})
-
-/* ТЕМЫ */
-
-const themes=["theme1","theme2","theme3"]
-
-let currentTheme=0
-
-const savedTheme=localStorage.getItem("themeIndex")
-
-if(savedTheme!==null){
-currentTheme=parseInt(savedTheme)
-}
-
-function applyTheme(){
-
-document.body.classList.remove("theme1","theme2","theme3")
-
-document.body.classList.add(themes[currentTheme])
-
-localStorage.setItem("themeIndex",currentTheme)
-
-}
-
-applyTheme()
-
-const btn=document.getElementById("themeToggle")
-
-btn.onclick=()=>{
-
-currentTheme++
-
-if(currentTheme>=themes.length){
-currentTheme=0
-}
-
-applyTheme()
-
-}
-
-function openSection(section){
-
-const content = document.getElementById("page-content");
-
-content.classList.remove("section");
-content.classList.add("section-hide");
-
-setTimeout(()=>{
-
-content.innerHTML = "<h2>"+section+"</h2>";
-content.classList.remove("section-hide");
-content.classList.add("section");
-
-},200);
-
-}

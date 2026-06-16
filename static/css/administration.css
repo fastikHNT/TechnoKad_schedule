@@ -1,0 +1,410 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-color);
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.actions-left,
+.actions-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* =====================================================
+   Поиск + фильтр
+===================================================== */
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.search-box {
+    position: relative;
+    display:flex;
+    align-items:center;
+    width: 320px;
+}
+
+.admin-topbar{
+    display:flex;
+    align-items:center;
+    gap:14px; /* расстояние между поиском и фильтром */
+}
+
+.search-box input {
+    width: 100%;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 6px rgba(99,102,241,0.3);
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
+}
+
+.filter-icon {
+    margin-bottom: 10px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    transition: 0.2s ease;
+}
+
+.filter-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+/* =====================================================
+   Кнопки
+===================================================== */
+
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 15px 0;
+}
+
+button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s ease;
+    background: var(--button-gradient);
+    color: var(--text-color);
+}
+
+#saveBtn {
+    background: linear-gradient(145deg, #22c55e, #16a34a);
+    color: white;
+}
+
+#cancelBtn {
+    background: linear-gradient(145deg, #f97316, #ea580c);
+    color: white;
+}
+
+#deleteBtn {
+    margin-left: auto;
+    background: linear-gradient(145deg, #dc2626, #b91c1c);
+    color: white;
+}
+
+#saveBtn:hover,
+#cancelBtn:hover,
+#deleteBtn:hover {
+    opacity: 0.9;
+}
+
+/* =====================================================
+   Таблица
+===================================================== */
+.table-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 18px;
+    margin: 20px 0 10px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 10px;
+    text-align: left;
+}
+
+/* =====================================================
+   Режим редактирования
+===================================================== */
+
+.edit-indicator {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+}
+
+/* =====================================================
+   Уведомления
+===================================================== */
+
+.admin-message {
+    position: fixed;
+    top: 0;
+    right: 24px;
+    z-index: 9999;
+    width: min(420px, calc(100% - 48px));
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: 0.2s ease;
+}
+
+.admin-message.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.admin-success {
+    background: rgba(34,197,94,0.15);
+    border-left: 4px solid #22c55e;
+}
+
+.admin-error {
+    background: rgba(239,68,68,0.15);
+    border-left: 4px solid #ef4444;
+}
+
+.admin-warning {
+    background: rgba(245,158,11,0.15);
+    border-left: 4px solid #f59e0b;
+}
+
+.admin-info {
+    background: rgba(59,130,246,0.15);
+    border-left: 4px solid #3b82f6;
+}
+
+/* ================= Модалка ================= */
+
+.custom-modal {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    backdrop-filter: blur(3px);
+}
+
+.custom-modal.hidden {
+    display: none;
+}
+
+.custom-modal-content {
+    background: var(--modal-bg);
+    color: var(--modal-text);
+    padding: 28px 32px;
+    border-radius: 12px;
+    width: 420px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    animation: modalFade 0.2s ease;
+}
+
+.custom-modal-content h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.custom-modal-content p {
+    margin-bottom: 24px;
+    color: var(--modal-subtext);
+}
+
+/* ===== КНОПКИ ===== */
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Удалить */
+#confirmDeleteBtn {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#confirmDeleteBtn:hover {
+    background: #dc2626;
+}
+
+#closeDeleteModalBtn,
+#closeRestoreModalBtn {
+    background: #f59e0b;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#closeDeleteModalBtn:hover,
+#closeRestoreModalBtn:hover {
+    background: #d97706;
+}
+
+@keyframes modalFade {
+    from {
+        transform: translateY(-8px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* =====================================================
+
+===================================================== */
+
+.hidden {
+    display: none !important;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* =====================================================
+   Темы
+===================================================== */
+
+/* ===== Темная ===== */
+
+body.theme-dark {
+    background: #111827;
+    color: white;
+}
+
+body.theme-dark .admin-container {
+    background: #1f2937;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+}
+
+body.theme-dark input,
+body.theme-dark select {
+    background: rgba(255,255,255,0.08);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+body.theme-dark input::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+body.theme-dark thead {
+    background: rgba(255,255,255,0.05);
+}
+
+body.theme-dark tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.theme-dark tbody tr:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* ===== Синяя ===== */
+
+body.theme-blue {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+}
+
+body.theme-blue .admin-container {
+    background: white;
+    color: #111827;
+    border-radius: 16px;
+    padding: 30px;
+}
+
+body.theme-blue tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+body.theme-blue tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* ===== Пурпурная===== */
+
+body.theme-purple {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+}
+
+body.theme-purple .admin-container {
+    background: white;
+    color: #111827;
+    border-radius: 16px;
+    padding: 30px;
+}
+
+body.theme-purple tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+body.theme-purple tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* =====================================================
+   Строка выбора
+===================================================== */
+
+tbody tr.selected-row,
+tbody tr.selected-row:hover{
+    background: var(--row-selected);
+    transition: 0.2s ease;
+}
+
+/* =====================================================
+   Когда нет информации
+===================================================== */
+
+.no-data-cell {
+    pointer-events: none;
+    text-align: center;
+    padding: 18px 0;
+    opacity: 0.9;
+}

@@ -1,396 +1,464 @@
-html, body{
-margin:0;
-font-family:Segoe UI, Arial;
-background:#f4f6f8;
-transition:0.25s;
-height:100%;
-overflow:hidden;
+/* ==================================================
+   ПЕРЕМЕННЫЕ (БАЗА)
+================================================== */
+
+:root{
+    --bg-page: #f4f6f8;
+    --bg-card: #ffffff;
+    --bg-sidebar: linear-gradient(180deg,#244a61,#1c3647);
+
+    --text-color: #111827;
+    --menu-text: #dbe7ef;
+
+    --input-bg: #ffffff;
+    --input-border: #d0d7de;
+    --input-placeholder: #888;
+    --row-selected: rgba(0,0,0,0.05);
+
+    --modal-bg: #ffffff;
+    --modal-text: #1f2937;
+    --modal-subtext: #6b7280;
+    --modal-overlay: rgba(0, 0, 0, 0.45);
+
+    --button-bg: linear-gradient(135deg,#667eea,#764ba2);
+    --button-hover: linear-gradient(135deg,#5a67d8,#6b46c1);
+    --menu-active: linear-gradient(135deg,#667eea,#764ba2);
 }
 
-/* анимация появления страницы */
+/* ==================================================
+   ТЕМА 1 — ПУРПУРНАЯ
+================================================== */
 
-body{
-opacity:0;
-animation:pageFade 0.6s ease forwards;
+.theme1{
+    --bg-page: linear-gradient(135deg,#667eea,#764ba2);
+    --bg-card: #ffffff;
+
+    /* тот же самый градиент */
+    --button-bg: linear-gradient(135deg,#667eea,#764ba2);
+    --button-hover: linear-gradient(135deg,#5a67d8,#6b46c1);
+    --menu-active: linear-gradient(135deg,#667eea,#764ba2);
+    --row-selected: rgba(118,75,162,0.25);
+}
+
+/* ==================================================
+   ТЕМА 2 — ТЁМНАЯ
+================================================== */
+
+.theme2{
+    --bg-page: linear-gradient(135deg,#000000,#434343);
+    --bg-card: #1a1a1a;
+    --bg-sidebar: #0d0d0d;
+
+    --text-color: #e6e6e6;
+    --menu-text: #cfd8dc;
+
+    --input-bg: #2a2a2a;
+    --input-border: #444;
+    --input-placeholder: #aaaaaa;
+    --row-selected: #244a32;
+
+    --modal-bg: #0b0b0b;
+    --modal-text: #f9fafb;
+    --modal-subtext: #9ca3af;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+
+    --button-bg: #244a32;
+    --button-hover: #6fc24d;
+    --menu-active: #244a32;
+}
+
+/* ==================================================
+   ТЕМА 3 — СИНЯЯ
+================================================== */
+
+.theme3{
+    --bg-page: linear-gradient(135deg,#2b6cb0,#63b3ed);
+    --bg-card: #ffffff;
+
+    --button-bg: #2b6cb0;
+    --button-hover: #1e4f88;
+    --menu-active: #2b6cb0;
+    --row-selected: rgba(43,108,176,0.20);
+}
+
+/* ==================================================
+   БАЗА
+================================================== */
+html, body{
+    margin:0;
+    font-family:Segoe UI, Arial;
+    background: var(--bg-page);
+    color: var(--text-color);
+    transition:0.25s;
+    height:100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    opacity:0;
+    animation:pageFade 0.6s ease forwards;
 }
 
 @keyframes pageFade{
-to{
-opacity:1;
-}
+    to{ opacity:1; }
 }
 
 .app{
-display:flex;
-height:100vh;
+    display:flex;
+    height:100vh;
 }
 
-/* sidebar */
+/* ==================================================
+ Права
+================================================== */
+
+.menu-disabled{
+    opacity:0.45;
+    cursor:not-allowed;
+    pointer-events:none;
+    position:relative;
+}
+
+.menu-disabled::after{
+    content:"Нет доступа";
+    position:absolute;
+    left:110%;
+    top:50%;
+    transform:translateY(-50%);
+    background:#1e1e1e;
+    color:#fff;
+    padding:4px 8px;
+    border-radius:6px;
+    font-size:12px;
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s;
+}
+
+.menu-disabled:hover::after{
+    opacity:1;
+}
+
+.disabled-option {
+    color: #666 !important;
+}
+
+/* ==================================================
+ Боковая панель
+================================================== */
+.admin-panel {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.admin-panel.active {
+    max-height: 500px;
+    opacity: 1;
+}
 
 .sidebar{
-width:260px;
-background:linear-gradient(180deg,#244a61,#1c3647);
-padding:20px;
-padding-bottom:30px;
-color:white;
-display:flex;
-flex-direction:column;
-height:100%;
-box-sizing:border-box;
+    width:260px;
+    background: var(--bg-sidebar);
+    padding:20px;
+    padding-bottom:30px;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    box-sizing:border-box;
 
-opacity:0;
-transform:translateX(-30px);
-animation:sidebarShow 0.5s ease forwards;
-animation-delay:0.2s;
+    opacity:0;
+    transform:translateX(-30px);
+    animation:sidebarShow 0.5s ease forwards;
+    animation-delay:0.2s;
 }
 
 @keyframes sidebarShow{
-to{
-opacity:1;
-transform:translateX(0);
-}
-}
-
-/* кнопка смены темы */
-
-.theme-btn{
-margin-top:auto;
-margin-left:auto;
-margin-right:auto;
-margin-bottom:10px;
-display:flex;
-align-items:center;
-justify-content:center;
-width:60%;
-padding:10px;
-border-radius:10px;
-cursor:pointer;
-background:transparent;
-border:none;
-box-shadow:none;
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
 }
 
-.theme-btn:hover{
-background:rgba(255,255,255,0.14);
-}
-
-.theme-btn img{
-width:16px;
-height:16px;
-}
-
-/* меню */
+/* ==================================================
+   МЕНЮ
+================================================== */
 
 .menu{
-display:flex;
-flex-direction:column;
-gap:14px;
-flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    flex:1;
 }
 
 .menu a{
-display:flex;
-align-items:center;
-gap:14px;
-padding:14px 16px;
-border-radius:10px;
-cursor:pointer;
-color:#dbe7ef;
-transition:0.2s;
-text-decoration:none;
-font-size:15.5px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    color: var(--menu-text);
+    transition:0.2s;
+    text-decoration:none;
+    font-size:15.5px;
 }
 
 .menu a:hover{
-background:rgba(255,255,255,0.12);
-color:white;
-transform:scale(1.05);
+    background:rgba(255,255,255,0.12);
+    color:white;
+    transform:scale(1.05);
 }
 
 .menu a.active{
-background:#2f6fa3;
-color:white;
+    background: var(--menu-active);
+    color:white;
 }
 
-/* иконки */
+/* ==================================================
+   ИКОНКИ
+================================================== */
 
 .icon{
-width:20px;
-text-align:center;
+    width:20px;
+    text-align:center;
 }
 
 .icon img{
-width:18px;
-height:18px;
-object-fit:contain;
+    width:18px;
+    height:18px;
+    object-fit:contain;
 }
 
-/* контент */
+/* ==================================================
+   Контент
+================================================== */
 
 .content{
-flex:1;
-padding:40px 60px;
+    flex:1;
+    padding:100px 60px 40px 60px;
+    overflow:hidden;
 }
-
-/* верхняя панель */
 
 .topbar{
-display:flex;
-justify-content:flex-end;
-margin-bottom:30px;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    height:60px;
+    margin-bottom:30px;
 }
 
-/* карточка страницы */
+header{
+    position:fixed;
+    top:50px;
+    right:0;
+    left:260px;
+    height:60px;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    padding:0 60px;
+    z-index:1000;
+}
+
+/* ==================================================
+   Страница
+================================================== */
 
 .page{
-background:white;
-padding:30px;
-border-radius:12px;
-box-shadow:0 6px 18px rgba(0,0,0,0.06);
+    background: var(--bg-card);
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06);
 
-opacity:0;
-transform:translateY(15px);
-animation:pageContent 0.4s ease forwards;
-animation-delay:0.3s;
+    opacity:0;
+    animation:pageContent 0.4s ease forwards;
+    animation-delay:0.3s;
 }
 
 @keyframes pageContent{
-to{
-opacity:1;
-transform:translateY(0);
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:none;   /* ← ВАЖНО */
+    }
 }
+/* ==================================================
+   Анимация страниц
+================================================== */
+.page-anim{
+    opacity:0;
+    transform:translateY(20px);
+    transition: opacity 1s ease, transform 1s ease;
 }
 
-/* анимация переключения разделов */
+.page-anim.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+/* ==================================================
+   СЕКЦИИ
+================================================== */
 
 .section{
-opacity:0;
-transform:translateY(15px);
-animation:sectionShow 0.35s ease forwards;
+    opacity:0;
+    animation:sectionShow 0.35s ease forwards;
 }
 
 @keyframes sectionShow{
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-.section-hide{
-animation:sectionHide 0.2s ease forwards;
-}
-
-@keyframes sectionHide{
-to{
-opacity:0;
-transform:translateY(-10px);
-}
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
 }
 
-/* dark mode */
+/* ==================================================
+   ФОРМЫ
+================================================== */
 
-body.dark{
-background:#1e1e1e;
-color:#e5e5e5;
+.page input,
+.page select,
+.page textarea{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--input-border);
+    margin-bottom:10px;
+    font-size:14px;
+    background: var(--input-bg);
+    color: var(--text-color);
 }
 
-body.dark .page{
-background:#2b2b2b;
+.page input::placeholder,
+.page textarea::placeholder{
+    color: var(--input-placeholder);
 }
 
-body.dark .menu a{
-color:#cfd8dc;
+/* ==================================================
+   КНОПКИ
+================================================== */
+
+.page button{
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background: var(--button-bg);
+    color:white;
+    font-weight:500;
+    transition:0.2s;
 }
 
-body.dark .menu a.active{
-background:#3b7bb5;
+.page button:hover{
+    background: var(--button-hover);
 }
 
-/* логотип */
+/* ==================================================
+   КНОПКА СМЕНЫ ТЕМЫ
+================================================== */
+
+.theme-btn{
+    margin-top:auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    background:transparent;
+    border:none;
+}
+
+.theme-btn:hover{
+    background:rgba(255,255,255,0.14);
+}
+
+.theme-btn img{
+    width:16px;
+    height:16px;
+}
+
+/* ==================================================
+   ПРОФИЛЬ
+================================================== */
+
+.profile-panel{
+    background: var(--bg-card);
+    color: var(--text-color);
+}
+
+.profile-panel input{
+    background: var(--input-bg);
+    border:1px solid var(--input-border);
+    color: var(--text-color);
+}
+
+#profileMessage{
+    margin-top:10px;
+    font-size:14px;
+    display:none;
+}
+
+.message-success{ color:#2ecc71; }
+.message-error{ color:#ff4d4d; }
+
+/* ==================================================
+   ЛОГОТИП
+================================================== */
 
 .logo{
-display:flex;
-align-items:center;
-font-family:Arial, sans-serif;
-font-size:52px;
-font-weight:600;
-transform:scale(0.85);
-transform-origin:left center;
-margin-top:25px;
-margin-bottom:50px;
+    display:flex;
+    align-items:center;
+    font-family:Arial, sans-serif;
+    font-size:52px;
+    font-weight:600;
+    transform:scale(0.85);
+    transform-origin:left center;
+    margin-top:25px;
+    margin-bottom:50px;
 }
 
 .techno{
-color:white;
-margin-right:-10px;
+    color:white;
+    margin-right:-1px;
 }
 
 .kad-wrap{
-position:relative;
-display:inline-block;
+    position:relative;
+    display:inline-block;
 }
 
 .kad{
-color:#18a7b5;
-position:relative;
-z-index:2;
+    color:#18a7b5;
+    position:relative;
+    z-index:2;
 }
 
 .circle{
-position:absolute;
-left:-28px;
-top:-38px;
-width:150px;
-height:150px;
-overflow:visible;
+    position:absolute;
+    left:-28px;
+    top:-38px;
+    width:150px;
+    height:150px;
+    overflow:visible;
 }
 
 .circle circle{
-fill:none;
-stroke:#18a7b5;
-stroke-width:6;
-stroke-dasharray:270 90;
-transform:rotate(207deg);
-transform-origin:60px 60px;
+    fill:none;
+    stroke:#18a7b5;
+    stroke-width:6;
+    stroke-dasharray:270 90;
+    transform:rotate(207deg);
+    transform-origin:60px 60px;
 }
-
-
-
-/* ---------- ТЕМЫ ---------- */
-
-/* тема 1 (как login) */
-
-body.theme1{
-background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-}
-
-.theme1 .page{
-background:white;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
-
-.theme1 .logo-img{
-filter:drop-shadow(0 3px 8px rgba(0,0,0,0.25));
-}
-/* тема 2 (черно-белая) */
-
-body.theme2{
-background:linear-gradient(135deg,#000000,#434343);
-color:white;
-}
-
-.theme2 .sidebar{
-background:#111;
-}
-
-.theme2 .page{
-background:#1e1e1e;
-color:white;
-}
-
-.theme2 .logo-text{
-color:white;
-}
-
-.theme3 .logo-icon{
-background:linear-gradient(135deg,#1a73e8,#42a5f5);
-}
-
-.theme2 .logo-img{
-filter:brightness(1.2) drop-shadow(0 3px 8px rgba(0,0,0,0.6));
-}
-
-/* тема 3 (сине-белая фирменная) */
-
-body.theme3{
-background:linear-gradient(135deg,#2b6cb0,#63b3ed);
-}
-
-.theme3 .sidebar{
-background:linear-gradient(180deg,#1a365d,#2b6cb0);
-}
-
-.theme3 .page{
-background:white;
-}
-
-.theme3 .logo-img{
-filter:drop-shadow(0 3px 10px rgba(0,0,0,0.35));
-}
-
-
-body{
-opacity:0;
-animation:fadePage 0.6s ease forwards;
-}
-
-@keyframes fadePage{
-from{
-opacity:0;
-}
-to{
-opacity:1;
-}
-}
-
-/* выезд бокового меню */
-
-
-@keyframes showSidebar{
-to{
-transform:translateX(0);
-opacity:1;
-}
-}
-
-/* появление основного контента */
-
-.main-content{
-opacity:0;
-transform:translateY(20px);
-animation:showContent 0.6s ease forwards;
-animation-delay:0.4s;
-}
-
-@keyframes showContent{
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* аватар пользователя */
-
-.user-profile{
-opacity:0;
-transform:scale(0.8);
-animation:showAvatar 0.4s ease forwards;
-animation-delay:0.6s;
-}
-
-@keyframes showAvatar{
-to{
-opacity:1;
-transform:scale(1);
-}
-}
-
-.section{
-opacity:0;
-transform:translateY(15px);
-animation:sectionShow 0.35s ease forwards;
-}
-
-@keyframes sectionShow{
-from{
-opacity:0;
-transform:translateY(15px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-
-

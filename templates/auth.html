@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <!-- Подключение CSS файла -->
+    <link rel="stylesheet" href="../static/css/auth.css">
+</head>
+<body>
+
+    <div class="container">
+
+    <!-- Секция формы авторизации -->
+    <section id="login-section" class="form-section active">
+        <h1>Вход</h1>
+        <form id="login-form" action="/login" method="post">
+            <div class="form-group">
+                <label for="login-email">Электронная почта:</label>
+                <input type="email" id="login-email" name="email" required placeholder="Введите ваш email">
+            </div>
+
+            <div class="form-group">
+                <label for="login-password">Пароль:</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="login-password" name="password" required placeholder="Введите ваш пароль">
+                    <span class="password-toggle-icon">👁</span>
+                </div>
+
+                <a href="#" id="show-forgot-password" onclick="return false;">Забыли пароль?</a>
+            </div>
+
+            <button type="submit">Войти</button>
+        </form>
+
+        <div class="auth-links">
+            Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a>
+        </div>
+    </section>
+
+        <!-- Секция восстановления пароля -->
+    <section id="forgot-password-section" class="form-section">
+    <h1>Восстановление пароля</h1>
+
+    <form action="/forgot-password" method="post">
+        <div class="form-group">
+            <label for="reset-email">Электронная почта:</label>
+            <input type="email" id="reset-email" name="email" required placeholder="Введите ваш email">
+        </div>
+
+        <button type="submit">Отправить ссылку</button>
+    </form>
+
+    <div class="auth-links">
+        <a href="#" id="back-to-login">Вернуться ко входу</a>
+    </div>
+</section>
+        <!-- Секция формы регистрации -->
+<section id="register-section" class="form-section">
+    <h1>Регистрация</h1>
+
+    <form id="register-form" action="/register" method="post">
+
+        <div class="form-group">
+            <label for="reg-email">Электронная почта:</label>
+            <input type="email" id="reg-email" name="email" required placeholder="Введите ваш email">
+        </div>
+
+        <div class="form-group">
+            <label for="reg-username">Имя:</label>
+            <input type="text" id="reg-username" name="first_name" required placeholder="Введите имя">
+        </div>
+
+        <div class="form-group">
+            <label for="reg-lastname">Фамилия:</label>
+            <input type="text" id="reg-lastname" name="last_name" required placeholder="Введите фамилию">
+        </div>
+
+        <div class="form-group">
+            <label for="reg-password">Пароль:</label>
+            <div class="password-input-wrapper">
+                <input type="password" id="reg-password" name="password" required minlength="6" placeholder="Введите пароль">
+                <span class="password-toggle-icon">👁</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="reg-password2">Подтвердите пароль:</label>
+            <div class="password-input-wrapper">
+                <input type="password" id="reg-password2" name="password2" required minlength="6" placeholder="Повторите пароль">
+                <span class="password-toggle-icon">👁</span>
+            </div>
+        </div>
+
+        <p id="password-match-error" class="error-message" style="display:none;">
+            Пароли не совпадают
+        </p>
+
+        <p id="password-hint" class="error-message" style="display:none;">
+            Минимальная длина пароля — 8 символов
+        </p>
+
+        <button type="submit">Зарегистрироваться</button>
+
+    </form>
+
+    <div class="auth-links">
+        Уже есть аккаунт? <a href="#" id="show-login">Войти</a>
+    </div>
+
+</section>
+
+
+        <div id="modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <h2>Сообщение</h2>
+        <p id="modal-message"></p>
+        <button id="modal-ok">OK</button>
+    </div>
+</div>
+    </div>
+
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script>
+window.userRole = "{{ current_user.role.name if current_user.is_authenticated else '' }}";
+</script>
+
+
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    showModal({{ messages[0][1] | tojson }});
+});
+</script>
+{% endif %}
+{% endwith %}
+
+</body>
+</html>

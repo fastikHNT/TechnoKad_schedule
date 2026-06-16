@@ -1,0 +1,268 @@
+/* ==================================================
+   PROFILE WRAPPER
+================================================== */
+
+.profile{
+    position:relative;
+    display:flex;
+    align-items:center;
+}
+
+/* ==================================================
+   AVATAR
+================================================== */
+
+.avatar{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    object-fit:cover;
+    transition:transform 0.2s ease;
+}
+
+.avatar-wrapper{
+    width:40px;
+    height:40px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+}
+
+.avatar-wrapper:hover .avatar{
+    transform:scale(1.08);
+}
+
+.avatar-wrapper:hover .tooltip{
+    opacity:1;
+    transform:translateY(-50%) scale(1);
+}
+
+.avatar-initials{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:var(--button-bg);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:1px;
+}
+
+/* ==================================================
+   PROFILE MENU
+================================================== */
+
+.profile-menu{
+    position:absolute;
+    right:0;
+    top:55px;
+    width:340px;
+    background:var(--bg-card);
+    border-radius:14px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.25);
+    padding:20px;
+    opacity:0;
+    transform:translateY(-10px) scale(0.98);
+    pointer-events:none;
+    transition:0.2s ease;
+    z-index:2000;
+    color:var(--text-color);
+}
+
+.profile-menu.open{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    pointer-events:auto;
+}
+
+/* ==================================================
+   PROFILE INFO
+================================================== */
+
+.profile-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.profile-info strong{
+    font-size:15px;
+    color:var(--text-color);
+}
+
+.profile-info .email{
+    font-size:13px;
+    opacity:0.7;
+}
+
+.profile-info .extra{
+    font-size:13px;
+    opacity:0.75;
+}
+
+/* ==================================================
+   BLOCKS
+================================================== */
+
+.menu-block{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    width:100%;
+}
+
+.menu-block label{
+    font-size:13px;
+    font-weight:500;
+    opacity:0.8;
+}
+
+/* ==================================================
+   INPUTS
+================================================== */
+
+.input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--input-border);
+    border-radius:8px;
+    font-size:14px;
+    background:var(--input-bg);
+    color:var(--text-color);
+    outline:none;
+    transition:0.2s;
+    box-sizing:border-box;
+}
+
+.input-error{
+    border-color:#ff4d4d !important;
+}
+
+.input:focus{
+    border-color:var(--button-bg);
+    box-shadow:0 0 0 2px rgba(0,0,0,0.05);
+}
+
+/* ==================================================
+   BUTTONS
+================================================== */
+
+.btn-primary{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:0.15s;
+    background:var(--button-bg);
+    color:white;
+}
+
+.btn-primary:hover{
+    background:var(--button-hover);
+}
+
+/* ==================================================
+   FILE UPLOAD
+================================================== */
+
+.file-upload{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px dashed var(--input-border);
+    border-radius:8px;
+    padding:10px;
+    cursor:pointer;
+    background:var(--input-bg);
+    font-size:13px;
+    opacity:0.85;
+}
+
+.file-upload input{
+    display:none;
+}
+
+/* ==================================================
+   TOOLTIP
+================================================== */
+
+.tooltip{
+    position:absolute;
+    right:120%;
+    top:50%;
+    transform:translateY(-50%) scale(0.9);
+    background:#111;
+    color:#fff;
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:12px;
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:none;
+    transition:0.2s;
+}
+
+/* ==================================================
+   LOGOUT BUTTON
+================================================== */
+
+.logout-btn{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    transition:0.2s;
+    background:#e53935;
+    color:#fff;
+}
+
+.logout-btn:hover{
+    background:#c62828;
+}
+
+/* ==================================================
+   ERRORS & MESSAGES
+================================================== */
+
+.error{
+    color:#ff4d4f;
+    font-size:13px;
+    margin-top:6px;
+    opacity:0;
+    transition:0.2s;
+}
+
+.error:not(:empty){
+    opacity:1;
+}
+
+.message{
+    min-height:18px;
+    margin-top:8px;
+    font-size:14px;
+    opacity:0;
+    transition:opacity .3s;
+}
+
+.message.show{
+    opacity:1;
+}
+
+.message.success{
+    color:#22c55e;
+}
+
+.message.error{
+    color:#ef4444;
+}
