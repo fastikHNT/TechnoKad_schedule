@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import requests
+from flask import session
+RECAPTCHA_SECRET_KEY = "6LfgCSQtAAAAAOSljwxPwatX3zfBF7YMj9co5-m3"
+
 from flask import Flask, render_template, request, redirect, flash, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user
@@ -53,7 +57,41 @@ app.config.from_object(Config)
 
 db.init_app(app)
 login_manager.init_app(app)
+# Куда перенаправляем неавторизованных пользователей
+login_manager.login_view = 'authorization'
+
+# Сообщение при попытке доступа к защищённой странице
+login_manager.login_message = "Пожалуйста, авторизуйтесь, чтобы получить доступ к данной странице."
+login_manager.login_message_category = "warning"
 mail.init_app(app)
+
+
+@app.route('/captcha', methods=['GET', 'POST'])
+def captcha():
+    if request.method == 'POST':
+
+        recaptcha_response = request.form.get('g-recaptcha-response')
+
+        # Проверка
+        verify = requests.post(
+            "https://www.google.com/recaptcha/api/siteverify",
+            data={
+                "secret": RECAPTCHA_SECRET_KEY,
+                "response": recaptcha_response
+            }
+        ).json()
+
+        if verify.get("success"):
+            session["captcha_passed"] = True  # ← ВАЖНО
+            return redirect('/')
+
+        flash("Подтвердите, что вы не робот")
+        return redirect('/captcha')
+
+    return render_template('captcha.html')
+
+
+
 
 
 @login_manager.user_loader
@@ -74,6 +112,10 @@ def authorization():
 
         Отображает форму входа/регистрации и т.д. (auth.html).
     """
+    if not session.get("captcha_passed"):
+        return redirect('/captcha')
+
+    return render_template('auth.html')
     return render_template('auth.html')
 
 
@@ -181,7 +223,7 @@ def activate(token):
     """
     activation = ActivationToken.query.filter_by(token=token, used=False).first()
 
-    if not activation or activation.expires_at < msk_now():
+    if not activation or activation.expires_at > msk_now():
         return render_template("email/token_invalid.html")
 
     user = User.query.get(activation.user_id)
@@ -363,7 +405,7 @@ def reset_password(token):
 
         return redirect('/')
 
-    return render_template("reset_password.html", token=token)
+    return render_template("email/reset_password.html", token=token)
 
 @app.route("/upload-avatar", methods=["POST"])
 @login_required
