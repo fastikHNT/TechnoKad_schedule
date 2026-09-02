@@ -1,0 +1,1272 @@
+/* =====================================================
+   Общие стили страницы графиков
+===================================================== */
+.schedule-page {
+    padding: 0;
+    margin: 0;
+    display: block;
+    width: 100%;
+    color: var(--text-color);
+}
+
+/* Заголовок */
+
+.schedule-page h2 {
+    margin: 0 0 16px 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* =====================================================
+   Верхняя панель: фильтры и кнопки
+===================================================== */
+
+.schedule-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 6px;
+}
+
+/* левая часть */
+
+.toolbar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filters-with-edit {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.filters-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* правая часть */
+
+.toolbar-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.right-col {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+/* =====================================================
+   Фильтры
+===================================================== */
+
+.admin-filter {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--input-bg);
+    font-size: 14px;
+    transition: 0.2s;
+    color: var(--text-color);
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+}
+
+.admin-filter:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 6px rgba(99,102,241,0.25);
+    outline: 2px solid var(--accent);
+}
+
+/* =====================================================
+   Строка кнопок редактирования
+===================================================== */
+
+.edit-buttons-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+    padding: 0;
+    width: 100%;
+}
+
+.edit-buttons-left {
+    display: flex;
+    gap: 12px;
+}
+
+.edit-buttons-row .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* =====================================================
+   Панель действий
+===================================================== */
+
+.actions {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.actions-grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr;
+    justify-items: start;
+    row-gap: 4px;
+    column-gap: 16px;
+}
+
+.right-col {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    margin-top: 10px;
+    justify-content: flex-end;
+}
+
+.bottom-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.bottom-row {
+    grid-column: auto;
+}
+
+/* =====================================================
+   Кнопки
+===================================================== */
+.btn,
+button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Кнопка "Удалить" всегда красная */
+.btn-danger,
+#deleteScheduleBtn {
+    background: #dc2626 !important;
+    color: white !important;
+}
+
+.btn-danger:hover,
+#deleteScheduleBtn:hover {
+    background: #ef4444 !important;
+}
+
+/* Кнопка "Сохранить" - цвет темы */
+.btn-success,
+#btnSave {
+    background: var(--button-bg, #6366f1) !important;
+    color: white !important;
+}
+
+.btn-success:hover,
+#btnSave:hover {
+    background: var(--button-hover, #4f46e5) !important;
+}
+
+/* Кнопка "Отмена" - оранжевая */
+.btn-warning,
+#btnCancel {
+    background: #f59e0b !important;
+    color: white !important;
+}
+
+.btn-warning:hover,
+#btnCancel:hover {
+    background: #d97706 !important;
+}
+
+button[disabled],
+button.disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    filter: saturate(0.6) brightness(0.9);
+    pointer-events: none;
+}
+
+button[disabled]:hover,
+button.disabled:hover {
+    cursor: not-allowed;
+    opacity: 0.55;
+    filter: saturate(0.6) brightness(0.9);
+    transform: none;
+}
+
+.actions-grid{
+    margin-top:12px;
+}
+
+.left-col{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.bottom-row{
+    margin-top:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.bottom-left{
+    display:flex;
+    gap:10px;
+}
+
+.bottom-right{
+    display:flex;
+}
+
+
+/* =====================================================
+   Индикатор режима редактирования
+===================================================== */
+
+.edit-indicator {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(245,158,11,0.12);
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+}
+
+/* =====================================================
+   Таблица графика
+===================================================== */
+
+.vacation-grid-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--modal-bg);
+    color: var(--modal-text);
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+.schedule-table thead {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.schedule-table th {
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.schedule-table th.col-name {
+    text-align: left;
+    padding-left: 16px;
+    min-width: 120px;
+}
+
+.schedule-table th.col-position {
+    text-align: left;
+    min-width: 150px;
+}
+
+.schedule-table th.col-month {
+    min-width: 60px;
+    font-size: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schedule-table th.col-month:last-child {
+    border-right: none;
+}
+
+.schedule-table td.col-name {
+    text-align: left;
+    padding-left: 16px;
+    font-weight: 500;
+}
+
+.schedule-table td.col-position {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.schedule-table td.col-month {
+    min-width: 60px;
+}
+
+.schedule-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.schedule-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.schedule-table tbody tr td.empty {
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    text-align: center;
+    colspan: 15;
+}
+
+.schedule-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    position: relative;
+}
+
+.schedule-table td.col-name {
+    text-align: left;
+    padding-left: 16px;
+    font-weight: 500;
+}
+
+.schedule-table td.col-position {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.schedule-table td.col-name.editable-name {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.schedule-table td.col-name.editable-name:hover {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.schedule-table td.col-name.editable-name:hover::after {
+    content: "✏️";
+    margin-left: 4px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+/* Ячейка месяца */
+.month-cell {
+    min-width: 60px;
+    height: 40px;
+    cursor: default;
+}
+
+/* Отпуск в ячейке */
+.vacation-cell {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+    color: white;
+    font-weight: 500;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    border: none;
+    border-radius: 4px;
+    margin: 0;
+    padding: 0;
+}
+
+/* Отпуск, пересекающий два месяца */
+.vacation-cell.vacation-cross {
+    border-radius: 4px;
+    min-width: 120px;
+    background: none !important;
+}
+
+.vacation-cell.type-main.vacation-cross {
+    background-color: #1e3a8a;
+}
+
+.vacation-cell.type-education.vacation-cross {
+    background-color: #60a5fa;
+}
+
+.vacation-cell.type-planned.vacation-cross {
+    background-color: #fbbf24;
+}
+
+.vacation-cell.type-decreetal.vacation-cross {
+    background-color: #16a34a;
+}
+
+/* Отпуск в пределах одного месяца */
+.vacation-cell.vacation-full {
+    border-radius: 4px;
+}
+
+/* Отпуск, пересекающий два месяца */
+.vacation-cell.vacation-cross {
+    border-radius: 4px;
+    min-width: 120px;
+}
+
+/* Отпуск пересекает месяц (начался раньше, закончится позже) */
+.vacation-cell.vacation-intersect {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    border-radius: 4px;
+}
+
+.vacation-cell.vacation-intersect::before {
+    content: "◀";
+    position: absolute;
+    left: 4px;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.vacation-cell.vacation-intersect::after {
+    content: "▶";
+    position: absolute;
+    right: 4px;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.vacation-cell:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    z-index: 10;
+    position: relative;
+}
+
+/* Типы отпусков */
+.vacation-cell.type-main {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+}
+
+.vacation-cell.type-education {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+}
+
+.vacation-cell.type-planned {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
+.vacation-cell.type-decreetal {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+/* Ячейка с отпуском в режиме редактирования */
+.vacation-cell.editable-vacation {
+    cursor: pointer;
+    position: relative;
+}
+
+.vacation-cell.editable-vacation::before {
+    content: "✏️";
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.vacation-cell:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Tooltip для отпуска */
+.vacation-cell[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Пустая ячейка в режиме редактирования */
+.month-cell.editable {
+    cursor: pointer;
+}
+
+.month-cell.editable:hover {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.month-cell.editable::before {
+    content: "+";
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.month-cell.editable:hover::before {
+    color: rgba(99, 102, 241, 0.6);
+}
+
+/* =====================================================
+   Служебные
+===================================================== */
+
+.hidden {
+    display: none !important;
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* =====================================================
+   Строка выбора
+===================================================== */
+
+#scheduleTableBody tr.row-selected {
+    background: rgba(99, 102, 241, 0.2) !important;
+    transition: background 0.2s;
+}
+
+#scheduleTableBody tr.row-selected:hover {
+    background: rgba(99, 102, 241, 0.25) !important;
+}
+
+tbody tr.selected-row,
+tbody tr.selected-row:hover {
+    background: var(--row-selected);
+    transition: 0.2s;
+}
+
+/* =====================================================
+   Модальные окна
+===================================================== */
+
+.custom-modal {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    backdrop-filter: blur(3px);
+}
+
+.custom-modal .ce-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    line-height: 1;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.custom-modal.hidden {
+    display: none;
+}
+
+.custom-modal-content {
+    position: relative;
+    background: var(--modal-bg);
+    color: var(--modal-text);
+    padding: 60px 32px 28px 32px;
+    border-radius: 12px;
+    width: 420px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    animation: modalFade 0.2s ease;
+}
+
+.custom-modal-content h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.custom-modal-content p {
+    margin-bottom: 24px;
+    color: var(--modal-subtext);
+}
+
+.custom-modal-content label {
+    display: block;
+    text-align: left;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+
+@keyframes modalFade {
+    from { transform: translateY(-8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+/* Кнопка закрытия модалки */
+
+.custom-modal .ce-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    line-height: 1;
+    z-index: 3001;
+}
+
+.custom-modal-content .ce-modal-close:hover {
+    background: rgba(220, 38, 38, 0.8);
+    border-color: rgba(220, 38, 38, 0.5);
+    transform: scale(1.1);
+}
+
+/* Строка становится кликабельной в режиме редактирования */
+.row-editable {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.row-editable:hover {
+    background: #f0f7ff;
+}
+
+/* Ячейка с отпуском */
+.vacation-marked {
+    background: #d1eaff;
+    color: #0056b3;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Сетка месяцев в модалке редактирования */
+.months-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 12px 0 16px;
+}
+.month-edit-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+}
+.month-edit-item input {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* =====================================================
+   Модалка добавления сотрудника
+===================================================== */
+
+.ce-mode-row {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.ce-mode-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+    color: var(--modal-text);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.ce-mode-btn:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.5);
+}
+
+.ce-mode-btn.active {
+    background: rgba(99, 102, 241, 0.3);
+    border-color: rgba(99, 102, 241, 0.7);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+.ce-users-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 12px;
+}
+
+.ce-user-item {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ce-user-item:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-left: 3px solid rgba(99, 102, 241, 0.5);
+}
+
+.ce-user-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ce-user-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #6366f1;
+}
+
+.ce-user-checkbox label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin: 0;
+}
+
+.ce-list-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+}
+
+.ce-user-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--modal-text);
+}
+
+.ce-user-position {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.ce-users-list .empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Чекбокс в модалке schedule */
+
+.schedule-page .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.schedule-page .checkbox-label:hover {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.schedule-page .checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Чекбокс "по умолчанию" в фильтре */
+.schedule-default-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--input-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: var(--text-color);
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.schedule-default-label:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--accent, #6366f1);
+    box-shadow: 0 0 6px rgba(99,102,241,0.25);
+}
+
+.schedule-default-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #6366f1;
+    margin: 0;
+}
+
+.schedule-default-label input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Светлые темы */
+body.theme1 .schedule-default-label,
+body.theme3 .schedule-default-label {
+    background: var(--input-bg, rgba(255, 255, 255, 0.8));
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #1a1a1a;
+}
+
+body.theme1 .schedule-default-label:hover,
+body.theme3 .schedule-default-label:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent, #6366f1);
+    box-shadow: 0 0 6px rgba(99,102,241,0.25);
+}
+
+body.theme1 .schedule-default-label input[type="checkbox"],
+body.theme3 .schedule-default-label input[type="checkbox"] {
+    accent-color: #6366f1;
+}
+
+.schedule-page .checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Поля ввода для schedule */
+
+.schedule-page .input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: var(--input-bg, rgba(255, 255, 255, 0.05));
+    color: var(--text-color);
+    font-size: 14px;
+    transition: all 0.2s;
+    margin-top: 4px;
+}
+
+.schedule-page .input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.5);
+    background: var(--input-bg, rgba(255, 255, 255, 0.08));
+}
+
+/* Select должности - цвет фона как у темы */
+.schedule-page select.input.ce-department-select,
+.schedule-page select.input.ce-position-select {
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.05));
+    color: var(--text-color);
+}
+
+.schedule-page select.input option {
+    background-color: var(--modal-bg, #1a1a1a);
+    color: var(--text-color);
+}
+
+.schedule-page input[type="date"] {
+    color: var(--text-color);
+}
+
+.schedule-page input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Кнопки в модалках schedule */
+
+.schedule-page .btn-save,
+#vacationModal .btn-save {
+    padding: 10px 24px;
+    background: #16a34a !important;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.schedule-page .btn-save:hover,
+#vacationModal .btn-save:hover {
+    background: #15803d !important;
+    transform: translateY(-2px);
+}
+
+.schedule-page .btn-cancel,
+#vacationModal .btn-cancel {
+    padding: 10px 24px;
+    background: #f59e0b !important;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.schedule-page .btn-cancel:hover,
+#vacationModal .btn-cancel:hover {
+    background: #d97706 !important;
+}
+
+.schedule-page .btn-delete,
+#vacationModal .btn-delete {
+    padding: 10px 24px;
+    background: #ef4444 !important;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.schedule-page .btn-delete:hover,
+#vacationModal .btn-delete:hover {
+    background: #dc2626 !important;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+/* =====================================================
+   Кастомные модальные окна подтверждения
+===================================================== */
+
+#deleteConfirmModal .custom-modal-content,
+#saveConfirmModal .custom-modal-content {
+    text-align: center;
+    padding: 32px;
+}
+
+#deleteConfirmModal h3,
+#saveConfirmModal h3 {
+    margin-bottom: 16px;
+    font-size: 20px;
+    color: var(--text-color);
+}
+
+#deleteConfirmModal p,
+#saveConfirmModal p {
+    margin-bottom: 24px;
+    color: var(--modal-subtext);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+#confirmDeleteBtn,
+#confirmSaveBtn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#confirmDeleteBtn {
+    background: #dc2626 !important;
+    color: white !important;
+}
+
+#confirmDeleteBtn:hover {
+    background: #ef4444 !important;
+}
+
+#confirmSaveBtn {
+    background: var(--button-bg, #6366f1) !important;
+    color: white !important;
+}
+
+#confirmSaveBtn:hover {
+    background: var(--button-hover, #4f46e5) !important;
+}
+
+#cancelDeleteBtn,
+#cancelSaveBtn {
+    background: #f59e0b !important;
+    color: white !important;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#cancelDeleteBtn:hover,
+#cancelSaveBtn:hover {
+    background: #d97706 !important;
+}
+
+#confirmSaveBtn {
+    background: var(--button-bg, #6366f1) !important;
+    color: white !important;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#confirmSaveBtn:hover {
+    background: var(--button-hover, #4f46e5) !important;
+}
+
+/* =====================================================
+   Селектор типа отпуска
+===================================================== */
+
+.vacation-type-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+    text-align: left;
+}
+
+.vacation-type-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.vacation-type-label:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.vacation-type-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.vacation-type-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.vacation-type-color.type-main {
+    background: #1e3a8a;
+}
+
+.vacation-type-color.type-education {
+    background: #60a5fa;
+}
+
+.vacation-type-color.type-planned {
+    background: #fbbf24;
+}
+
+.vacation-type-color.type-decreetal {
+    background: #16a34a;
+}
+
+/* =====================================================
+   Светлые темы - цвет должности
+===================================================== */
+
+body.theme1 .schedule-table td.col-position,
+body.theme3 .schedule-table td.col-position {
+    color: black !important;
+}
+
+body.theme1 .ce-user-position,
+body.theme3 .ce-user-position {
+    color: black !important;
+}
+
+/* =====================================================
+   Drag-and-drop стили
+===================================================== */
+
+#scheduleTableBody tr.dragging {
+    opacity: 0.5;
+    background: rgba(99, 102, 241, 0.2) !important;
+    cursor: grabbing;
+}
+
+#scheduleTableBody tr.drag-over {
+    border-top: 3px solid #6366f1 !important;
+    background: rgba(99, 102, 241, 0.15) !important;
+}
+
+#scheduleTableBody tr {
+    cursor: grab;
+}
+
+#scheduleTableBody tr:active {
+    cursor: grabbing;
+}
+
+/* =====================================================
+   Подсветка сотрудников по категориям должностей
+===================================================== */
+
+/* Руководитель проекта - фиолетовый */
+.schedule-table td.pos-category-project-lead {
+    color: #7c3aed !important;
+    font-weight: 600;
+}
+
+/* Заместитель руководителя, руководитель отдела - розовый */
+.schedule-table td.pos-category-pink {
+    color: #ec4899 !important;
+    font-weight: 500;
+}
+
+/* Светлые темы - усиливаем цвета */
+body.theme1 .schedule-table td.pos-category-pink,
+body.theme3 .schedule-table td.pos-category-pink {
+    color: #db2777 !important;
+}
+
+/* Специалист, ведущий специалист - бирюзовый */
+.schedule-table td.pos-category-turquoise {
+    color: #0d9488 !important;
+}
+
+/* Оператор - зеленый */
+.schedule-table td.pos-category-orange {
+    color: #ea580c !important;
+}
+
+/* Ассистент - темно-синий */
+.schedule-table td.pos-category-dark-blue {
+    color: #1e3a8a !important;
+}
+
+/* Светлые темы - усиливаем цвета */
+body.theme1 .schedule-table td.pos-category-project-lead,
+body.theme3 .schedule-table td.pos-category-project-lead {
+    color: #6d28d9 !important;
+}
+
+body.theme1 .schedule-table td.pos-category-turquoise,
+body.theme3 .schedule-table td.pos-category-turquoise {
+    color: #0f766e !important;
+}
+
+body.theme1 .schedule-table td.pos-category-operator,
+body.theme3 .schedule-table td.pos-category-operator {
+    color: #15803d !important;
+}
+
+body.theme1 .schedule-table td.pos-category-orange,
+body.theme3 .schedule-table td.pos-category-orange {
+    color: #c2410c !important;
+}
+
+body.theme1 .schedule-table td.pos-category-dark-blue,
+body.theme3 .schedule-table td.pos-category-dark-blue {
+    color: #1e40af !important;
+}

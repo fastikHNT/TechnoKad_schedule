@@ -1,0 +1,222 @@
+<h2>Графики отпусков</h2>
+
+<div class="schedule-page">
+
+    <div id="messageBox" class="admin-message"></div>
+
+    <div class="schedule-toolbar">
+        <div class="toolbar-left">
+            <div class="filters-with-edit">
+
+                <div class="filters-row">
+                    <div class="filter-box">
+                        <select id="departmentFilter" class="admin-filter">
+                            <option value="">Выберите отдел</option>
+                            <option value="1">Отдел по работе с клиентами</option>
+                            <option value="2">Отдел технической поддержки</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-box">
+                        <select id="scheduleFilter" class="admin-filter" disabled>
+                            <option value="">Выберите график</option>
+                        </select>
+                    </div>
+
+                    <label class="schedule-default-label">
+                        <input type="checkbox" id="isDefaultCheckbox" disabled>
+                        📌 График по умолчанию
+                    </label>
+                </div>
+
+                <button id="editBtn" class="btn btn-secondary">Редактировать</button>
+
+            </div>
+        </div>
+
+        <div class="toolbar-right">
+            <button id="createScheduleBtn" class="btn btn-success">Создать график</button>
+        </div>
+
+
+    </div>
+
+    <div class="actions">
+
+    <div class="actions-grid">
+
+        <div class="left-col">
+            <button id="createEmployeeBtn" class="btn btn-success">Добавить сотрудника в график</button>
+            <button id="transferVacationBtn" class="btn btn-secondary">Перенести отпуск</button>
+            <button id="suggestVacationBtn" class="btn btn-secondary">Запланировать отпуск</button>
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- Кнопки режима редактирования -->
+    <div id="editButtonsRow" class="edit-buttons-row hidden">
+        <div class="edit-buttons-left">
+            <button id="btnSave" class="btn btn-success">Сохранить</button>
+            <button id="btnCancel" class="btn btn-warning">Отмена</button>
+        </div>
+        <button id="deleteScheduleBtn" class="btn btn-danger">Удалить</button>
+    </div>
+
+    <div id="editIndicator" class="edit-indicator hidden">
+        🔶 Включён режим редактирования
+    </div>
+
+    <h3 id="selectedScheduleTitle" class="schedule-title hidden"></h3>
+
+    <style>
+        .schedule-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 16px 0;
+            color: var(--text-color);
+        }
+    </style>
+
+    <!-- Таблица графика -->
+    <div id="vacationGrid" class="vacation-grid-container">
+        <table id="scheduleTable" class="schedule-table schedule-grid">
+            <thead>
+                <tr>
+                    <th class="col-name">Имя</th>
+                    <th class="col-name">Фамилия</th>
+                    <th class="col-position">Должность</th>
+                    <th class="col-month">Янв</th>
+                    <th class="col-month">Фев</th>
+                    <th class="col-month">Мар</th>
+                    <th class="col-month">Апр</th>
+                    <th class="col-month">Май</th>
+                    <th class="col-month">Июн</th>
+                    <th class="col-month">Июл</th>
+                    <th class="col-month">Авг</th>
+                    <th class="col-month">Сен</th>
+                    <th class="col-month">Окт</th>
+                    <th class="col-month">Ноя</th>
+                    <th class="col-month">Дек</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleTableBody">
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Модальное окно добавления сотрудника -->
+    <div id="createEmployeeModal" class="custom-modal hidden">
+
+        <div class="custom-modal-content">
+
+            <h3>Добавление сотрудника в график</h3>
+            <p>Выберите способ добавления:</p>
+
+            <div id="ceModeRow" class="ce-mode-row">
+                <button id="ceModeList" class="ce-mode-btn">Из списка зарегистрированных</button>
+                <button id="ceModeManual" class="ce-mode-btn">Вручную</button>
+            </div>
+
+            <div id="ceListBlock" class="hidden">
+                <label>Поиск:</label>
+                <input id="ceSearch" type="text" placeholder="Поиск сотрудника...">
+
+                <label>Сотрудники отдела:</label>
+                <div id="ceUsersList" class="ce-users-list"></div>
+
+                <div class="ce-list-footer">
+                    <button id="ceAddSelected" class="btn-save">Добавить выбранных</button>
+                    <button id="ceBackToMenu" class="btn-cancel">Отмена</button>
+                </div>
+            </div>
+
+            <div id="ceManualBlock" class="hidden">
+                <label>Отдел</label>
+                <select id="ceDepartment" class="input ce-department-select">
+                    <option value="">Выберите отдел</option>
+                    <option value="1">Отдел по работе с клиентами</option>
+                    <option value="2">Отдел технической поддержки</option>
+                </select>
+
+                <label>Имя</label>
+                <input id="ceFirstName" type="text" placeholder="Введите имя">
+
+                <label>Фамилия</label>
+                <input id="ceLastName" type="text" placeholder="Введите фамилию">
+
+                <label>Должность</label>
+                <select id="cePosition" class="input ce-position-select">
+                    <option value="">Сначала выберите отдел</option>
+                </select>
+
+                <div class="ce-btn-row">
+                    <button id="ceSave" class="btn-save">Добавить</button>
+                    <button id="ceBackToMenuManual" class="btn-cancel">Отмена</button>
+                </div>
+            </div>
+
+        </div>
+
+        <button id="ceCloseModal" class="ce-modal-close">&times;</button>
+
+    </div>
+
+
+    <!-- Модальное окно создания графика -->
+    <div id="createScheduleModal" class="custom-modal hidden">
+        <div class="custom-modal-content">
+            <h3>Создание нового графика</h3>
+
+            <label>Название графика:</label>
+            <input type="text" id="csName" class="input">
+
+            <label>Отдел:</label>
+            <select id="csDepartment" class="input">
+                <option value="1">Отдел по работе с клиентами</option>
+                <option value="2">Отдел технической поддержки</option>
+            </select>
+
+            <label>Год:</label>
+            <select id="csYear" class="input year-select"></select>
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="csIsDefault">
+                Сделать графиком по умолчанию
+            </label>
+
+            <div class="modal-buttons">
+                <button id="confirmCreateScheduleBtn" class="btn-save">Добавить</button>
+                <button id="closeCreateScheduleModalBtn" class="btn-cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div id="deleteConfirmModal" class="custom-modal hidden">
+        <div class="custom-modal-content">
+            <h3 id="deleteModalTitle">Удаление</h3>
+            <p id="deleteModalText">Вы уверены?</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteBtn" class="btn btn-danger">Да</button>
+                <button id="cancelDeleteBtn" class="btn btn-warning">Нет</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения сохранения -->
+    <div id="saveConfirmModal" class="custom-modal hidden">
+        <div class="custom-modal-content">
+            <h3>Сохранение изменений</h3>
+            <p id="saveModalText">Сохранить все изменения?</p>
+            <div class="modal-buttons">
+                <button id="confirmSaveBtn" class="btn btn-success">Да</button>
+                <button id="cancelSaveBtn" class="btn btn-warning">Нет</button>
+            </div>
+        </div>
+    </div>
+
+</div>

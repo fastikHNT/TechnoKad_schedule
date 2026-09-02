@@ -3,6 +3,9 @@ from zoneinfo import ZoneInfo
 
 import requests
 from flask import session
+
+from models.schedule import VacationSchedule
+
 RECAPTCHA_SECRET_KEY = "6LfgCSQtAAAAAOSljwxPwatX3zfBF7YMj9co5-m3"
 
 from flask import Flask, render_template, request, redirect, flash, url_for
@@ -11,11 +14,13 @@ from flask_login import login_user, login_required, logout_user
 
 from config import Config
 from extensions import db, login_manager, mail
-
 from models.user import User
 from models.role import Role
 from models.departement import Department
 from models.position import Position
+
+from models.schedule import Employee, VacationSchedule, ScheduleEmployee, Vacation, TypeVacation
+
 
 from models.activation_token import ActivationToken
 
@@ -89,9 +94,6 @@ def captcha():
         return redirect('/captcha')
 
     return render_template('captcha.html')
-
-
-
 
 
 @login_manager.user_loader
@@ -609,10 +611,6 @@ def get_users():
         ]
     })
 
-
-
-
-
 @app.route("/positions/<int:department_id>")
 def get_positions(department_id):
     """
@@ -890,6 +888,548 @@ def update_user():
     db.session.commit()
 
     return jsonify({"success": True})
+
+
+
+
+@app.route("/schedule")
+@login_required
+def schedule_page():
+    return render_template("schedule.html")
+
+
+@app.route("/api/current-user")
+@login_required
+def get_current_user():
+    """
+        Получение данных текущего пользователя.
+
+        Возвращает:
+        - id
+        - role (название роли)
+        - role_display (отображаемое имя роли)
+        - department_id (ID отдела пользователя)
+    """
+    return jsonify({
+        "id": current_user.id,
+        "role": current_user.role.name if current_user.role else None,
+        "role_display": ROLE_TRANSLATIONS.get(
+            current_user.role.name if current_user.role else None,
+            current_user.role.name if current_user.role else None
+        ),
+        "department_id": current_user.department_id
+    })
+
+
+@app.route("/api/schedules/<int:department_id>")
+def get_schedules(department_id):
+
+    schedules = VacationSchedule.query.filter_by(
+        department_id=department_id
+    ).all()
+
+    return jsonify([
+        {
+            "id": s.id,
+            "name": s.name,
+            "year": s.year,
+            "is_default": s.is_default
+        }
+        for s in schedules
+    ])
+
+@app.route("/api/schedule/<int:schedule_id>")
+def get_schedule(schedule_id):
+
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+
+    employees_data = []
+
+    for se in schedule.employees:
+
+        employee = se.employee
+
+        vacations = []
+        for v in se.vacation_entries:
+            vacations.append({
+                "id": v.id,
+                "start_date": v.start_date.strftime("%Y-%m-%d"),
+                "end_date": v.end_date.strftime("%Y-%m-%d"),
+                "type_vacation_id": v.type_vacation_id
+            })
+
+        employees_data.append({
+            "id": employee.id,
+            "schedule_employee_id": se.id,
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "position": employee.position,
+            "vacations": vacations
+        })
+
+    # Старый формат для совместимости
+    tasks = []
+    for se in schedule.employees:
+        for v in se.vacation_entries:
+            tasks.append({
+                "id": v.id,
+                "name": f"{se.employee.last_name} {se.employee.first_name}",
+                "start": v.start_date.strftime("%Y-%m-%d"),
+                "end": v.end_date.strftime("%Y-%m-%d"),
+                "progress": 100
+            })
+
+    return jsonify({
+        "id": schedule.id,
+        "name": schedule.name,
+        "year": schedule.year,
+        "is_default": schedule.is_default,
+        "employees": employees_data,
+        "tasks": tasks
+    })
+
+
+@app.route("/api/schedules/create", methods=["POST"])
+def create_schedule():
+
+    data = request.get_json()
+
+    name = data.get("name")
+    department_id = data.get("department_id")
+    year = data.get("year")
+    is_default = data.get("is_default", False)
+    who_created = current_user.id
+
+    if not name:
+        return jsonify({"error": "Название обязательно"}), 400
+
+    # Если устанавливаем график как обязательный, сначала сбрасываем старый
+    if is_default:
+        VacationSchedule.query.filter_by(
+            department_id=department_id,
+            is_default=True
+        ).update({"is_default": False})
+
+    schedule = VacationSchedule(
+        name=name,
+        department_id=department_id,
+        year=year,
+        is_default=is_default,
+        who_created=who_created
+    )
+
+    db.session.add(schedule)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "id": schedule.id
+    })
+
+
+@app.route("/api/users/department/<int:department_id>")
+def get_users_by_department(department_id):
+    users = User.query.filter_by(department_id=department_id).all()
+
+    return jsonify({
+        "users": [
+            {
+                "id": u.id,
+                "first_name": u.first_name,
+                "last_name": u.last_name,
+                "position_name": u.position.name if u.position else None
+            }
+            for u in users
+        ]
+    })
+
+
+@app.route("/api/users/registered/<int:department_id>")
+def get_registered_users(department_id):
+    """
+        Получение зарегистрированных сотрудников отдела.
+
+        Возвращает только пользователей с is_registered = True.
+    """
+    users = User.query.filter_by(
+        department_id=department_id,
+        is_registered=True,
+        is_active=True
+    ).all()
+
+    return jsonify({
+        "users": [
+            {
+                "id": u.id,
+                "first_name": u.first_name,
+                "last_name": u.last_name,
+                "position_name": u.position.name if u.position else None
+            }
+            for u in users
+        ]
+    })
+
+
+@app.route("/api/schedules/<int:department_id>/default")
+def get_default_schedule(department_id):
+    """
+        Получение обязательного графика для отдела.
+
+        Возвращает только один график, отмеченный как is_default.
+        Если такого нет — возвращает пустой ответ.
+    """
+    schedule = VacationSchedule.query.filter_by(
+        department_id=department_id,
+        is_default=True
+    ).first()
+
+    if not schedule:
+        return jsonify(None)
+
+    employees_data = []
+
+    for se in schedule.employees:
+
+        employee = se.employee
+
+        vacations = []
+        for v in se.vacation_entries:
+            vacations.append({
+                "id": v.id,
+                "start_date": v.start_date.strftime("%Y-%m-%d"),
+                "end_date": v.end_date.strftime("%Y-%m-%d"),
+                "type_vacation_id": v.type_vacation_id
+            })
+
+        employees_data.append({
+            "id": employee.id,
+            "schedule_employee_id": se.id,
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "position": employee.position,
+            "vacations": vacations
+        })
+
+    return jsonify({
+        "id": schedule.id,
+        "name": schedule.name,
+        "year": schedule.year,
+        "is_default": schedule.is_default,
+        "employees": employees_data
+    })
+
+
+@app.route("/api/schedules/<int:schedule_id>/set-default", methods=["POST"])
+def set_default_schedule(schedule_id):
+    """
+        Установка графика как обязательного для просмотра.
+
+        Логика:
+        - Получает schedule_id из URL
+        - Находит график по ID
+        - Сбрасывает is_default у всех графиков этого отдела
+        - Устанавливает is_default = True для выбранного графика
+        - Сохраняет изменения в базе
+    """
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+
+    # Сбрасываем старый обязательный график
+    VacationSchedule.query.filter_by(
+        department_id=schedule.department_id,
+        is_default=True
+    ).update({"is_default": False})
+
+    # Устанавливаем новый
+    schedule.is_default = True
+    db.session.commit()
+
+    return jsonify({"success": True, "schedule_id": schedule.id})
+
+
+@app.route("/api/schedules/<int:schedule_id>/remove-default", methods=["POST"])
+def remove_default_schedule(schedule_id):
+    """
+        Снятие флага обязательного графика.
+
+        Логика:
+        - Получает schedule_id из URL
+        - Находит график по ID
+        - Сбрасывает is_default = False
+        - Сохраняет изменения в базе
+    """
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+    schedule.is_default = False
+    db.session.commit()
+
+    return jsonify({"success": True, "schedule_id": schedule.id})
+
+
+@app.route("/api/schedules/<int:schedule_id>/add-employee", methods=["POST"])
+def add_employee_to_schedule(schedule_id):
+    """
+        Добавление сотрудника в график.
+
+        Принимает:
+        - employee_id: ID зарегистрированного сотрудника ИЛИ
+        - first_name, last_name, position: данные нового сотрудника
+
+        Логика:
+        - Находит график по ID
+        - Создаёт запись ScheduleEmployee
+        - Если сотрудник новый — создаёт запись в employees
+        - Сохраняет изменения в базе
+    """
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+    data = request.get_json()
+
+    employee = None
+
+    # Вариант 1: добавление из списка зарегистрированных пользователей
+    if data.get("employee_id"):
+        user_id = data["employee_id"]
+        
+        # Ищем пользователя
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "Пользователь не найден"}), 404
+        
+        # Проверяем, нет ли уже в графике по email
+        existing_se = ScheduleEmployee.query.join(Employee).filter(
+            ScheduleEmployee.schedule_id == schedule.id,
+            Employee.first_name == user.first_name,
+            Employee.last_name == user.last_name
+        ).first()
+        
+        if existing_se:
+            return jsonify({"error": "Этот сотрудник уже есть в графике"}), 400
+        
+        # Ищем или создаём запись Employee
+        employee = Employee.query.filter_by(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            department_id=schedule.department_id
+        ).first()
+        
+        if not employee:
+            employee = Employee(
+                first_name=user.first_name,
+                last_name=user.last_name,
+                position=user.position.name if user.position else None,
+                department_id=schedule.department_id
+            )
+            db.session.add(employee)
+            db.session.flush()
+
+    # Вариант 2: добавление вручную
+    elif data.get("first_name") and data.get("last_name"):
+        # Проверяем дубли по имени и фамилии
+        existing_emp = Employee.query.filter_by(
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            department_id=schedule.department_id
+        ).first()
+        
+        if existing_emp:
+            # Проверяем, нет ли уже в графике
+            existing_se = ScheduleEmployee.query.filter_by(
+                schedule_id=schedule.id,
+                employee_id=existing_emp.id
+            ).first()
+            
+            if existing_se:
+                return jsonify({"error": "Этот сотрудник уже есть в графике"}), 400
+            
+            employee = existing_emp
+        else:
+            employee = Employee(
+                first_name=data["first_name"],
+                last_name=data["last_name"],
+                position=data.get("position", ""),
+                department_id=schedule.department_id
+            )
+            db.session.add(employee)
+            db.session.flush()
+
+    else:
+        return jsonify({"error": "Не указаны данные сотрудника"}), 400
+
+    # Создаём связь
+    schedule_employee = ScheduleEmployee(
+        schedule_id=schedule.id,
+        employee_id=employee.id
+    )
+
+    db.session.add(schedule_employee)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "employee_id": employee.id,
+        "schedule_employee_id": schedule_employee.id
+    })
+
+
+@app.route("/api/vacations/add", methods=["POST"])
+def add_vacation():
+    """
+        Добавление отпуска сотруднику в график.
+
+        Принимает:
+        - schedule_employee_id: ID записи ScheduleEmployee
+        - start_date: дата начала (YYYY-MM-DD)
+        - end_date: дата окончания (YYYY-MM-DD)
+        - type_vacation_id: ID типа отпуска (опционально)
+    """
+    data = request.get_json()
+
+    schedule_employee_id = data.get("schedule_employee_id")
+    start_date = data.get("start_date")
+    end_date = data.get("end_date")
+    type_vacation_id = data.get("type_vacation_id", 1)  # По умолчанию - основной
+
+    if not all([schedule_employee_id, start_date, end_date]):
+        return jsonify({"error": "Не указаны обязательные поля"}), 400
+
+    schedule_employee = ScheduleEmployee.query.get_or_404(schedule_employee_id)
+    employee = schedule_employee.employee
+
+    vacation = Vacation(
+        schedule_employee_id=schedule_employee_id,
+        first_name=employee.first_name,
+        last_name=employee.last_name,
+        position=employee.position,
+        start_date=datetime.strptime(start_date, "%Y-%m-%d").date(),
+        end_date=datetime.strptime(end_date, "%Y-%m-%d").date(),
+        type_vacation_id=type_vacation_id
+    )
+
+    db.session.add(vacation)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "vacation_id": vacation.id
+    })
+
+
+@app.route("/api/vacations/<int:vacation_id>", methods=["PUT"])
+def update_vacation(vacation_id):
+    """
+        Обновление отпуска.
+
+        Принимает:
+        - start_date: дата начала (YYYY-MM-DD)
+        - end_date: дата окончания (YYYY-MM-DD)
+        - type_vacation_id: ID типа отпуска
+    """
+    vacation = Vacation.query.get_or_404(vacation_id)
+    data = request.get_json()
+
+    if data.get("start_date"):
+        vacation.start_date = datetime.strptime(data["start_date"], "%Y-%m-%d").date()
+
+    if data.get("end_date"):
+        vacation.end_date = datetime.strptime(data["end_date"], "%Y-%m-%d").date()
+
+    if data.get("type_vacation_id"):
+        vacation.type_vacation_id = int(data["type_vacation_id"])
+
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+
+@app.route("/api/vacations/<int:vacation_id>", methods=["DELETE"])
+def delete_vacation(vacation_id):
+    """
+        Удаление отпуска.
+    """
+    vacation = Vacation.query.get_or_404(vacation_id)
+    db.session.delete(vacation)
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+
+@app.route("/api/schedule-employees/<int:schedule_employee_id>", methods=["PUT"])
+def update_schedule_employee(schedule_employee_id):
+    """
+        Обновление данных сотрудника в графике (имя, фамилия).
+    """
+    schedule_employee = ScheduleEmployee.query.get_or_404(schedule_employee_id)
+    employee = schedule_employee.employee
+    data = request.get_json()
+
+    if data.get("first_name"):
+        employee.first_name = data["first_name"]
+
+    if data.get("last_name"):
+        employee.last_name = data["last_name"]
+
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+
+@app.route("/api/schedule-employees/<int:schedule_employee_id>", methods=["DELETE"])
+def delete_schedule_employee(schedule_employee_id):
+    """
+        Удаление сотрудника из графика.
+    """
+    schedule_employee = ScheduleEmployee.query.get_or_404(schedule_employee_id)
+    db.session.delete(schedule_employee)
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+
+@app.route("/api/vacation-types")
+def get_vacation_types():
+    """
+        Получение списка типов отпусков.
+
+        Возвращает JSON-массив типов отпусков из таблицы type_vacation.
+    """
+    types = TypeVacation.query.all()
+
+    return jsonify([
+        {
+            "id": t.id,
+            "name": t.name
+        }
+        for t in types
+    ])
+
+
+@app.route("/api/schedules/<int:schedule_id>/reorder-employees", methods=["POST"])
+def reorder_employees(schedule_id):
+    """
+        Сохранение нового порядка сотрудников в графике.
+
+        Принимает:
+        - employee_order: массив schedule_employee_id в новом порядке
+
+        Логика:
+        - Добавляет поле sort_order к ScheduleEmployee
+        - Сохраняет новый порядок
+    """
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+    data = request.get_json()
+    
+    employee_order = data.get("employee_order", [])
+    
+    if not employee_order:
+        return jsonify({"error": "Не указан порядок сотрудников"}), 400
+    
+    for index, schedule_employee_id in enumerate(employee_order):
+        se = ScheduleEmployee.query.get(schedule_employee_id)
+        if se and se.schedule_id == schedule_id:
+            se.sort_order = index
+    
+    db.session.commit()
+    
+    return jsonify({"success": True})
+
 
 
 

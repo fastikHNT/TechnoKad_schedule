@@ -77,14 +77,25 @@ const pages = {
 
                 })
 
+            } else if (page === "vacation") {
+
+                switchPage(async (wrapper) => {
+
+                const html = await fetch("/schedule").then(r => r.text())
+
+                wrapper.innerHTML = html
+
+                if (typeof initSchedulePage === "function") {
+                    initSchedulePage()
+                }
+            })
+
             } else if (pages[page]) {
 
                 switchPage((wrapper) => {
-                    wrapper.innerHTML = pages[page]
+                wrapper.innerHTML = pages[page]
                 })
-
             }
-
         })
 
     })

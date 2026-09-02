@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/administration.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}">
 </head>
 
 <body class="theme1 page-enter">
@@ -42,7 +43,7 @@
                     Администрирование
                 </a>
 
-                <a href="#" data-page="vacation">
+                <a href="#" data-page="vacation" id="vacationLink">
                     <span class="icon">
                         <img src="{{ url_for('static', filename='img/icon_shedule.png') }}">
                     </span>
@@ -111,6 +112,7 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
     <script src="{{ url_for('static', filename='js/permissions.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/schedule.js') }}"></script>
 
 </body>
 </html>
