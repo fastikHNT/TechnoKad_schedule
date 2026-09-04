@@ -912,6 +912,7 @@ def get_current_user():
     """
     return jsonify({
         "id": current_user.id,
+        "email": current_user.email,
         "role": current_user.role.name if current_user.role else None,
         "role_display": ROLE_TRANSLATIONS.get(
             current_user.role.name if current_user.role else None,
@@ -961,9 +962,12 @@ def get_schedule(schedule_id):
         employees_data.append({
             "id": employee.id,
             "schedule_employee_id": se.id,
+            "user_id": se.user_id,
+            "email": employee.email,
             "first_name": employee.first_name,
             "last_name": employee.last_name,
             "position": employee.position,
+            "direction": employee.direction,
             "vacations": vacations
         })
 
@@ -983,6 +987,7 @@ def get_schedule(schedule_id):
         "id": schedule.id,
         "name": schedule.name,
         "year": schedule.year,
+        "department_id": schedule.department_id,
         "is_default": schedule.is_default,
         "employees": employees_data,
         "tasks": tasks
@@ -1063,7 +1068,9 @@ def get_registered_users(department_id):
                 "id": u.id,
                 "first_name": u.first_name,
                 "last_name": u.last_name,
-                "position_name": u.position.name if u.position else None
+                "email": u.email,
+                "position_name": u.position.name if u.position else None,
+                "direction": u.direction if hasattr(u, 'direction') else None
             }
             for u in users
         ]
@@ -1104,9 +1111,12 @@ def get_default_schedule(department_id):
         employees_data.append({
             "id": employee.id,
             "schedule_employee_id": se.id,
+            "user_id": se.user_id,
+            "email": employee.email,
             "first_name": employee.first_name,
             "last_name": employee.last_name,
             "position": employee.position,
+            "direction": employee.direction,
             "vacations": vacations
         })
 
@@ -1215,10 +1225,16 @@ def add_employee_to_schedule(schedule_id):
                 first_name=user.first_name,
                 last_name=user.last_name,
                 position=user.position.name if user.position else None,
-                department_id=schedule.department_id
+                department_id=schedule.department_id,
+                direction=data.get("direction"),
+                email=user.email
             )
             db.session.add(employee)
             db.session.flush()
+        else:
+            # Обновляем направление и email для существующего сотрудника
+            employee.direction = data.get("direction")
+            employee.email = user.email
 
     # Вариант 2: добавление вручную
     elif data.get("first_name") and data.get("last_name"):
@@ -1240,12 +1256,16 @@ def add_employee_to_schedule(schedule_id):
                 return jsonify({"error": "Этот сотрудник уже есть в графике"}), 400
             
             employee = existing_emp
+            # Обновляем направление для существующего сотрудника
+            employee.direction = data.get("direction")
         else:
             employee = Employee(
                 first_name=data["first_name"],
                 last_name=data["last_name"],
                 position=data.get("position", ""),
-                department_id=schedule.department_id
+                department_id=schedule.department_id,
+                direction=data.get("direction"),
+                email=current_user.email if current_user.is_authenticated else None
             )
             db.session.add(employee)
             db.session.flush()
@@ -1256,7 +1276,8 @@ def add_employee_to_schedule(schedule_id):
     # Создаём связь
     schedule_employee = ScheduleEmployee(
         schedule_id=schedule.id,
-        employee_id=employee.id
+        employee_id=employee.id,
+        user_id=current_user.id if current_user.is_authenticated else None
     )
 
     db.session.add(schedule_employee)
@@ -1298,6 +1319,7 @@ def add_vacation():
         first_name=employee.first_name,
         last_name=employee.last_name,
         position=employee.position,
+        direction=employee.direction,
         start_date=datetime.strptime(start_date, "%Y-%m-%d").date(),
         end_date=datetime.strptime(end_date, "%Y-%m-%d").date(),
         type_vacation_id=type_vacation_id

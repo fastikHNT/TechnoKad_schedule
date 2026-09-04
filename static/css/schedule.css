@@ -354,15 +354,34 @@ button.disabled:hover {
 }
 
 .schedule-table td {
-    padding: 10px 8px;
+    padding: 0;
     text-align: center;
+    border: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     position: relative;
+    height: 50px;
+    vertical-align: middle;
+}
+
+/* Убираем вертикальные разделители между ячейками */
+.schedule-table td:not(:last-child) {
+    border-right: none !important;
+}
+
+/* Светлые темы - разделители для заголовков месяцев */
+body.theme1 .schedule-table th:not(:last-child),
+body.theme3 .schedule-table th:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Тёмная тема - разделители для заголовков месяцев */
+body.theme2 .schedule-table th:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .schedule-table td.col-name {
     text-align: left;
-    padding-left: 16px;
+    padding: 0 8px;
     font-weight: 500;
 }
 
@@ -370,6 +389,13 @@ button.disabled:hover {
     text-align: left;
     color: rgba(255, 255, 255, 0.7);
     font-size: 13px;
+    padding: 0 8px;
+}
+
+.schedule-table td.vacation-cell {
+    padding: 0;
+    border-left: none !important;
+    margin: 0 !important;
 }
 
 .schedule-table td.col-name.editable-name {
@@ -393,54 +419,71 @@ button.disabled:hover {
     min-width: 60px;
     height: 40px;
     cursor: default;
+    height: 100%;
+}
+
+/* Светлые темы - разделители для ячеек календаря */
+body.theme1 .schedule-table td:not(:last-child),
+body.theme3 .schedule-table td:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+body.theme1 .schedule-table td,
+body.theme3 .schedule-table td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Тёмная тема - разделители для ячеек календаря */
+body.theme2 .schedule-table td:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.theme2 .schedule-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.theme1 .schedule-table td,
+body.theme3 .schedule-table td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Отпуск в ячейке */
 .vacation-cell {
-    background: linear-gradient(135deg, #1e3a8a, #1e40af);
     color: white;
     font-weight: 500;
     font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
-    position: relative;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    height: 50px !important;
+    min-height: 50px;
+    display: table-cell;
     min-width: 60px;
-    border: none;
-    border-radius: 4px;
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible;
+    border-radius: 0 !important;
+    position: relative;
+    background: transparent !important;
 }
 
-/* Отпуск, пересекающий два месяца */
-.vacation-cell.vacation-cross {
-    border-radius: 4px;
-    min-width: 120px;
-    background: none !important;
+/* Светлые темы - разделители для vacation-cell */
+body.theme1 .vacation-cell:not(:last-child),
+body.theme3 .vacation-cell:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.15) !important;
 }
 
-.vacation-cell.type-main.vacation-cross {
-    background-color: #1e3a8a;
+body.theme1 .vacation-cell,
+body.theme3 .vacation-cell {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.vacation-cell.type-education.vacation-cross {
-    background-color: #60a5fa;
+/* Тёмная тема - разделители для vacation-cell */
+body.theme2 .vacation-cell:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-.vacation-cell.type-planned.vacation-cross {
-    background-color: #fbbf24;
-}
-
-.vacation-cell.type-decreetal.vacation-cross {
-    background-color: #16a34a;
-}
-
-/* Отпуск в пределах одного месяца */
-.vacation-cell.vacation-full {
-    border-radius: 4px;
+body.theme2 .vacation-cell {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Отпуск, пересекающий два месяца */
@@ -473,10 +516,9 @@ button.disabled:hover {
 
 .vacation-cell:hover {
     filter: brightness(1.1);
-    transform: scale(1.05);
+    transform: scale(1.02);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     z-index: 10;
-    position: relative;
 }
 
 /* Типы отпусков */
@@ -513,7 +555,6 @@ button.disabled:hover {
 
 .vacation-cell:hover {
     filter: brightness(1.1);
-    transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
@@ -521,7 +562,7 @@ button.disabled:hover {
 .vacation-cell[data-tooltip]:hover::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
@@ -530,8 +571,8 @@ button.disabled:hover {
     border-radius: 6px;
     font-size: 12px;
     white-space: nowrap;
-    z-index: 1000;
-    margin-bottom: 6px;
+    z-index: 10000;
+    pointer-events: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -832,9 +873,37 @@ tbody tr.selected-row:hover {
     color: var(--modal-text);
 }
 
+.ce-user-email {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    display: block;
+    margin-top: 2px;
+}
+
 .ce-user-position {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
+}
+
+.ce-user-direction {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.ce-user-item[data-direction="ПО/ЭЦП"] .ce-user-direction {
+    color: #ea580c;
+}
+
+.ce-user-item[data-direction="ТЭ/ТГ"] .ce-user-direction {
+    color: #0d9488;
+}
+
+.ce-user-item[data-direction="ТО/ТМ"] .ce-user-direction {
+    color: #ec4899;
+}
+
+.ce-user-item[data-direction="ГРП"] .ce-user-direction {
+    color: #7c3aed;
 }
 
 .ce-users-list .empty {
@@ -904,9 +973,18 @@ tbody tr.selected-row:hover {
 }
 
 .schedule-default-label:hover {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(99, 102, 241, 0.2);
     border-color: var(--accent, #6366f1);
-    box-shadow: 0 0 6px rgba(99,102,241,0.25);
+    border-width: 2px;
+    box-shadow: 0 0 8px rgba(99,102,241,0.35);
+}
+
+/* Тёмная тема - hover */
+body.theme2 .schedule-default-label:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--accent, #6366f1);
+    border-width: 2px;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
 }
 
 .schedule-default-label input[type="checkbox"] {
@@ -930,16 +1008,30 @@ body.theme3 .schedule-default-label {
     color: #1a1a1a;
 }
 
-body.theme1 .schedule-default-label:hover,
+body.theme1 .schedule-default-label:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+    border-width: 2px;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+}
+
 body.theme3 .schedule-default-label:hover {
-    background: rgba(99, 102, 241, 0.1);
-    border-color: var(--accent, #6366f1);
-    box-shadow: 0 0 6px rgba(99,102,241,0.25);
+    background: rgba(43, 108, 176, 0.25);
+    border-color: #2b6cb0;
+    border-width: 2px;
+    box-shadow: 0 0 10px rgba(43, 108, 176, 0.4);
 }
 
 body.theme1 .schedule-default-label input[type="checkbox"],
 body.theme3 .schedule-default-label input[type="checkbox"] {
     accent-color: #6366f1;
+}
+
+/* Тёмная тема - hover */
+body.theme2 .schedule-default-label:hover {
+    background: rgba(36, 74, 50, 0.3);
+    border-color: #244a32;
+    box-shadow: 0 0 6px rgba(36, 74, 50, 0.5);
 }
 
 .schedule-page .checkbox-label input[type="checkbox"] {
@@ -966,6 +1058,20 @@ body.theme3 .schedule-default-label input[type="checkbox"] {
     outline: none;
     border-color: rgba(99, 102, 241, 0.5);
     background: var(--input-bg, rgba(255, 255, 255, 0.08));
+}
+
+/* Стили для блока направления */
+#ceDirectionBlock,
+#ceDirectionFilterBlock {
+    margin-top: 8px;
+}
+
+#ceDirectionBlock label,
+#ceDirectionFilterBlock label {
+    display: block;
+    text-align: left;
+    margin-bottom: 6px;
+    margin-top: 12px;
 }
 
 /* Select должности - цвет фона как у темы */
@@ -1208,6 +1314,11 @@ body.theme3 .ce-user-position {
     color: black !important;
 }
 
+body.theme1 .ce-user-email,
+body.theme3 .ce-user-email {
+    color: rgba(0, 0, 0, 0.5) !important;
+}
+
 /* =====================================================
    Drag-and-drop стили
 ===================================================== */
@@ -1231,65 +1342,197 @@ body.theme3 .ce-user-position {
     cursor: grabbing;
 }
 
-/* =====================================================
-   Подсветка сотрудников по категориям должностей
-===================================================== */
-
-/* Руководитель проекта - фиолетовый */
-.schedule-table td.pos-category-project-lead {
-    color: #7c3aed !important;
-    font-weight: 600;
+/* Стили для скрытых элементов */
+.hidden {
+    display: none !important;
 }
 
-/* Заместитель руководителя, руководитель отдела - розовый */
-.schedule-table td.pos-category-pink {
+.ce-direction-select {
+    margin-top: 8px;
+}
+
+/* =====================================================
+   Подсветка сотрудников по направлениям
+===================================================== */
+
+/* ПО/ЭЦП - оранжевый */
+.schedule-table td.dir-po-ecp {
+    color: #ea580c !important;
+    font-weight: 500;
+}
+
+/* ТЭ/ТГ - бирюзовый */
+.schedule-table td.dir-te-tg {
+    color: #0d9488 !important;
+    font-weight: 500;
+}
+
+/* ТО/ТМ - розовый */
+.schedule-table td.dir-to-tm {
     color: #ec4899 !important;
     font-weight: 500;
 }
 
-/* Светлые темы - усиливаем цвета */
-body.theme1 .schedule-table td.pos-category-pink,
-body.theme3 .schedule-table td.pos-category-pink {
-    color: #db2777 !important;
-}
-
-/* Специалист, ведущий специалист - бирюзовый */
-.schedule-table td.pos-category-turquoise {
-    color: #0d9488 !important;
-}
-
-/* Оператор - зеленый */
-.schedule-table td.pos-category-orange {
-    color: #ea580c !important;
-}
-
-/* Ассистент - темно-синий */
-.schedule-table td.pos-category-dark-blue {
-    color: #1e3a8a !important;
+/* ГРП - фиолетовый */
+.schedule-table td.dir-grp {
+    color: #7c3aed !important;
+    font-weight: 500;
 }
 
 /* Светлые темы - усиливаем цвета */
-body.theme1 .schedule-table td.pos-category-project-lead,
-body.theme3 .schedule-table td.pos-category-project-lead {
-    color: #6d28d9 !important;
-}
-
-body.theme1 .schedule-table td.pos-category-turquoise,
-body.theme3 .schedule-table td.pos-category-turquoise {
-    color: #0f766e !important;
-}
-
-body.theme1 .schedule-table td.pos-category-operator,
-body.theme3 .schedule-table td.pos-category-operator {
-    color: #15803d !important;
-}
-
-body.theme1 .schedule-table td.pos-category-orange,
-body.theme3 .schedule-table td.pos-category-orange {
+body.theme1 .schedule-table td.dir-po-ecp,
+body.theme3 .schedule-table td.dir-po-ecp {
     color: #c2410c !important;
 }
 
-body.theme1 .schedule-table td.pos-category-dark-blue,
-body.theme3 .schedule-table td.pos-category-dark-blue {
-    color: #1e40af !important;
+body.theme1 .schedule-table td.dir-te-tg,
+body.theme3 .schedule-table td.dir-te-tg {
+    color: #0f766e !important;
+}
+
+body.theme1 .schedule-table td.dir-to-tm,
+body.theme3 .schedule-table td.dir-to-tm {
+    color: #db2777 !important;
+}
+
+body.theme1 .schedule-table td.dir-grp,
+body.theme3 .schedule-table td.dir-grp {
+    color: #6d28d9 !important;
+}
+
+/* =====================================================
+   Легенда направлений
+===================================================== */
+
+.direction-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--modal-bg);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.direction-legend .legend-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-right: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.legend-po-ecp {
+    background: #ea580c;
+}
+
+.legend-te-tg {
+    background: #0d9488;
+}
+
+.legend-to-tm {
+    background: #ec4899;
+}
+
+.legend-grp {
+    background: #7c3aed;
+}
+
+.legend-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Светлые темы */
+body.theme1 .direction-legend,
+body.theme3 .direction-legend {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.theme1 .legend-text,
+body.theme3 .legend-text {
+    color: #1a1a1a;
+}
+
+/* =====================================================
+   Легенда типов отпуска
+===================================================== */
+
+.vacation-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: var(--modal-bg);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.vacation-legend .legend-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-right: 8px;
+}
+
+.vacation-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vacation-legend .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.legend-main {
+    background: #1e3a8a;
+}
+
+.legend-education {
+    background: #60a5fa;
+}
+
+.legend-planned {
+    background: #fbbf24;
+}
+
+.legend-decreetal {
+    background: #16a34a;
+}
+
+.vacation-legend .legend-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Светлые темы */
+body.theme1 .vacation-legend,
+body.theme3 .vacation-legend {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.theme1 .vacation-legend .legend-text,
+body.theme3 .vacation-legend .legend-text {
+    color: #1a1a1a;
 }

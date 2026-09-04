@@ -8,6 +8,8 @@ const state = {
     originalSchedule:null,
     departmentId:null,
     userDepartmentId: null,
+    currentUserId: null,
+    currentEmail: null,
     currentFirstName: null,
     currentLastName: null,
     vacationTypes: [],
@@ -30,43 +32,27 @@ function declineChange(count) {
     return "изменений";
 }
 
-// Маппинг ключевых слов должности → категория цвета
-const POSITION_CATEGORIES = [
-    { keywords: ["руководитель проекта"], category: "project_lead" },
-    { keywords: ["заместитель руководителя", "руководитель отдела"], category: "pink" },
-    { keywords: ["ведущий специалист", "специалист"], category: "turquoise" },
-    { keywords: ["оператор"], category: "operator" },
-    { keywords: ["ведущий инженер", "инженер"], category: "orange" },
-    { keywords: ["ассистент"], category: "dark_blue" }
-];
-
-// Получить категорию должности по названию
-function getPositionCategory(positionName) {
-    if (!positionName) return "default";
-    const lower = positionName.toLowerCase();
-    
-    for (const cat of POSITION_CATEGORIES) {
-        for (const keyword of cat.keywords) {
-            if (lower.includes(keyword)) {
-                return cat.category;
-            }
-        }
-    }
-    return "default";
+// Получить CSS класс для направления
+function getDirectionClass(direction) {
+    if (!direction) return "";
+    const classMap = {
+        "ПО/ЭЦП": "dir-po-ecp",
+        "ТЭ/ТГ": "dir-te-tg",
+        "ТО/ТМ": "dir-to-tm",
+        "ГРП": "dir-grp"
+    };
+    return classMap[direction] || "";
 }
 
-// Получить CSS класс для категории
-function getCategoryClass(category) {
-    const classMap = {
-        "project_lead": "pos-category-project-lead",
-        "pink": "pos-category-pink",
-        "turquoise": "pos-category-turquoise",
-        "operator": "pos-category-operator",
-        "orange": "pos-category-orange",
-        "dark_blue": "pos-category-dark-blue",
-        "default": ""
-    };
-    return classMap[category] || "";
+// Склонение слова "день"
+function declineVacationDays(count) {
+    const abs = Math.abs(count) % 100;
+    const lastDigit = abs % 10;
+    
+    if(abs > 10 && abs < 20) return "дней";
+    if(lastDigit > 1 && lastDigit < 5) return "дня";
+    if(lastDigit === 1) return "день";
+    return "дней";
 }
 
 const DOM = {
@@ -83,7 +69,6 @@ const DOM = {
     btnDeleteSchedule:"#deleteScheduleBtn",
 
     btnAddEmployee:"#createEmployeeBtn",
-    btnTransfer:"#transferVacationBtn",
     btnSuggest:"#suggestVacationBtn",
 
     editIndicator:"#editIndicator",
@@ -116,6 +101,10 @@ const DOM = {
     ceLastName:"#ceLastName",
     cePosition:"#cePosition",
     ceDepartment:"#ceDepartment",
+    ceDirection:"#ceDirection",
+    ceDirectionBlock:"#ceDirectionBlock",
+    ceDirectionFilter:"#ceDirectionFilter",
+    ceDirectionFilterBlock:"#ceDirectionFilterBlock",
     ceCloseModal:"#ceCloseModal",
 
     deleteConfirmModal:"#deleteConfirmModal",
@@ -127,7 +116,10 @@ const DOM = {
     saveConfirmModal:"#saveConfirmModal",
     saveModalText:"#saveModalText",
     confirmSaveBtn:"#confirmSaveBtn",
-    cancelSaveBtn:"#cancelSaveBtn"
+    cancelSaveBtn:"#cancelSaveBtn",
+
+    directionLegend:"#directionLegend",
+    vacationLegend:"#vacationLegend"
 };
 
 let el = {};
@@ -136,12 +128,6 @@ function cacheDom(){
     Object.entries(DOM).forEach(([k,s])=>{
         el[k] = document.querySelector(s);
     });
-}
-
-function bindEvents(){
-    if(el.btnEdit){
-        el.btnEdit.addEventListener("click", handleEditClick);
-    }
 }
 
 function toggle(element,show,disable=false){
@@ -357,9 +343,9 @@ function updateUi(){
 
         // Показываем кнопки
         toggle(el.btnAddEmployee, true, false);
-        toggle(el.btnTransfer, true, false);
         toggle(el.btnSuggest, true, false);
         toggle(el.btnCreateSchedule, true, false);
+        toggle(el.btnDeleteSchedule, true);
 
         toggleGroup([
             "btnTransfer",
@@ -386,6 +372,9 @@ function updateUi(){
 
     // Скрываем кнопку "Редактировать"
     toggle(el.btnEdit, false);
+
+    // Скрываем кнопку удаления графика
+    toggle(el.btnDeleteSchedule, false);
 
     // Блокируем кнопки в режиме редактирования
     toggle(el.btnAddEmployee, true, true);
@@ -564,6 +553,16 @@ function enableSuggestMode(){
         return;
     }
 
+    // Проверяем, что текущий пользователь есть в графике
+    const currentUserInSchedule = state.selectedSchedule.employees?.some(emp => 
+        emp.user_id === state.currentUserId || emp.email === state.currentEmail
+    );
+
+    if(!currentUserInSchedule){
+        showMessage("Вы отсутсвуете в данном графике", "warning");
+        return;
+    }
+
     // Сохраняем оригинальные данные для отмены
     state.originalSchedule = JSON.parse(JSON.stringify(state.selectedSchedule));
     state.pendingChanges = {
@@ -576,6 +575,12 @@ function enableSuggestMode(){
 
     state.suggestMode = true;
     state.editMode = true;
+
+    // Добавляем класс для CSS
+    document.body.classList.add("suggest-mode");
+
+    // Скрываем кнопку удаления графика
+    toggle(el.btnDeleteSchedule, false);
 
     // Перерендериваем таблицу с редактируемыми ячейками
     renderSchedule(state.selectedSchedule);
@@ -600,6 +605,7 @@ async function cancelEdit(){
             async () => {
                 state.editMode = false;
                 state.suggestMode = false;
+                document.body.classList.remove("suggest-mode");
 
                 // Восстанавливаем оригинальные данные
                 state.selectedSchedule = state.originalSchedule;
@@ -627,6 +633,8 @@ async function cancelEdit(){
     state.editMode = false;
     state.suggestMode = false;
     state.originalSchedule = null;
+    document.body.classList.remove("suggest-mode");
+    toggle(el.btnDeleteSchedule, true);
     state.pendingChanges = {
         updatedNames: {},
         addedVacations: [],
@@ -781,6 +789,8 @@ async function saveAllChanges(){
             state.editMode = false;
             state.suggestMode = false;
             state.originalSchedule = null;
+            document.body.classList.remove("suggest-mode");
+            toggle(el.btnDeleteSchedule, true);
             state.pendingChanges = {
                 updatedNames: {},
                 addedVacations: [],
@@ -821,6 +831,12 @@ function openCreateEmployeeModal(){
     if(!state.selectedSchedule){
         showMessage("Сначала выберите график","warning");
         return;
+    }
+
+    // Загружаем должности для отдела графика
+    const deptId = state.selectedSchedule.department_id;
+    if(deptId) {
+        loadPositions(deptId);
     }
 
     // Сбрасываем на начальный экран выбора режима
@@ -924,15 +940,6 @@ function setupCloseButton(){
     } else {
         console.error("ceCloseModal not found!");
     }
-    
-    // Закрытие по клику на фон модалки
-    if(el.createEmployeeModal){
-        el.createEmployeeModal.addEventListener("click", function(e){
-            if(e.target === el.createEmployeeModal){
-                closeCreateEmployeeModal();
-            }
-        });
-    }
 }
 
 // Показ списка зарегистрированных сотрудников
@@ -961,17 +968,36 @@ async function showEmployeeList(){
         const div = document.createElement("div");
         div.className = "ce-user-item";
         div.dataset.userId = user.id;
+        div.dataset.direction = user.direction || "";
         div.innerHTML = `
             <div class="ce-user-checkbox">
                 <input type="checkbox" id="user-${user.id}" value="${user.id}">
                 <label for="user-${user.id}">
                     <span class="ce-user-name">${user.last_name} ${user.first_name}</span>
+                    ${user.email ? `<span class="ce-user-email">${user.email}</span>` : ''}
                     <span class="ce-user-position">${user.position_name || ""}</span>
+                    ${user.direction ? `<span class="ce-user-direction" style="color: var(--direction-color); font-weight: 500;">${user.direction}</span>` : ""}
                 </label>
             </div>
         `;
         container.appendChild(div);
     });
+    
+    // Показываем фильтр по направлению только для отдела ТП
+    if(el.ceDirectionFilterBlock) {
+        if(state.departmentId === "2") {
+            toggle(el.ceDirectionFilterBlock, true);
+        } else {
+            toggle(el.ceDirectionFilterBlock, false);
+        }
+    }
+    
+    // Предотвращаем закрытие модалки при клике на элементы списка
+    if(el.ceListBlock) {
+        el.ceListBlock.addEventListener("click", function(e){
+            e.stopPropagation();
+        });
+    }
 }
 
 // Добавление сотрудника из списка
@@ -1000,19 +1026,24 @@ async function addSelectedEmployees(){
         return;
     }
 
-    let success = true;
-    const employees = [];
+    // Получаем направление из фильтра
+    const selectedDirection = el.ceDirectionFilter?.value || "";
 
-    checkedItems.forEach(checkbox => {
+    let success = true;
+
+    // Для отдела ТП проверяем, что выбрано направление
+    if(state.departmentId === "2" && !selectedDirection) {
+        showMessage("Выберите направление для сотрудников", "warning");
+        return;
+    }
+
+    for(const checkbox of checkedItems) {
         const item = checkbox.closest(".ce-user-item");
         const userId = item.dataset.userId;
-        const userName = item.querySelector(".ce-user-name").textContent;
-        employees.push({ id: userId, name: userName });
-    });
-
-    for(const emp of employees){
+        
         const result = await api.addEmployee(state.selectedSchedule.id, {
-            employee_id: parseInt(emp.id)
+            employee_id: parseInt(userId),
+            direction: selectedDirection || null
         });
         
         if(!result){
@@ -1022,8 +1053,7 @@ async function addSelectedEmployees(){
     }
 
     if(success){
-        const names = employees.map(e => e.name).join(", ");
-        showMessage(`${employees.length} сотрудников добавлено в график`, "success");
+        showMessage(`${checkedItems.length} сотрудников добавлено в график`, "success");
         closeCreateEmployeeModal();
         
         // Перезагружаем график
@@ -1045,11 +1075,27 @@ function showManualEntry(){
     el.ceModeManual?.classList.add("active");
     el.ceModeList?.classList.remove("active");
     
-    // Очищаем поля
+    // Очищаем поля, но сохраняем отдел из графика
     el.ceFirstName.value = "";
     el.ceLastName.value = "";
     el.cePosition.value = "";
-    el.ceDepartment.value = "";
+    
+    // Всегда блокируем отдел, если есть выбранный график
+    const deptId = state.selectedSchedule?.department_id;
+    if(deptId && el.ceDepartment) {
+        el.ceDepartment.value = deptId;
+        el.ceDepartment.disabled = true;
+        
+        // Показываем/скрываем блок направления
+        if(el.ceDirectionBlock) {
+            if(deptId == 2) {
+                toggle(el.ceDirectionBlock, true);
+            } else {
+                toggle(el.ceDirectionBlock, false);
+                if(el.ceDirection) el.ceDirection.value = "";
+            }
+        }
+    }
 }
 
 // Автоформатирование при вводе
@@ -1089,6 +1135,22 @@ function showModeSelection(){
     // Убираем подсветку
     el.ceModeList?.classList.remove("active");
     el.ceModeManual?.classList.remove("active");
+    
+    // Если отдел уже установлен (из графика), блокируем его и показываем/скрываем направление
+    const deptId = state.selectedSchedule?.department_id;
+    if(deptId && el.ceDepartment) {
+        el.ceDepartment.value = deptId;
+        el.ceDepartment.disabled = true;
+        
+        if(el.ceDirectionBlock) {
+            if(deptId == 2) {
+                toggle(el.ceDirectionBlock, true);
+            } else {
+                toggle(el.ceDirectionBlock, false);
+                if(el.ceDirection) el.ceDirection.value = "";
+            }
+        }
+    }
 }
 
 // Добавление сотрудника вручную
@@ -1098,6 +1160,7 @@ async function addEmployeeManual(){
     const lastName = capitalizeName(el.ceLastName.value.trim());
     const departmentId = el.ceDepartment.value;
     const positionId = el.cePosition.value;
+    const direction = el.ceDirection.value;
 
     // Валидация
     if(!departmentId){
@@ -1120,13 +1183,20 @@ async function addEmployeeManual(){
         return;
     }
 
+    // Для отдела ТП направление обязательно
+    if(departmentId === "2" && !direction){
+        showMessage("Выберите направление","warning");
+        return;
+    }
+
     // Получаем название должности
     const positionName = el.cePosition.options[el.cePosition.selectedIndex].text;
 
     const success = await api.addEmployee(state.selectedSchedule.id, {
         first_name: firstName,
         last_name: lastName,
-        position: positionName
+        position: positionName,
+        direction: direction || null
     });
 
     if(success){
@@ -1137,6 +1207,7 @@ async function addEmployeeManual(){
         el.ceFirstName.value = "";
         el.ceLastName.value = "";
         el.cePosition.value = "";
+        el.ceDirection.value = "";
         
         // Перезагружаем график
         const data = await api.getSchedule(state.selectedSchedule.id);
@@ -1153,7 +1224,9 @@ function validateName(name){
 
 // Форматирование имени (первая буква заглавная)
 function capitalizeName(name){
-    return name.replace(/\b\w/g, l => l.toUpperCase());
+    return name.replace(/(^|\s)[а-яё]/g, function(match){
+        return match.toUpperCase();
+    });
 }
 
 // Загрузка должностей для отдела
@@ -1183,6 +1256,16 @@ function setupDepartmentHandler(){
     el.ceDepartment?.addEventListener("change", function(){
         const deptId = this.value;
         loadPositions(deptId);
+        
+        // Показываем поле направления только для отдела ТП (id=2)
+        if(el.ceDirectionBlock) {
+            if(deptId === "2") {
+                toggle(el.ceDirectionBlock, true);
+            } else {
+                toggle(el.ceDirectionBlock, false);
+                if(el.ceDirection) el.ceDirection.value = "";
+            }
+        }
     });
 }
 
@@ -1224,7 +1307,7 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
                 <p id="vacEmployeeName"></p>
                 <p id="vacMonthName"></p>
 
-                <label>Тип отпуска:</label>
+                <label id="vacTypeLabel">Тип отпуска:</label>
                 <div id="vacTypeSelector" class="vacation-type-selector">
                     <label class="vacation-type-label">
                         <input type="radio" name="vacationType" value="1" checked>
@@ -1267,6 +1350,40 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
         document.getElementById("vacCancelBtn").addEventListener("click", closeVacationModal);
         document.getElementById("vacSaveBtn").addEventListener("click", saveVacation);
         document.getElementById("vacDeleteBtn").addEventListener("click", deleteCurrentVacation);
+
+        // Скрываем выбор типа отпуска в режиме suggestMode
+        const typeSelector = modal.querySelector("#vacTypeSelector");
+        if(typeSelector) {
+            typeSelector.style.display = state.suggestMode ? "none" : "";
+        }
+
+        const typeLabel = modal.querySelector("#vacTypeLabel");
+        if(typeLabel) {
+            typeLabel.style.display = state.suggestMode ? "none" : "";
+        }
+
+        // Блокируем кнопку удаления в режиме suggestMode
+        const deleteBtn = document.getElementById("vacDeleteBtn");
+        if(deleteBtn) {
+            deleteBtn.style.display = state.suggestMode ? "none" : "";
+        }
+    } else {
+        // Модалка уже существует - обновляем видимость элементов
+        const typeSelector = modal.querySelector("#vacTypeSelector");
+        if(typeSelector) {
+            typeSelector.style.display = state.suggestMode ? "none" : "";
+        }
+
+        const typeLabel = modal.querySelector("#vacTypeLabel");
+        if(typeLabel) {
+            typeLabel.style.display = state.suggestMode ? "none" : "";
+        }
+
+        // Обновляем видимость кнопки удаления
+        const deleteBtn = document.getElementById("vacDeleteBtn");
+        if(deleteBtn) {
+            deleteBtn.style.display = state.suggestMode ? "none" : "";
+        }
     }
 
     // Устанавливаем заголовок
@@ -1291,11 +1408,6 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
     // Сохраняем месяц в dataset модалки (вне блока if(!modal), чтобы обновлялось при каждом открытии)
     modal.dataset.month = month;
 
-    document.getElementById("vacStartDate").min = yearStart;
-    document.getElementById("vacStartDate").max = yearEnd;
-    document.getElementById("vacEndDate").min = yearStart;
-    document.getElementById("vacEndDate").max = yearEnd;
-
     // Если режим редактирования и есть данные отпуска
     if(isEditMode && vacationData){
         // Проверяем, что отпуск в том же году, что и график
@@ -1309,15 +1421,20 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
             const typeRadio = modal.querySelector(`input[name="vacationType"][value="${vacationData.type_vacation_id}"]`);
             if(typeRadio) typeRadio.checked = true;
 
-            // Показываем кнопку удаления
-            toggle(document.getElementById("vacDeleteBtn"), true);
+            // Показываем кнопку удаления только в режиме редактирования, не в suggestMode
+            if(!state.suggestMode) {
+                toggle(document.getElementById("vacDeleteBtn"), true);
+            } else {
+                document.getElementById("vacDeleteBtn").style.display = "none";
+            }
             modal.dataset.vacationId = vacationData.id;
             
-            // Для редактирования: min = начало отпуска, max = конец отпуска
-            document.getElementById("vacStartDate").min = vacationData.start_date;
-            document.getElementById("vacEndDate").min = vacationData.start_date;
-            document.getElementById("vacStartDate").max = vacationData.end_date;
-            document.getElementById("vacEndDate").max = vacationData.end_date;
+            // Для редактирования: min/max в рамках месяца для начала, до конца года для окончания
+            document.getElementById("vacStartDate").min = monthStart;
+            document.getElementById("vacEndDate").min = monthStart;
+            document.getElementById("vacStartDate").max = monthEnd;
+            document.getElementById("vacEndDate").min = document.getElementById("vacStartDate").value;
+            document.getElementById("vacEndDate").max = `${year}-12-31`;
         } else {
             // Отпуск в другом году — показываем сообщение
             showMessage("Отпуск не в этом году", "warning");
@@ -1329,10 +1446,17 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
         document.getElementById("vacStartDate").value = monthStart;
         document.getElementById("vacEndDate").value = monthEnd;
         
-        // Для нового отпуска: только даты текущего года графика
-        document.getElementById("vacStartDate").min = yearStart;
-        document.getElementById("vacEndDate").min = yearStart;
-        document.getElementById("vacStartDate").max = yearEnd;
+        // Для suggestMode устанавливаем тип "Запланированный" (type=3)
+        if(state.suggestMode) {
+            const plannedType = modal.querySelector('input[name="vacationType"][value="3"]');
+            if(plannedType) plannedType.checked = true;
+        }
+        
+        // Для нового отпуска: start date ограничена выбранным месяцем
+        document.getElementById("vacStartDate").min = monthStart;
+        document.getElementById("vacStartDate").max = monthEnd;
+        // end date от даты начала до конца года
+        document.getElementById("vacEndDate").min = monthStart;
         document.getElementById("vacEndDate").max = yearEnd;
         
         toggle(document.getElementById("vacDeleteBtn"), false);
@@ -1348,6 +1472,7 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
 function closeVacationModal(){
     const modal = document.getElementById("vacationModal");
     if(modal) toggle(modal, false);
+    document.body.classList.remove("suggest-mode");
 }
 
 async function saveVacation(){
@@ -1496,13 +1621,21 @@ async function saveVacation(){
                 closeVacationModal();
                 showMessage("Отпуск успешно запланирован", "success");
                 
-                // Перезагружаем график
+                // Выходим из режима редактирования
+                state.editMode = false;
+                state.suggestMode = false;
+                state.originalSchedule = null;
+                document.body.classList.remove("suggest-mode");
+                
+                // Перезагружаем график и обновляем UI
                 if(state.selectedSchedule){
                     const data = await api.getSchedule(state.selectedSchedule.id);
                     state.selectedSchedule = data;
                     renderSchedule(data);
-                    updateUi();
                 }
+                updateUi();
+            } else {
+                showMessage("Ошибка при планировании отпуска", "error");
             }
         }
     }
@@ -1511,6 +1644,11 @@ async function saveVacation(){
 async function deleteCurrentVacation(){
     const modal = document.getElementById("vacationModal");
     if(!modal) return;
+
+    // В режиме suggestMode удаление запрещено
+    if(state.suggestMode) {
+        return;
+    }
 
     const vacationId = modal.dataset.vacationId;
     if(!vacationId) return;
@@ -1568,30 +1706,12 @@ function bindEvents(){
 
     el.btnDeleteSchedule?.addEventListener("click", deleteEmployeeFromSchedule);
 
-    el.btnSuggest?.addEventListener("click", enableSuggestMode);
-
-    el.btnCreateSchedule?.addEventListener("click", () => {
-        if(state.editMode || state.suggestMode){
-            showMessage("Выйдите из режима редактирования","warning");
-            return;
-        }
-        openCreateScheduleModal();
-    });
-
     el.btnAddEmployee?.addEventListener("click", () => {
         if(state.editMode || state.suggestMode){
             showMessage("Выйдите из режима редактирования","warning");
             return;
         }
         openCreateEmployeeModal();
-    });
-
-    el.btnTransfer?.addEventListener("click", () => {
-        if(state.editMode || state.suggestMode){
-            showMessage("Выйдите из режима редактирования","warning");
-            return;
-        }
-        showMessage("Функция переноса отпуска","info");
     });
 
     el.btnSuggest?.addEventListener("click", () => {
@@ -1622,6 +1742,17 @@ function bindEvents(){
 
     // Поиск сотрудников
     el.ceSearch?.addEventListener("input", filterEmployees);
+    el.ceSearch?.addEventListener("click", function(e){
+        e.stopPropagation();
+    });
+    
+    // Фильтр по направлению (устанавливает значение для добавления)
+    el.ceDirectionFilter?.addEventListener("change", function(){
+        // Просто запоминаем выбранное значение, фильтрация не нужна
+    });
+    el.ceDirectionFilter?.addEventListener("click", function(e){
+        e.stopPropagation();
+    });
 
     // Обработчик выбора отдела
     setupDepartmentHandler();
@@ -1717,6 +1848,8 @@ async function loadCurrentUser(){
     
     if(user && user.department_id){
         state.userDepartmentId = user.department_id;
+        state.currentUserId = user.id;
+        state.currentEmail = user.email;
         state.currentFirstName = user.first_name || "";
         state.currentLastName = user.last_name || "";
         
@@ -1740,6 +1873,10 @@ function renderSchedule(data){
 
     // Всегда показываем контейнер
     toggle(grid, true);
+    
+    // Показываем легенды только если есть график
+    toggle(el.directionLegend, !!data);
+    toggle(el.vacationLegend, !!data);
 
     if(!data || !data.employees || data.employees.length === 0){
 
@@ -1760,22 +1897,18 @@ function renderSchedule(data){
 
         // В режиме предложения отпуска проверяем, что это текущий пользователь
         const isCurrentUser = state.suggestMode && 
-                              emp.first_name === state.currentFirstName && 
-                              emp.last_name === state.currentLastName;
+                              (emp.user_id === state.currentUserId || emp.email === state.currentEmail);
 
         // Создаём ячейки для месяцев
         const year = data?.year || 2026;
         
-        // Создаём массив: для каждого месяца хранит отпуск, который его покрывает
+        // Для каждого месяца определяем отпуск
         const monthVacations = new Array(12).fill(null);
-        
         for(const vac of (emp.vacations || [])) {
             const vacStart = new Date(vac.start_date);
             const vacEnd = new Date(vac.end_date);
-            
             const startMonth = vacStart.getMonth();
             const endMonth = vacEnd.getMonth();
-            
             for(let m = startMonth; m <= endMonth; m++) {
                 if(m >= 0 && m < 12) {
                     monthVacations[m] = vac;
@@ -1783,80 +1916,92 @@ function renderSchedule(data){
             }
         }
         
-        // Рендерим ячейки, объединяя непрерывные месяцы одного отпуска
+        // Рендерим 12 ячеек (по одной на каждый месяц)
         let months = "";
-        let i = 0;
         const processedVacations = new Set();
         
-        while(i < 12) {
-            const vacation = monthVacations[i];
+        for(let m = 0; m < 12; m++) {
+            const vacation = monthVacations[m];
+            let cellClass = "month-cell";
+            let cellContent = "";
+            let tooltip = "";
             
-            if(vacation && !processedVacations.has(vacation.id)) {
-                const vacStart = new Date(vacation.start_date);
-                const vacEnd = new Date(vacation.end_date);
-                
-                const startMonth = vacStart.getMonth();
-                const endMonth = vacEnd.getMonth();
-                const colspan = endMonth - startMonth + 1;
-                const startDay = vacStart.getDate();
+            if(vacation && !state.suggestMode) {
+                // Ячейка с отпуском
                 const typeClass = getVacationTypeClass(vacation.type_vacation_id);
+                cellClass += ` vacation-cell ${typeClass}`;
+                if(state.editMode) cellClass += " editable-vacation";
                 
-                processedVacations.add(vacation.id);
-                
-                // Вычисляем процент заполнения первого месяца
-                const daysInStartMonth = new Date(year, startMonth + 1, 0).getDate();
-                const daysInFirstMonth = daysInStartMonth - startDay + 1;
-                const fillPercent = (daysInFirstMonth / daysInStartMonth * 100).toFixed(1);
-                
-                const tooltip = `📅 ${formatDate(vacation.start_date)} - ${formatDate(vacation.end_date)}`;
-                
-                let cellClass = `vacation-cell ${typeClass}`;
-                if(colspan > 1) {
-                    cellClass += " vacation-cross";
-                }
-                if(state.editMode && !state.suggestMode) {
-                    cellClass += " editable-vacation";
-                }
-                
-                // Определяем цвет по типу отпуска
+                // Определяем цвет
                 let bgColor = '#1e3a8a';
                 if(typeClass === 'type-education') bgColor = '#60a5fa';
                 else if(typeClass === 'type-planned') bgColor = '#fbbf24';
                 else if(typeClass === 'type-decreetal') bgColor = '#16a34a';
                 
-                // Используем background-position для сдвига градиента
-                months += `<td class="${cellClass}" data-tooltip="${tooltip}" data-vacation-id="${vacation.id}" data-vacation-type="${vacation.type_vacation_id}" data-month="${startMonth}" colspan="${colspan}" style="background: linear-gradient(90deg, ${bgColor} 0%, ${bgColor} 100%) !important; background-size: ${colspan * 100}% 100% !important; background-repeat: no-repeat !important; background-position: ${100 - fillPercent}% 0 !important;"></td>`;
+                const vacStart = new Date(vacation.start_date);
+                const vacEnd = new Date(vacation.end_date);
+                const startMonth = vacStart.getMonth();
+                const endMonth = vacEnd.getMonth();
+                const startDay = vacStart.getDate();
+                const endDay = vacEnd.getDate();
                 
-                // Пропускаем обработанные месяцы
-                i = endMonth + 1;
-            } else {
-                let cellClass = "";
-                if(state.editMode){
-                    if(state.suggestMode){
-                        // В режиме предложения отпуска редактируем только своего
-                        if(isCurrentUser){
-                            cellClass = "editable";
-                        }
-                    } else {
-                        cellClass = "editable";
-                    }
+                // Вычисляем позицию и ширину цветной полосы
+                let leftPercent = 0;
+                let widthPercent = 100;
+                let borderRadius = '0';
+                
+                if(m === startMonth && m === endMonth) {
+                    // Отпуск в пределах одного месяца
+                    const daysInMonth = new Date(year, m + 1, 0).getDate();
+                    leftPercent = ((startDay - 1) / daysInMonth) * 100;
+                    widthPercent = ((endDay - startDay + 1) / daysInMonth) * 100;
+                    borderRadius = '4px';
+                } else if(m === startMonth) {
+                    // Первый месяц отпуска
+                    const daysInMonth = new Date(year, m + 1, 0).getDate();
+                    leftPercent = ((startDay - 1) / daysInMonth) * 100;
+                    widthPercent = 100 - leftPercent;
+                    borderRadius = '4px 0 0 4px';
+                } else if(m === endMonth) {
+                    // Последний месяц отпуска
+                    const daysInMonth = new Date(year, m + 1, 0).getDate();
+                    widthPercent = (endDay / daysInMonth) * 100;
+                    borderRadius = '0 4px 4px 0';
                 }
-                months += `<td class="month-cell ${cellClass}" data-month="${i}"></td>`;
-                i++;
+                // Для промежуточных месяцев — полная ширина (100%)
+                
+                // Вычисляем количество дней отпуска
+                const daysDiff = Math.round((vacEnd - vacStart) / (1000 * 60 * 60 * 24)) + 1;
+                const daysWord = declineVacationDays(daysDiff);
+                
+                tooltip = `📅 ${formatDate(vacation.start_date)} - ${formatDate(vacation.end_date)} (${daysDiff} ${daysWord})`;
+                
+                cellContent = `<div style="position: absolute; top: 0; left: ${leftPercent}%; width: ${widthPercent}%; height: 100%; background: ${bgColor}; border-radius: ${borderRadius}; pointer-events: none;"></div>`;
+                
+                processedVacations.add(vacation.id);
             }
+            
+            if(state.editMode && !cellContent) {
+                if(state.suggestMode && isCurrentUser) {
+                    cellClass += " editable";
+                } else if(!state.suggestMode) {
+                    cellClass += " editable";
+                }
+            }
+            
+            months += `<td class="${cellClass}" data-month="${m}" data-tooltip="${tooltip}" data-vacation-id="${vacation?.id || ''}" data-vacation-type="${vacation?.type_vacation_id || ''}" style="position: relative;">${cellContent}</td>`;
         }
 
         // В режиме редактирования делаем ФИ кликабельными
         let nameCell1, nameCell2;
-        const positionCategory = getPositionCategory(emp.position);
-        const categoryClass = getCategoryClass(positionCategory);
+        const directionClass = getDirectionClass(emp.direction);
         
         if(state.editMode && !state.suggestMode){
-            nameCell1 = `<td class="col-name editable-name ${categoryClass}" data-field="first_name">${emp.first_name ?? ""}</td>`;
-            nameCell2 = `<td class="col-name editable-name ${categoryClass}" data-field="last_name">${emp.last_name ?? ""}</td>`;
+            nameCell1 = `<td class="col-name editable-name ${directionClass}" data-field="first_name">${emp.first_name ?? ""}</td>`;
+            nameCell2 = `<td class="col-name editable-name ${directionClass}" data-field="last_name">${emp.last_name ?? ""}</td>`;
         } else {
-            nameCell1 = `<td class="col-name ${categoryClass}">${emp.first_name ?? ""}</td>`;
-            nameCell2 = `<td class="col-name ${categoryClass}">${emp.last_name ?? ""}</td>`;
+            nameCell1 = `<td class="col-name ${directionClass}">${emp.first_name ?? ""}</td>`;
+            nameCell2 = `<td class="col-name ${directionClass}">${emp.last_name ?? ""}</td>`;
         }
 
         tr.innerHTML = `
@@ -2156,10 +2301,24 @@ async function deleteEmployeeFromSchedule(){
             if(success){
                 showMessage("Сотрудник удалён из графика", "success");
                 
+                // Сбрасываем режим редактирования
+                state.editMode = false;
+                state.suggestMode = false;
+                state.originalSchedule = null;
+                document.body.classList.remove("suggest-mode");
+                state.pendingChanges = {
+                    updatedNames: {},
+                    addedVacations: [],
+                    deletedVacations: [],
+                    modifiedVacations: [],
+                    employeeOrder: null
+                };
+                
                 // Перезагружаем график
                 const data = await api.getSchedule(state.selectedSchedule.id);
                 state.selectedSchedule = data;
                 renderSchedule(data);
+                updateUi();
             }
         }
     );

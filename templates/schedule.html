@@ -49,7 +49,6 @@
 
         <div class="left-col">
             <button id="createEmployeeBtn" class="btn btn-success">Добавить сотрудника в график</button>
-            <button id="transferVacationBtn" class="btn btn-secondary">Перенести отпуск</button>
             <button id="suggestVacationBtn" class="btn btn-secondary">Запланировать отпуск</button>
         </div>
 
@@ -109,6 +108,48 @@
         </table>
     </div>
 
+    <!-- Легенда направлений -->
+    <div id="directionLegend" class="direction-legend hidden">
+        <div class="legend-title">Направления:</div>
+        <div class="legend-item">
+            <span class="legend-color legend-po-ecp"></span>
+            <span class="legend-text">ПО/ЭЦП</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-te-tg"></span>
+            <span class="legend-text">ТЭ/ТГ</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-to-tm"></span>
+            <span class="legend-text">ТО/ТМ</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-grp"></span>
+            <span class="legend-text">ГРП</span>
+        </div>
+    </div>
+
+    <!-- Легенда типов отпуска -->
+    <div id="vacationLegend" class="vacation-legend hidden">
+        <div class="legend-title">Типы отпуска:</div>
+        <div class="legend-item">
+            <span class="legend-color legend-main"></span>
+            <span class="legend-text">Основной отпуск</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-education"></span>
+            <span class="legend-text">Учебный отпуск</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-planned"></span>
+            <span class="legend-text">Запланированный отпуск</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-decreetal"></span>
+            <span class="legend-text">Декретный отпуск</span>
+        </div>
+    </div>
+
 
     <!-- Модальное окно добавления сотрудника -->
     <div id="createEmployeeModal" class="custom-modal hidden">
@@ -124,6 +165,17 @@
             </div>
 
             <div id="ceListBlock" class="hidden">
+                <div id="ceDirectionFilterBlock" class="hidden">
+                    <label>Направление:</label>
+                    <select id="ceDirectionFilter" class="input ce-direction-select">
+                        <option value="">Все направления</option>
+                        <option value="ПО/ЭЦП">ПО/ЭЦП</option>
+                        <option value="ТЭ/ТГ">ТЭ/ТГ</option>
+                        <option value="ТО/ТМ">ТО/ТМ</option>
+                        <option value="ГРП">ГРП</option>
+                    </select>
+                </div>
+
                 <label>Поиск:</label>
                 <input id="ceSearch" type="text" placeholder="Поиск сотрудника...">
 
@@ -144,16 +196,27 @@
                     <option value="2">Отдел технической поддержки</option>
                 </select>
 
-                <label>Имя</label>
-                <input id="ceFirstName" type="text" placeholder="Введите имя">
-
-                <label>Фамилия</label>
-                <input id="ceLastName" type="text" placeholder="Введите фамилию">
-
                 <label>Должность</label>
                 <select id="cePosition" class="input ce-position-select">
                     <option value="">Сначала выберите отдел</option>
                 </select>
+
+                <div id="ceDirectionBlock" class="hidden">
+                    <label>Направление</label>
+                    <select id="ceDirection" class="input ce-direction-select">
+                        <option value="">Выберите направление</option>
+                        <option value="ПО/ЭЦП">ПО/ЭЦП</option>
+                        <option value="ТЭ/ТГ">ТЭ/ТГ</option>
+                        <option value="ТО/ТМ">ТО/ТМ</option>
+                        <option value="ГРП">ГРП</option>
+                    </select>
+                </div>
+
+                <label>Фамилия</label>
+                <input id="ceLastName" type="text" placeholder="Введите фамилию">
+
+                <label>Имя</label>
+                <input id="ceFirstName" type="text" placeholder="Введите имя">
 
                 <div class="ce-btn-row">
                     <button id="ceSave" class="btn-save">Добавить</button>

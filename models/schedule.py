@@ -20,6 +20,8 @@ class Employee(db.Model):
     last_name = db.Column(db.String(100), nullable=False)
     position = db.Column(db.String(255))
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id", ondelete="SET NULL"))
+    direction = db.Column(db.String(100))  # ПО/ЭЦП, ТЭ/ТГ, ТО/ТМ, ГРП
+    email = db.Column(db.String(150))  # Email пользователя для связи с таблицей users
 
     department = db.relationship("Department", backref="employees")
 
@@ -66,6 +68,7 @@ class ScheduleEmployee(db.Model):
         db.ForeignKey("employees.id", ondelete="CASCADE"),
         nullable=False
     )
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     sort_order = db.Column(db.Integer, default=0)
 
     __table_args__ = (
@@ -103,6 +106,7 @@ class Vacation(db.Model):
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     position = db.Column(db.String(255))
+    direction = db.Column(db.String(100))  # ПО/ЭЦП, ТЭ/ТГ, ТО/ТМ, ГРП
 
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
