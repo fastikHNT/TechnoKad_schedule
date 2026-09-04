@@ -70,6 +70,12 @@
    Фильтры
 ===================================================== */
 
+.filters-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
 .admin-filter {
     padding: 8px 12px;
     border-radius: 10px;
@@ -864,20 +870,37 @@ tbody tr.selected-row:hover {
 }
 
 /* Чекбокс "по умолчанию" в фильтре */
-.schedule-default-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    background: var(--input-bg, rgba(255, 255, 255, 0.05));
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-    color: var(--text-color);
-    height: 38px;
-    box-sizing: border-box;
+#isDefaultCheckbox {
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
+}
+
+.filter-box {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    vertical-align: middle !important;
+}
+
+.filter-box .schedule-default-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 14px !important;
+    background: var(--input-bg, rgba(255, 255, 255, 0.05)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    font-size: 14px !important;
+    color: var(--text-color) !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    line-height: normal !important;
+    vertical-align: middle !important;
 }
 
 .schedule-default-label:hover {

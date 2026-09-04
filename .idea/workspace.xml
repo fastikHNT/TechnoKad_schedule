@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="fixup! 02.09.2026">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="02.09.2026">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/css/schedule.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/schedule.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/js/schedule.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/schedule.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/schedule.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/schedule.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788371861045</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="02.09.2026">
+      <option name="closed" value="true" />
+      <created>1788377485634</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1788377485634</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

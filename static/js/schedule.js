@@ -19,6 +19,17 @@ const state = {
     }
 };
 
+// Функция склонения слова "изменение"
+function declineChange(count) {
+    const abs = Math.abs(count) % 100;
+    const lastDigit = abs % 10;
+    
+    if(abs > 10 && abs < 20) return "изменений";
+    if(lastDigit > 1 && lastDigit < 5) return "изменения";
+    if(lastDigit === 1) return "изменение";
+    return "изменений";
+}
+
 // Маппинг ключевых слов должности → категория цвета
 const POSITION_CATEGORIES = [
     { keywords: ["руководитель проекта"], category: "project_lead" },
@@ -327,7 +338,8 @@ function updateUi(){
 
     // Отображение названия графика
     if(el.title && state.selectedSchedule){
-        el.title.textContent = state.selectedSchedule.name;
+        const yearSuffix = state.selectedSchedule.year ? ` на ${state.selectedSchedule.year}` : '';
+        el.title.textContent = `График${yearSuffix}`;
         toggle(el.title, true);
     }
 
@@ -441,7 +453,8 @@ async function onDepartmentChange(){
         const opt = document.createElement("option");
 
         opt.value = s.id;
-        opt.textContent = s.name + (s.is_default ? ' 📌' : '');
+        const yearSuffix = s.year ? ` (${s.year} год)` : '';
+        opt.textContent = s.name + yearSuffix + (s.is_default ? ' 📌' : '');
 
         el.scheduleFilter.appendChild(opt);
 
@@ -782,7 +795,7 @@ async function saveAllChanges(){
             renderSchedule(data);
             updateUi();
 
-            showMessage(`Сохранено ${changesCount} изменений`, "success");
+            showMessage(`Сохранено ${changesCount} ${declineChange(changesCount)}`, "success");
         } else {
             showMessage("Ошибка при сохранении некоторых изменений","error");
         }
@@ -790,7 +803,7 @@ async function saveAllChanges(){
 
     // Показываем модальное окно подтверждения
     showSaveConfirmModal(
-        `Сохранить ${totalChanges} изменений?`,
+        `Сохранить ${totalChanges} ${declineChange(totalChanges)}?`,
         performSave
     );
 }
@@ -1263,30 +1276,65 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
     document.getElementById("vacEmployeeName").textContent = employeeName;
     document.getElementById("vacMonthName").textContent = monthNames[month];
 
-    // Устанавливаем минимальные/максимальные даты (весь год)
-    const minDate = `${2026}-01-01`;
-    const maxDate = `${2026}-12-31`;
-    document.getElementById("vacStartDate").min = minDate;
-    document.getElementById("vacStartDate").max = maxDate;
-    document.getElementById("vacEndDate").min = minDate;
-    document.getElementById("vacEndDate").max = maxDate;
+    // Получаем год из selectedSchedule или используем 2026
+    const year = state.selectedSchedule?.year || 2026;
+    const monthNum = parseInt(month);
+
+    // Вычисляем начало выбранного месяца
+    const monthStart = `${year}-${String(monthNum + 1).padStart(2, '0')}-01`;
+    // Конец выбранного месяца
+    const monthEnd = `${year}-${String(monthNum + 1).padStart(2, '0')}-${new Date(year, monthNum + 1, 0).getDate()}`;
+    // Границы всего года
+    const yearStart = `${year}-01-01`;
+    const yearEnd = `${year}-12-31`;
+
+    // Сохраняем месяц в dataset модалки (вне блока if(!modal), чтобы обновлялось при каждом открытии)
+    modal.dataset.month = month;
+
+    document.getElementById("vacStartDate").min = yearStart;
+    document.getElementById("vacStartDate").max = yearEnd;
+    document.getElementById("vacEndDate").min = yearStart;
+    document.getElementById("vacEndDate").max = yearEnd;
 
     // Если режим редактирования и есть данные отпуска
     if(isEditMode && vacationData){
-        document.getElementById("vacStartDate").value = vacationData.start_date;
-        document.getElementById("vacEndDate").value = vacationData.end_date;
+        // Проверяем, что отпуск в том же году, что и график
+        const vacYear = new Date(vacationData.start_date).getFullYear();
         
-        // Устанавливаем тип отпуска
-        const typeRadio = modal.querySelector(`input[name="vacationType"][value="${vacationData.type_vacation_id}"]`);
-        if(typeRadio) typeRadio.checked = true;
+        if(vacYear === year) {
+            document.getElementById("vacStartDate").value = vacationData.start_date;
+            document.getElementById("vacEndDate").value = vacationData.end_date;
+            
+            // Устанавливаем тип отпуска
+            const typeRadio = modal.querySelector(`input[name="vacationType"][value="${vacationData.type_vacation_id}"]`);
+            if(typeRadio) typeRadio.checked = true;
 
-        // Показываем кнопку удаления
-        toggle(document.getElementById("vacDeleteBtn"), true);
-        modal.dataset.vacationId = vacationData.id;
+            // Показываем кнопку удаления
+            toggle(document.getElementById("vacDeleteBtn"), true);
+            modal.dataset.vacationId = vacationData.id;
+            
+            // Для редактирования: min = начало отпуска, max = конец отпуска
+            document.getElementById("vacStartDate").min = vacationData.start_date;
+            document.getElementById("vacEndDate").min = vacationData.start_date;
+            document.getElementById("vacStartDate").max = vacationData.end_date;
+            document.getElementById("vacEndDate").max = vacationData.end_date;
+        } else {
+            // Отпуск в другом году — показываем сообщение
+            showMessage("Отпуск не в этом году", "warning");
+            closeVacationModal();
+            return;
+        }
     } else {
-        // Режим добавления - ставим начало и конец месяца
-        document.getElementById("vacStartDate").value = minDate;
-        document.getElementById("vacEndDate").value = maxDate;
+        // Режим добавления - ставим начало выбранного месяца, конец - конец выбранного месяца
+        document.getElementById("vacStartDate").value = monthStart;
+        document.getElementById("vacEndDate").value = monthEnd;
+        
+        // Для нового отпуска: только даты текущего года графика
+        document.getElementById("vacStartDate").min = yearStart;
+        document.getElementById("vacEndDate").min = yearStart;
+        document.getElementById("vacStartDate").max = yearEnd;
+        document.getElementById("vacEndDate").max = yearEnd;
+        
         toggle(document.getElementById("vacDeleteBtn"), false);
         delete modal.dataset.vacationId;
     }
@@ -1321,6 +1369,31 @@ async function saveVacation(){
 
     if(new Date(endDate) <= new Date(startDate)){
         showMessage("Дата окончания должна быть позже даты начала", "warning");
+        return;
+    }
+
+    // Для нового отпуска проверяем, что начало не раньше выбранного месяца
+    if(!modal.dataset.vacationId && modal.dataset.month !== undefined) {
+        const month = parseInt(modal.dataset.month);
+        const year = state.selectedSchedule?.year || 2026;
+        const monthStart = new Date(year, month, 1);
+        const start = new Date(startDate);
+        
+        if(start < monthStart) {
+            const monthNames = ["январь", "февраль", "март", "апрель", "май", "июнь",
+                               "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+            showMessage(`Отпуск не может начаться раньше ${monthNames[month]}`, "warning");
+            return;
+        }
+    }
+
+    // Проверяем, что отпуск в пределах года графика
+    const year = state.selectedSchedule?.year || 2026;
+    const startYear = new Date(startDate).getFullYear();
+    const endYear = new Date(endDate).getFullYear();
+    
+    if(startYear !== year || endYear !== year) {
+        showMessage(`Отпуск должен быть в ${year} году`, "warning");
         return;
     }
 
@@ -1406,19 +1479,6 @@ async function saveVacation(){
         }
     } else {
         if(state.editMode && !state.suggestMode){
-            // Проверяем, есть ли вообще изменения
-            const hasAnyChanges = state.pendingChanges.modifiedVacations.length > 0 ||
-                                 state.pendingChanges.addedVacations.length > 0 ||
-                                 state.pendingChanges.deletedVacations.length > 0 ||
-                                 Object.keys(state.pendingChanges.updatedNames).length > 0 ||
-                                 state.pendingChanges.employeeOrder;
-            
-            if(!hasAnyChanges) {
-                showMessage("Изменений не найдено", "warning");
-                closeVacationModal();
-                return;
-            }
-            
             // Добавляем в pendingChanges
             state.pendingChanges.addedVacations.push({
                 scheduleEmployeeId: scheduleEmployeeId,
@@ -1703,65 +1763,72 @@ function renderSchedule(data){
                               emp.first_name === state.currentFirstName && 
                               emp.last_name === state.currentLastName;
 
-        // Создаём ячейки для месяцев (объединяем отпуска, пересекающие 2 месяца)
+        // Создаём ячейки для месяцев
+        const year = data?.year || 2026;
+        
+        // Создаём массив: для каждого месяца хранит отпуск, который его покрывает
+        const monthVacations = new Array(12).fill(null);
+        
+        for(const vac of (emp.vacations || [])) {
+            const vacStart = new Date(vac.start_date);
+            const vacEnd = new Date(vac.end_date);
+            
+            const startMonth = vacStart.getMonth();
+            const endMonth = vacEnd.getMonth();
+            
+            for(let m = startMonth; m <= endMonth; m++) {
+                if(m >= 0 && m < 12) {
+                    monthVacations[m] = vac;
+                }
+            }
+        }
+        
+        // Рендерим ячейки, объединяя непрерывные месяцы одного отпуска
         let months = "";
         let i = 0;
+        const processedVacations = new Set();
         
-        while(i < 12){
-            const vacation = getVacationForMonth(emp.vacations, i);
-            if(vacation){
-                const tooltip = `📅 ${formatDate(vacation.start_date)} - ${formatDate(vacation.end_date)}`;
+        while(i < 12) {
+            const vacation = monthVacations[i];
+            
+            if(vacation && !processedVacations.has(vacation.id)) {
+                const vacStart = new Date(vacation.start_date);
+                const vacEnd = new Date(vacation.end_date);
+                
+                const startMonth = vacStart.getMonth();
+                const endMonth = vacEnd.getMonth();
+                const colspan = endMonth - startMonth + 1;
+                const startDay = vacStart.getDate();
                 const typeClass = getVacationTypeClass(vacation.type_vacation_id);
-                const startDate = new Date(vacation.start_date);
-                const endDate = new Date(vacation.end_date);
-                const startDay = startDate.getDate();
-                const endDay = endDate.getDate();
-                const daysInStartMonth = new Date(2026, i + 1, 0).getDate();
                 
-                // Проверяем, пересекает ли отпуск два месяца
-                const startMonth = startDate.getMonth();
-                const endMonth = endDate.getMonth();
+                processedVacations.add(vacation.id);
                 
-                if(startMonth !== endMonth && i === startMonth){
-                    // Отпуск начинается в этом месяце и заканчивается в следующем
-                    // Вычисляем процент заполнения (от дня начала до конца месяца)
-                    const fillPercent = ((daysInStartMonth - startDay + 1) / daysInStartMonth * 100).toFixed(1);
-                    
-                    let cellClass = `vacation-cell ${typeClass} vacation-cross`;
-                    if(state.editMode && !state.suggestMode){
-                        cellClass += " editable-vacation";
-                    }
-                    // Определяем цвет по типу отпуска
-                    let bgColor = '#1e3a8a';
-                    if(typeClass === 'type-education') bgColor = '#60a5fa';
-                    else if(typeClass === 'type-planned') bgColor = '#fbbf24';
-                    else if(typeClass === 'type-decreetal') bgColor = '#16a34a';
-                    
-                    // Используем background-position для сдвига градиента
-                    months += `<td class="${cellClass}" data-tooltip="${tooltip}" data-vacation-id="${vacation.id}" data-vacation-type="${vacation.type_vacation_id}" data-month="${i}" colspan="2" style="background: linear-gradient(90deg, ${bgColor} 0%, ${bgColor} 100%) !important; background-size: 200% 100% !important; background-repeat: no-repeat !important; background-position: ${100 - fillPercent}% 0 !important;"></td>`;
-                    i += 2; // Пропускаем оба месяца
-                } else if(i === startMonth && i === endMonth){
-                    // Отпуск в пределах одного месяца
-                    // Вычисляем процент заполнения
-                    const daysInMonth = new Date(2026, i + 1, 0).getDate();
-                    const duration = endDate.getDate() - startDay + 1;
-                    const fillPercent = (duration / daysInMonth * 100).toFixed(1);
-                    
-                    let cellClass = `vacation-cell ${typeClass} vacation-full`;
-                    if(state.editMode && !state.suggestMode){
-                        cellClass += " editable-vacation";
-                    }
-                    months += `<td class="${cellClass}" data-tooltip="${tooltip}" data-vacation-id="${vacation.id}" data-vacation-type="${vacation.type_vacation_id}" data-month="${i}" style="background: linear-gradient(90deg, transparent ${(100 - fillPercent) / 2}%, inherit ${(100 - fillPercent) / 2}%);"></td>`;
-                    i++;
-                } else {
-                    // Месяц внутри отпуска (пересекает)
-                    let cellClass = `vacation-cell ${typeClass} vacation-intersect`;
-                    if(state.editMode && !state.suggestMode){
-                        cellClass += " editable-vacation";
-                    }
-                    months += `<td class="${cellClass}" data-tooltip="${tooltip}" data-vacation-id="${vacation.id}" data-vacation-type="${vacation.type_vacation_id}" data-month="${i}"></td>`;
-                    i++;
+                // Вычисляем процент заполнения первого месяца
+                const daysInStartMonth = new Date(year, startMonth + 1, 0).getDate();
+                const daysInFirstMonth = daysInStartMonth - startDay + 1;
+                const fillPercent = (daysInFirstMonth / daysInStartMonth * 100).toFixed(1);
+                
+                const tooltip = `📅 ${formatDate(vacation.start_date)} - ${formatDate(vacation.end_date)}`;
+                
+                let cellClass = `vacation-cell ${typeClass}`;
+                if(colspan > 1) {
+                    cellClass += " vacation-cross";
                 }
+                if(state.editMode && !state.suggestMode) {
+                    cellClass += " editable-vacation";
+                }
+                
+                // Определяем цвет по типу отпуска
+                let bgColor = '#1e3a8a';
+                if(typeClass === 'type-education') bgColor = '#60a5fa';
+                else if(typeClass === 'type-planned') bgColor = '#fbbf24';
+                else if(typeClass === 'type-decreetal') bgColor = '#16a34a';
+                
+                // Используем background-position для сдвига градиента
+                months += `<td class="${cellClass}" data-tooltip="${tooltip}" data-vacation-id="${vacation.id}" data-vacation-type="${vacation.type_vacation_id}" data-month="${startMonth}" colspan="${colspan}" style="background: linear-gradient(90deg, ${bgColor} 0%, ${bgColor} 100%) !important; background-size: ${colspan * 100}% 100% !important; background-repeat: no-repeat !important; background-position: ${100 - fillPercent}% 0 !important;"></td>`;
+                
+                // Пропускаем обработанные месяцы
+                i = endMonth + 1;
             } else {
                 let cellClass = "";
                 if(state.editMode){
@@ -1947,8 +2014,10 @@ function handleDrop(e) {
 function getVacationForMonth(vacations, monthIndex){
     if(!vacations || vacations.length === 0) return null;
 
-    const monthStart = new Date(2026, monthIndex, 1);
-    const monthEnd = new Date(2026, monthIndex + 1, 0);
+    // Используем год из выбранного графика
+    const year = state.selectedSchedule?.year || 2026;
+    const monthStart = new Date(year, monthIndex, 1);
+    const monthEnd = new Date(year, monthIndex + 1, 0);
 
     return vacations.find(v => {
         const startDate = new Date(v.start_date);
@@ -1977,7 +2046,7 @@ function formatDate(dateStr){
 
 // Обработка клика по ячейке месяца
 function handleMonthCellClick(e){
-    const month = e.target.dataset.month;
+    const month = parseInt(e.target.dataset.month);
     const row = e.target.closest("tr");
     const scheduleEmployeeId = row.dataset.employeeId;
     
