@@ -918,6 +918,7 @@ def get_current_user():
             current_user.role.name if current_user.role else None,
             current_user.role.name if current_user.role else None
         ),
+        "role_id": current_user.role_id,
         "department_id": current_user.department_id
     })
 

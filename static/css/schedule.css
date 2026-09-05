@@ -1034,6 +1034,38 @@ body.theme2 .schedule-default-label:hover {
     box-shadow: 0 0 6px rgba(36, 74, 50, 0.5);
 }
 
+/* Стили для disabled чекбокса */
+.schedule-default-label.disabled-label {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(0.5);
+}
+
+.schedule-default-label.disabled-label:hover {
+    background: var(--input-bg, rgba(255, 255, 255, 0.05)) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: none !important;
+}
+
+body.theme1 .schedule-default-label.disabled-label,
+body.theme3 .schedule-default-label.disabled-label {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.theme1 .schedule-default-label.disabled-label:hover,
+body.theme3 .schedule-default-label.disabled-label:hover {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: none !important;
+}
+
+body.theme2 .schedule-default-label.disabled-label:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: none !important;
+}
+
 .schedule-page .checkbox-label input[type="checkbox"] {
     width: 18px;
     height: 18px;
@@ -1151,9 +1183,21 @@ body.theme2 .schedule-default-label:hover {
 
 .modal-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
     margin-top: 24px;
+}
+
+.modal-buttons .btn-save,
+.modal-buttons .btn-cancel {
+    flex: 1;
+    min-width: 120px;
+}
+
+.modal-buttons .btn-delete {
+    width: 100%;
+    max-width: 400px;
 }
 
 /* =====================================================
