@@ -2239,13 +2239,16 @@ function renderSchedule(data){
         const tr = document.createElement("tr");
         tr.dataset.employeeId = emp.schedule_employee_id;
 
-        // В режиме предложения отпуска проверяем, что это текущий пользователь
-        // Сначала ищем текущего пользователя в графике
+        // Ищем текущего пользователя в графике
         let currentEmpScheduleEmployeeId = null;
-        if(state.suggestMode && state.currentUserId) {
-            const currentUserEmp = data.employees.find(e => 
-                e.user_id === state.currentUserId || e.email === state.currentEmail
-            );
+        if(state.currentUserId) {
+            const currentUserEmp = data.employees.find(e => {
+                // Сравниваем по user_id (приводим к числу)
+                const userIdMatch = e.user_id !== null && Number(e.user_id) === Number(state.currentUserId);
+                // Сравниваем по email
+                const emailMatch = e.email === state.currentEmail;
+                return userIdMatch || emailMatch;
+            });
             if(currentUserEmp) {
                 currentEmpScheduleEmployeeId = currentUserEmp.schedule_employee_id;
             }

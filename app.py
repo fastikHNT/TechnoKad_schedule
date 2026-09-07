@@ -187,6 +187,18 @@ def register():
             user.password_hash = password_hash
             db.session.commit()
 
+        # Проверяем, есть ли сотрудник без email в таблице employees
+        employee = Employee.query.filter_by(
+            first_name=first_name,
+            last_name=last_name,
+            email=None
+        ).first()
+        
+        if employee:
+            # Привязываем email к сотруднику
+            employee.email = email
+            db.session.commit()
+
         ActivationToken.query.filter_by(user_id=user.id).delete()
         db.session.commit()
 
@@ -1279,7 +1291,7 @@ def add_employee_to_schedule(schedule_id):
                 position=data.get("position", ""),
                 department_id=schedule.department_id,
                 direction=data.get("direction"),
-                email=current_user.email if current_user.is_authenticated else None
+                email=None  # Для ручного добавления email не заполняется
             )
             db.session.add(employee)
             db.session.flush()
@@ -1321,6 +1333,12 @@ def add_vacation():
     start_date = data.get("start_date")
     end_date = data.get("end_date")
     type_vacation_id = data.get("type_vacation_id", 1)  # По умолчанию - основной
+
+    # Преобразуем type_vacation_id в целое число
+    try:
+        type_vacation_id = int(type_vacation_id)
+    except (ValueError, TypeError):
+        type_vacation_id = 1
 
     if not all([schedule_employee_id, start_date, end_date]):
         return jsonify({"error": "Не указаны обязательные поля"}), 400
@@ -1411,9 +1429,25 @@ def update_schedule_employee(schedule_employee_id):
 def delete_schedule_employee(schedule_employee_id):
     """
         Удаление сотрудника из графика.
+        Если сотрудник больше не используется в других графиках,
+        удаляется также из таблицы employees.
     """
     schedule_employee = ScheduleEmployee.query.get_or_404(schedule_employee_id)
+    employee = schedule_employee.employee
+    
+    # Удаляем связь ScheduleEmployee
     db.session.delete(schedule_employee)
+    
+    # Проверяем, используется ли сотрудник в других графиках
+    other_usage = ScheduleEmployee.query.filter(
+        ScheduleEmployee.employee_id == employee.id,
+        ScheduleEmployee.id != schedule_employee_id
+    ).first()
+    
+    # Если сотрудник больше нигде не используется - удаляем из таблицы employees
+    if not other_usage:
+        db.session.delete(employee)
+    
     db.session.commit()
 
     return jsonify({"success": True})

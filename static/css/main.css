@@ -106,7 +106,7 @@ html, body{
 
 .app{
     display:flex;
-    height:100vh;
+    min-height: 100vh;
 }
 /* ==================================================
  Права
@@ -243,24 +243,23 @@ html, body{
     overflow:visible;
 }
 
-.topbar{
+header .topbar{
     display:flex;
     justify-content:flex-end;
     align-items:center;
     height:60px;
-    margin-bottom:30px;
 }
 
 header{
     position:fixed;
-    top:50px;
+    top:40px;
     right:0;
     left:260px;
     height:60px;
     display:flex;
     justify-content:flex-end;
     align-items:center;
-    padding:0 60px;
+    padding:0 80px;
     z-index:1000;
 }
 
