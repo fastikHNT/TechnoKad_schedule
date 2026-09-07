@@ -342,7 +342,7 @@ function showMessage(text,type="info"){
 
     messageTimeout = setTimeout(()=>{
         el.messageBox.classList.remove("show");
-    },3000);
+    },5000);
 }
 
 const api = {
@@ -389,7 +389,7 @@ const api = {
         });
 
         if(!r.ok){
-            showMessage("Ошибка установки обязательного графика","error");
+            showMessage("Ошибка установки графика по умолчанию","error");
             return false;
         }
 
@@ -670,7 +670,7 @@ async function onDepartmentChange(){
     const schedules = await api.getSchedules(depId);
 
     if(!schedules || schedules.length === 0){
-        showMessage("Для этого отдела графики не найдены", "warning");
+        showMessage("Для выбранного отдела графики не найдены", "warning");
         return;
     }
 
@@ -727,7 +727,7 @@ async function onScheduleChange(){
         return;
     }
 
-    state.selectedSchedule = data || [];
+    state.selectedSchedule = data;
 
     renderSchedule(state.selectedSchedule);
 
@@ -774,7 +774,7 @@ function enableEditMode(){
     renderSchedule(state.selectedSchedule);
     updateUi();
 
-    showMessage("Режим редактирования включён. Вносите изменения.", "info");
+    showMessage("Включен режим редактирования", "info");
 
 }
 
@@ -824,7 +824,7 @@ function enableSuggestMode(){
     renderSchedule(state.selectedSchedule);
     updateUi();
 
-    showMessage("Режим: предложите отпуск только для себя", "info");
+    showMessage("Вы можете запланировать свой отпуск", "info");
 
 }
 
@@ -914,7 +914,7 @@ async function onDefaultChange(){
             async () => {
                 const result = await api.setDefault(state.selectedSchedule.id);
                 if(result){
-                    showMessage("График установлен как обязательный", "success");
+                    showMessage("График установлен как график по умолчанию", "success");
                     await onDepartmentChange();
                 }
             }
@@ -933,7 +933,7 @@ async function onDefaultChange(){
         // Снимаем флаг "по умолчанию"
         const result = await api.removeDefault(state.selectedSchedule.id);
         if(result){
-            showMessage("График больше не является обязательным", "info");
+            showMessage("График больше не является графиком по умолчанию", "info");
             await onDepartmentChange();
         }
     }
@@ -1064,11 +1064,14 @@ async function saveAllChanges(){
 }
 
 function openCreateScheduleModal(){
-    toggle(el.createScheduleModal,true);
+    if(!el.createScheduleModal) return;
+    el.createScheduleModal.classList.remove("hidden");
 }
 
 function closeCreateScheduleModal(){
-    toggle(el.createScheduleModal,false);
+    if(el.createScheduleModal) {
+        el.createScheduleModal.classList.add("hidden");
+    }
 }
 
 function openCreateEmployeeModal(){
@@ -2134,6 +2137,14 @@ function initSchedule(){
 
     cacheDom();
 
+    // Перемещаем messageBox в .page-anim.show
+    if(el.messageBox) {
+        const pageAnim = document.querySelector('.page-anim.show');
+        if(pageAnim) {
+            pageAnim.appendChild(el.messageBox);
+        }
+    }
+
     bindEvents();
 
     setupInputHandlers();
@@ -2152,6 +2163,9 @@ function initSchedule(){
     updateUi();
 
 }
+
+// Алиас для main.js
+window.initSchedulePage = initSchedule;
 
 // Загрузка данных текущего пользователя
 async function loadCurrentUser(){

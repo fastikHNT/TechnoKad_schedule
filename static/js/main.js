@@ -4,7 +4,7 @@ const pages = {
 
     admin:`<h2>Администрирование</h2><p>Управление системой</p>`,
     vacation:`<h2>График отпусков</h2><p>Здесь будет таблица графика</p>`,
-    reports:`<h2>Формирование отчетов</h2>`,
+    reports:``,
     export:`<h2>Выгрузка данных</h2>`,
     "user-guide":`<h2>Руководство пользователя</h2>`,
     "admin-guide":`<h2>Руководство администратора</h2>`,
@@ -89,6 +89,17 @@ const pages = {
                     initSchedulePage()
                 }
             })
+
+            } else if (page === "reports") {
+
+                switchPage((wrapper) => {
+                    fetch("/reports").then(r => r.text()).then(html => {
+                        wrapper.innerHTML = html
+                        if (typeof initReportsPage === "function") {
+                            initReportsPage()
+                        }
+                    })
+                })
 
             } else if (pages[page]) {
 

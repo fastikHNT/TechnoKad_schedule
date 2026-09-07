@@ -127,30 +127,51 @@ function initAdminPage() {
     // ================= Ограничения редактирования ролей =================
     function applyRoleRestrictions(row) {
 
-        // Ограничения действуют только для админа
-        if (window.userRoleId !== 2) return;
-
         // Находим выпадающий список ролей в текущей строке
         const roleSelect = row.querySelector(".role select");
         if (!roleSelect) return;
 
-        // Роли, которые админ не имеет права назначать
-        const forbiddenRoles = [3, 4]; // Супер-админ, разработчик
+        const currentRoleId = window.userRoleId;
 
-        // Перебор всех вариантов роли
-        Array.from(roleSelect.options).forEach(option => {
-            const val = Number(option.value);
+        // Для разработчика - блокируем изменение роли полностью
+        if (currentRoleId === 4) {
+            roleSelect.disabled = true;
+            return;
+        }
 
-            // Если роль запрещённая — блокируем её
-            if (forbiddenRoles.includes(val)) {
-                option.disabled = true;
-                option.classList.add("disabled-option");
+        // Для супер-админа - нельзя назначать разработчиков
+        if (currentRoleId === 3) {
+            Array.from(roleSelect.options).forEach(option => {
+                const val = Number(option.value);
+                if (val === 4) {
+                    option.disabled = true;
+                    option.classList.add("disabled-option");
+                }
+            });
+            
+            // Если у сотрудника уже стоит роль разработчика - блокируем изменение
+            if (Number(roleSelect.value) === 4) {
+                roleSelect.disabled = true;
             }
-        });
+            return;
+        }
 
-    // Если у сотрудника уже стоит запрещённая роль — не сбрасываем её, просто блокируем селектор целиком, чтобы админ не мог изменить её.
-    if (forbiddenRoles.includes(Number(roleSelect.value))) {
-        roleSelect.disabled = true;
+        // Для админа - можно назначать только пользователя
+        if (currentRoleId === 2) {
+            const forbiddenRoles = [3, 4]; // Супер-админ, разработчик
+            
+            Array.from(roleSelect.options).forEach(option => {
+                const val = Number(option.value);
+                if (forbiddenRoles.includes(val)) {
+                    option.disabled = true;
+                    option.classList.add("disabled-option");
+                }
+            });
+
+            // Если у сотрудника уже стоит запрещённая роль - блокируем селектор
+            if (forbiddenRoles.includes(Number(roleSelect.value))) {
+                roleSelect.disabled = true;
+            }
         }
     }
 
@@ -218,15 +239,23 @@ function initAdminPage() {
     }
 
     // Показ уведомлений в верхнем блоке. Важно: messageBox создаётся в initAdminPage.
+    let adminMessageTimeout = null;
+
     function showMessage(text, type = "info") {
         if (!messageBox) return;
 
-        messageBox.textContent = text;
-        // классы вида: admin-message show admin-error / admin-success / admin-info
-        messageBox.className = "admin-message show admin-" + type;
+        // Очищаем предыдущий таймер, если есть
+        if(adminMessageTimeout) {
+            clearTimeout(adminMessageTimeout);
+        }
 
-        // Через 3 секунды скрываем
-        setTimeout(() => messageBox.classList.remove("show"), 3000);
+        messageBox.textContent = text;
+        messageBox.className = "admin-message admin-" + type;
+        messageBox.classList.add("show");
+
+        adminMessageTimeout = setTimeout(()=>{
+            messageBox.classList.remove("show");
+        },5000);
     }
 
     // Обновление заголовка таблицы — показывает текущий выбранный отдел
@@ -246,12 +275,20 @@ function initAdminPage() {
         positions = opt.positions || [];
         roles = opt.roles || [];
 
+        console.log('Loaded departments:', departments.length);
+        console.log('Loaded positions:', positions.length);
+        console.log('Loaded roles:', roles.length);
+
         // Загружаем всех пользователей (активных и удалённых)
         const data = await api("/api/users");
         allUsers = data.users || [];
 
         updateTableTitle(); // устанавливаем правильный заголовок
         renderUsers();      // рисуем таблицу
+        
+        // Показываем уведомление о successfulной загрузке
+        const filterText = adminFilter.options[adminFilter.selectedIndex].text;
+        showMessage(`Загружен список сотрудников`, "success");
     }
 
     // ================= Фильтр по типам пользователей  =================
@@ -509,18 +546,41 @@ function initAdminPage() {
             });
         });
 
-        // Если меняется отдел —  нужно пересобрать список должностей под новый отдел
-        row.querySelector(".dept-select")
-            .addEventListener("change", function () {
-
+        // Если меняется отдел — пересобираем список должностей под новый отдел
+        const deptSelect = row.querySelector(".dept-select");
+        if (deptSelect) {
+            // Удаляем старый обработчик, если есть
+            const newDeptSelect = deptSelect.cloneNode(true);
+            deptSelect.parentNode.replaceChild(newDeptSelect, deptSelect);
+            
+            newDeptSelect.addEventListener("change", function() {
                 const newDeptId = this.value;
-
-                // Перестраиваем список должностей
-                row.querySelector(".position").innerHTML =
-                    buildPositionSelect(newDeptId, null);
-
+                console.log('Department changed to:', newDeptId);
+                console.log('Available positions:', positions.length);
+                
+                if (newDeptId) {
+                    // Перестраиваем список должностей для выбранного отдела
+                    row.querySelector(".position").innerHTML =
+                        buildPositionSelect(newDeptId, null);
+                } else {
+                    // Если отдел не выбран, показываем placeholder
+                    row.querySelector(".position").innerHTML =
+                        buildPositionSelect(null, null);
+                }
+                
                 unsavedChanges = true;
             });
+            
+            // Если у сотрудника уже есть отдел, сразу подгружаем должности
+            if (user.department_id) {
+                const currentDeptId = newDeptSelect.value;
+                if (currentDeptId) {
+                    console.log('Initial department:', currentDeptId);
+                    row.querySelector(".position").innerHTML =
+                        buildPositionSelect(currentDeptId, user.position_id);
+                }
+            }
+        }
     }
 
     // ================= Сохранение изменений =================
@@ -537,23 +597,33 @@ function initAdminPage() {
         const newPosId = editingRow.querySelector(".pos-select")?.value || null;
         const newRoleId = editingRow.querySelector(".role select")?.value || null;
 
+        // Формируем объект с данными. role_id отправляем только если он изменился
+        const updateData = {
+            user_id: user.id,
+            department_id: newDeptId,
+            position_id: newPosId
+        };
+        
+        // Если роль изменилась, добавляем её в запрос
+        if (newRoleId && Number(newRoleId) !== Number(user.role_id)) {
+            updateData.role_id = newRoleId;
+        }
+
         try {
 
             // Отправляем изменения на сервер
             const response = await api("/api/admin/update-user", {
                 method: "POST",
-                body: JSON.stringify({
-                    user_id: user.id,
-                    department_id: newDeptId,
-                    position_id: newPosId,
-                    role_id: newRoleId
-                })
+                body: JSON.stringify(updateData)
             });
 
             // Если сервер успешно сохранил —  обновляем данные в локальном массиве
             user.department_id = newDeptId ? Number(newDeptId) : null;
             user.position_id = newPosId ? Number(newPosId) : null;
-            user.role_id = newRoleId ? Number(newRoleId) : null;
+            // Обновляем роль только если она изменилась
+            if (newRoleId && Number(newRoleId) !== Number(user.role_id)) {
+                user.role_id = Number(newRoleId);
+            }
 
             showMessage("Изменения сохранены", "success");
 
@@ -682,29 +752,50 @@ function initAdminPage() {
 
     // Формирует select со списком отделов
     function buildDepartmentSelect(selectedId) {
+        let options = '';
+        
+        // Если у сотрудника нет отдела, добавляем placeholder
+        if (!selectedId) {
+            options += '<option value="">Выберите отдел</option>';
+        }
+        
+        options += departments.map(d =>
+            `<option value="${d.id}" ${Number(d.id) === Number(selectedId) ? "selected" : ""}>
+                ${d.name}
+            </option>`
+        ).join("");
+        
         return `
             <select class="dept-select">
-                ${departments.map(d =>
-                    `<option value="${d.id}" ${Number(d.id) === Number(selectedId) ? "selected" : ""}>
-                        ${d.name}
-                    </option>`
-                ).join("")}
+                ${options}
             </select>
         `;
     }
 
     // Формирует select со списком должностей, отфильтрованных по выбранному отделу
     function buildPositionSelect(deptId, selectedPosId) {
+        console.log('buildPositionSelect called with deptId:', deptId);
+        console.log('Available positions:', positions.length);
+        
+        const deptPositions = positions.filter(p => Number(p.department_id) === Number(deptId));
+        console.log('Positions for dept', deptId, ':', deptPositions.length);
+        
+        if (!deptId) {
+            return `
+                <select class="pos-select">
+                    <option value="">Сначала выберите отдел</option>
+                </select>
+            `;
+        }
+        
         return `
             <select class="pos-select">
-                ${positions
-                    .filter(p => Number(p.department_id) === Number(deptId))
-                    .map(p =>
-                        `<option value="${p.id}" ${Number(p.id) === Number(selectedPosId) ? "selected" : ""}>
-                            ${p.name}
-                        </option>`
-                    ).join("")}
-                </select>
+                ${deptPositions.map(p =>
+                    `<option value="${p.id}" ${Number(p.id) === Number(selectedPosId) ? "selected" : ""}>
+                        ${p.name}
+                    </option>`
+                ).join("")}
+            </select>
         `;
     }
 
@@ -730,6 +821,33 @@ function initAdminPage() {
     adminFilter?.addEventListener("change", () => {
         updateTableTitle();
         exitEditMode();
+        
+        // Показываем уведомление о смене фильтра
+        const filterValue = adminFilter.value;
+        const filterText = adminFilter.options[adminFilter.selectedIndex].text;
+        const filteredUsers = getFilteredUsers();
+        
+        let message = ``;
+        let type = "info";
+        
+        switch(filterValue) {
+            case "ork":
+                message = `Загружен список сотрудников отдела по работе с клиентами`;
+                break;
+            case "otp":
+                message = `Загружен список сотрудников отдела технической поддержки`;
+                break;
+            case "unassigned":
+                message = `Загружен список нераспределённых сотрудников`;
+                break;
+            case "deleted":
+                message = `Загружен список удалённых сотрудников`;
+                break;
+            default:
+                message = `Загружен список сотрудников`;
+        }
+        
+        showMessage(message, type);
     });
 
     // Устанавливаем начальный заголовок

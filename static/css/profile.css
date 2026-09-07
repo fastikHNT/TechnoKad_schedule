@@ -232,7 +232,59 @@
 }
 
 /* ==================================================
-   ERRORS & MESSAGES
+   Превью аватара
+================================================== */
+
+.avatar-preview{
+    margin-top:15px;
+    text-align:center;
+}
+
+.avatar-preview img{
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid var(--button-bg);
+    margin-bottom:10px;
+}
+
+.avatar-preview-buttons{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+}
+
+.avatar-preview-buttons .btn-primary{
+    flex:1;
+}
+
+.avatar-preview-buttons .btn-primary:first-child{
+    background:#22c55e;
+}
+
+.avatar-preview-buttons .btn-primary:first-child:hover{
+    background:#16a34a;
+}
+
+.avatar-preview-buttons .btn-primary:last-child{
+    background:#ef4444;
+}
+
+.avatar-preview-buttons .btn-primary:last-child:hover{
+    background:#dc2626;
+}
+
+/* ==================================================
+
+================================================== */
+
+.hidden{
+    display:none !important;
+}
+
+/* ==================================================
+   Ошибки и уведомления
 ================================================== */
 
 .error{
@@ -248,15 +300,23 @@
 }
 
 .message{
-    min-height:18px;
-    margin-top:8px;
-    font-size:14px;
+    min-height:0;
+    height:0;
+    margin-top:0;
+    font-size:0;
     opacity:0;
     transition:opacity .3s;
+    overflow:hidden;
+    display:none;
 }
 
 .message.show{
     opacity:1;
+    min-height:18px;
+    height:auto;
+    margin-top:8px;
+    font-size:14px;
+    display:block;
 }
 
 .message.success{
@@ -265,4 +325,17 @@
 
 .message.error{
     color:#ef4444;
+}
+
+/* Убедимся, что сообщения не отображаются как текст */
+#phoneMessage,
+#avatarMessage,
+#passwordMessage{
+    display:none;
+}
+
+#phoneMessage.show,
+#avatarMessage.show,
+#passwordMessage.show{
+    display:block;
 }

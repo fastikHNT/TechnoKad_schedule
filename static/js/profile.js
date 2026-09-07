@@ -26,7 +26,7 @@ document.addEventListener("click", function (e) {
 
 /* ================= УВЕДОМЛЕНИЯ ================= */
 
-function showMessage(id, text, type = "success") {
+function showProfileMessage(id, text, type = "success") {
     const el = document.getElementById(id);
     if (!el) return;
 
@@ -49,17 +49,47 @@ function showMessage(id, text, type = "success") {
 
 /* ================= АВАТАР ================= */
 
-function uploadAvatar() {
+let pendingAvatarFile = null;
+
+function handleAvatarSelect() {
     const fileInput = document.getElementById("avatarInput");
+    const fileName = document.getElementById("fileName");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const avatarPreviewImg = document.getElementById("avatarPreviewImg");
 
     if (!fileInput || !fileInput.files.length) {
         return;
     }
 
     const file = fileInput.files[0];
+    pendingAvatarFile = file;
 
+    // Показываем имя файла
+    if (fileName) {
+        fileName.textContent = file.name;
+    }
+
+    // Создаем URL для превью
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (avatarPreviewImg) {
+            avatarPreviewImg.src = e.target.result;
+        }
+        if (avatarPreview) {
+            avatarPreview.classList.remove("hidden");
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function confirmUploadAvatar() {
+    if (!pendingAvatarFile) {
+        return;
+    }
+
+    const fileInput = document.getElementById("avatarInput");
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("avatar", pendingAvatarFile);
 
     fetch("/upload-avatar", {
         method: "POST",
@@ -74,14 +104,36 @@ function uploadAvatar() {
                     avatar.src = data.avatar_url;
                 }
 
-                showMessage("avatarMessage", "Аватар успешно обновлен", "success");
+                showProfileMessage("avatarMessage", "Аватар успешно обновлен", "success");
+                
+                // Скрываем превью и сбрасываем
+                cancelAvatarUpload();
             } else {
-                showMessage("avatarMessage", "Ошибка загрузки аватара", "error");
+                showProfileMessage("avatarMessage", "Ошибка загрузки аватара", "error");
             }
         })
         .catch(() => {
-            showMessage("avatarMessage", "Server Error", "error");
+            showProfileMessage("avatarMessage", "Server Error", "error");
         });
+}
+
+function cancelAvatarUpload() {
+    const fileInput = document.getElementById("avatarInput");
+    const fileName = document.getElementById("fileName");
+    const avatarPreview = document.getElementById("avatarPreview");
+
+    // Сбрасываем
+    if (fileInput) {
+        fileInput.value = "";
+    }
+    if (fileName) {
+        fileName.textContent = "Выбрать изображение";
+    }
+    if (avatarPreview) {
+        avatarPreview.classList.add("hidden");
+    }
+    
+    pendingAvatarFile = null;
 }
 
 /* ================= ТЕЛЕФОН ================= */
@@ -158,14 +210,14 @@ function savePhone() {
 
             if (data.success) {
                 originalPhone = phone;
-                showMessage("phoneMessage", "Телефон обновлен", "success");
+                showProfileMessage("phoneMessage", "Телефон обновлен", "success");
             } else {
-                showMessage("phoneMessage", data.error || "Ошибка сохранения", "error");
+                showProfileMessage("phoneMessage", data.error || "Ошибка сохранения", "error");
             }
         })
         .catch(() => {
             phoneSaving = false;
-            showMessage("phoneMessage", "Server Error", "error");
+            showProfileMessage("phoneMessage", "Server Error", "error");
         });
 }
 
@@ -199,7 +251,25 @@ if (phoneInput !== null) {
     });
 }
 
+/* ================= ИНИЦИАЛИЗАЦИЯ ================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const avatarInput = document.getElementById("avatarInput");
+    if (avatarInput) {
+        avatarInput.addEventListener("change", handleAvatarSelect);
+    }
+});
+
 /* ================= ПАРОЛЬ ================= */
+
+// Очищаем поля пароля при загрузке (браузер может автозаполнить)
+document.addEventListener("DOMContentLoaded", function () {
+    const oldPassword = document.getElementById("oldPassword");
+    const newPassword = document.getElementById("newPassword");
+    
+    if (oldPassword) oldPassword.value = "";
+    if (newPassword) newPassword.value = "";
+});
 
 function validateProfilePassword() {
     const oldPassword = document.getElementById("oldPassword");
@@ -236,10 +306,18 @@ const newPasswordInput = document.getElementById("newPassword");
 
 if (oldPasswordInput) {
     oldPasswordInput.addEventListener("input", validateProfilePassword);
+    oldPasswordInput.addEventListener("change", validateProfilePassword);
+    oldPasswordInput.addEventListener("paste", function() {
+        setTimeout(validateProfilePassword, 0);
+    });
 }
 
 if (newPasswordInput) {
     newPasswordInput.addEventListener("input", validateProfilePassword);
+    newPasswordInput.addEventListener("change", validateProfilePassword);
+    newPasswordInput.addEventListener("paste", function() {
+        setTimeout(validateProfilePassword, 0);
+    });
 }
 
 /* ================= СМЕНА ПАРОЛЯ ================= */
@@ -251,6 +329,12 @@ function changePassword() {
 
     const oldPassword = document.getElementById("oldPassword");
     const newPassword = document.getElementById("newPassword");
+
+    // Проверка, что новый пароль отличается от текущего
+    if (oldPassword.value === newPassword.value) {
+        showProfileMessage("passwordMessage", "Новый пароль должен отличаться от текущего", "error");
+        return;
+    }
 
     fetch("/change-password", {
         method: "POST",
@@ -265,15 +349,15 @@ function changePassword() {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showMessage("passwordMessage", "Пароль успешно изменен", "success");
+                showProfileMessage("passwordMessage", "Пароль успешно изменен", "success");
 
                 oldPassword.value = "";
                 newPassword.value = "";
             } else {
-                showMessage("passwordMessage", data.error || "Ошибка смены пароля", "error");
+                showProfileMessage("passwordMessage", data.error || "Ошибка смены пароля", "error");
             }
         })
         .catch(() => {
-            showMessage("passwordMessage", "Server Error", "error");
+            showProfileMessage("passwordMessage", "Server Error", "error");
         });
 }

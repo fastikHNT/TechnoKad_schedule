@@ -78,22 +78,18 @@ def can_edit_user(target_user):
     Проверяет, может ли текущий пользователь редактировать target_user.
 
     Логика:
-    - Никто не может редактировать сам себя
-    - Разработчик может редактировать всех, кроме себя
-    - Супер Админ не может редактировать других Супер-админов и разработчика
+    - Разработчик может редактировать всех, включая себя (только отдел и должность, не роль)
+    - Супер Админ не может редактировать других Супер-админов
     - Админ может редактировать только пользователя
     - Пользователь не может редактировать никого
     """
-
-    if target_user.id == current_user.id:
-        return False
 
     if current_user.role_id == ROLE_DEVELOPER:
         return True
 
     if current_user.role_id == ROLE_SUPER_ADMIN:
 
-        if target_user.role_id in [ROLE_SUPER_ADMIN, ROLE_DEVELOPER]:
+        if target_user.role_id == ROLE_SUPER_ADMIN:
             return False
 
         return True
@@ -105,24 +101,36 @@ def can_edit_user(target_user):
 
 # ---- ПРОВЕРКА НАЗНАЧЕНИЯ РОЛИ ----
 
-def can_assign_role(new_role_id):
+def can_assign_role(new_role_id, target_role_id=None):
     """
     Проверяет, может ли текущий пользователь назначить новую роль.
 
     Логика:
-    - Разработчик может назначать любые роли, кроме своей собственной
-    - Супер-админ не может назначать роль Разработчик
+    - Разработчик не может назначать роли (остается только своей)
+    - Супер-админ не может назначать роль Разработчик и не может снимать роль Разработчика
     - Админ может назначать только роль пользователя
     - Пользователь не может назначать роли
+
+    Параметры:
+    - new_role_id: новая роль, которую хотят назначить
+    - target_role_id: текущая роль пользователя (для проверки снятия роли)
     """
 
     if current_user.role_id == ROLE_DEVELOPER:
-        return new_role_id != ROLE_DEVELOPER or False
+        # Разработчик не может менять роли
+        return False
 
     if current_user.role_id == ROLE_SUPER_ADMIN:
-        return new_role_id != ROLE_DEVELOPER
+        # Супер-админ не может назначать разработчиками
+        if new_role_id == ROLE_DEVELOPER:
+            return False
+        # Супер-админ не может снимать роль разработчика
+        if target_role_id == ROLE_DEVELOPER:
+            return False
+        return True
 
     if current_user.role_id == ROLE_ADMIN:
+        # Админ может назначать только пользователя
         return new_role_id == ROLE_EMPLOYEE
 
     return False
@@ -135,7 +143,7 @@ def validate_user_update(target_user, new_role_id=None):
 
     Выполняет:
     1. Проверку права редактирования пользователя
-    2. Проверку права назначения новой роли (если передана)
+    2. Проверку права назначения новой роли (если передана и отличается от текущей)
 
     Возвращает:
     (True, None) — если изменение разрешено
@@ -145,8 +153,9 @@ def validate_user_update(target_user, new_role_id=None):
     if not can_edit_user(target_user):
         return False, "Недостаточно прав для редактирования данного пользователя"
 
-    if new_role_id is not None:
-        if not can_assign_role(int(new_role_id)):
+    # Проверяем назначение роли только если она реально меняется
+    if new_role_id is not None and int(new_role_id) != target_user.role_id:
+        if not can_assign_role(int(new_role_id), target_user.role_id):
             return False, "Недостаточно прав для назначения этой роли"
 
     return True, None

@@ -163,11 +163,11 @@ th, td {
 ===================================================== */
 
 .admin-message {
-    position: fixed;
-    top: 5px;
+    position: absolute;
+    top: 0;
     right: 5px;
-    z-index: 9999;
-    width: min(420px, calc(100% - 48px));
+    z-index: 999;
+    width: 420px;
     padding: 12px 16px;
     border-radius: 8px;
     font-weight: 500;
@@ -175,6 +175,7 @@ th, td {
     transform: translateY(-8px);
     pointer-events: none;
     transition: 0.2s ease;
+    display: block;
 }
 
 .admin-message.show {

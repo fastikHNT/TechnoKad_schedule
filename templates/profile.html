@@ -1,7 +1,5 @@
 
-<div class="topbar">
-
-  <div class="profile">
+<div class="profile">
 
     <div class="avatar-wrapper" onclick="toggleProfileMenu()">
       <div class="tooltip">Профиль</div>
@@ -63,7 +61,13 @@ value="{{ current_user.phone or '+7' }}" disabled>
 <span id="fileName">Выбрать изображение</span>
 </label>
 
-<button class="btn-primary" onclick="uploadAvatar()">Загрузить</button>
+<div id="avatarPreview" class="avatar-preview hidden">
+    <img id="avatarPreviewImg" src="" alt="Превью аватара">
+    <div class="avatar-preview-buttons">
+        <button class="btn-primary" onclick="confirmUploadAvatar()">Загрузить</button>
+        <button class="btn-primary" onclick="cancelAvatarUpload()">Отмена</button>
+    </div>
+</div>
 
 <div id="avatarMessage" class="message"></div>
 </div>
@@ -72,10 +76,10 @@ value="{{ current_user.phone or '+7' }}" disabled>
 <label>Смена пароля</label>
 
 
-<input type="password" id="oldPassword" class="input" placeholder="Текущий пароль">
+<input type="password" id="oldPassword" class="input" placeholder="Текущий пароль" autocomplete="off">
 <div class="error" id="oldPasswordError"></div>
 
-<input type="password" id="newPassword" class="input" placeholder="Новый пароль">
+<input type="password" id="newPassword" class="input" placeholder="Новый пароль" autocomplete="off">
 <div class="error" id="newPasswordError"></div>
 
 
@@ -96,9 +100,6 @@ value="{{ current_user.phone or '+7' }}" disabled>
 
 
 
-</div>
-</div>
-</div>
 </div>
 
 

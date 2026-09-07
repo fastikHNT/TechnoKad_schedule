@@ -11,19 +11,15 @@ RECAPTCHA_SECRET_KEY = "6LfgCSQtAAAAAOSljwxPwatX3zfBF7YMj9co5-m3"
 from flask import Flask, render_template, request, redirect, flash, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user
-
 from config import Config
 from extensions import db, login_manager, mail
 from models.user import User
 from models.role import Role
 from models.departement import Department
 from models.position import Position
-
 from models.schedule import Employee, VacationSchedule, ScheduleEmployee, Vacation, TypeVacation
-
-
+from models.report import Report
 from models.activation_token import ActivationToken
-
 from services.token_service import generate_token
 from services.email_service import send_email
 from services.email_validator import email_exists
@@ -31,9 +27,15 @@ from services.email_validator import email_exists
 import os
 from permissions import require_permission, can_edit_user, can_assign_role
 
-from flask import jsonify, request, url_for
+from flask import jsonify, request, url_for, send_file
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm, cm
+from reportlab.lib.colors import HexColor, white
 
 from uuid import uuid4
 
@@ -173,7 +175,9 @@ def register():
                 last_name=last_name,
                 password_hash=password_hash,
                 password_changed_at=msk_now(),
-                is_active = True
+                is_registered=False,
+                is_active=True,
+                role_id=1  # Employee по умолчанию
             )
             db.session.add(user)
             db.session.commit()
@@ -225,7 +229,7 @@ def activate(token):
     """
     activation = ActivationToken.query.filter_by(token=token, used=False).first()
 
-    if not activation or activation.expires_at > msk_now():
+    if not activation or activation.expires_at < msk_now():
         return render_template("email/token_invalid.html")
 
     user = User.query.get(activation.user_id)
@@ -348,10 +352,11 @@ def forgot_password():
 
     token = generate_token()
 
+    # Use UTC time for consistent token validation
     reset_token = ActivationToken(
         user_id=user.id,
         token=token,
-        expires_at=msk_now() + timedelta(hours=1)
+        expires_at=datetime.utcnow() + timedelta(hours=1)
     )
 
     db.session.add(reset_token)
@@ -387,7 +392,11 @@ def reset_password(token):
 
     activation = ActivationToken.query.filter_by(token=token, used=False).first()
 
-    if not activation or activation.expires_at < msk_now():
+    if not activation:
+        return render_template("email/token_invalid.html")
+
+    # Check expiration using UTC time (consistent with token creation)
+    if activation.expires_at < datetime.utcnow():
         return render_template("email/token_invalid.html")
 
     user = User.query.get(activation.user_id)
@@ -850,13 +859,14 @@ def update_user():
     position_id = data.get("position_id")
     role_id = data.get("role_id")
 
-    if department_id is None or position_id is None or role_id is None:
-        return jsonify({"success": False, "error": "Не заполнены обязательные поля"}), 400
+    # department_id и position_id обязательны, role_id может быть пустым (если не меняется)
+    if not department_id or not position_id:
+        return jsonify({"success": False, "error": "Не заполнены обязательные поля (отдел, должность)"}), 400
 
     try:
         department_id = int(department_id)
         position_id = int(position_id)
-        role_id = int(role_id)
+        role_id = int(role_id) if role_id is not None else None
     except (ValueError, TypeError):
         return jsonify({"success": False, "error": "Некорректный формат данных"}), 400
 
@@ -883,7 +893,10 @@ def update_user():
     # ---- ПРИМЕНЯЕМ ИЗМЕНЕНИЯ ----
     user.department_id = department_id
     user.position_id = position_id
-    user.role_id = role_id
+    
+    # Обновляем роль только если она передана
+    if role_id is not None:
+        user.role_id = role_id
 
     db.session.commit()
 
@@ -1449,6 +1462,297 @@ def reorder_employees(schedule_id):
         if se and se.schedule_id == schedule_id:
             se.sort_order = index
     
+    db.session.commit()
+    
+    return jsonify({"success": True})
+
+
+def generate_pdf(file_path, schedule, date_from, date_to, report_data):
+    """
+    Генерация PDF-отчёта с таблицей отпусков.
+    """
+    c = SimpleDocTemplate(
+        file_path,
+        pagesize=A4,
+        rightMargin=2*cm,
+        leftMargin=2*cm,
+        topMargin=2*cm,
+        bottomMargin=2*cm
+    )
+    
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=1
+    )
+    
+    elements = []
+    
+    year = schedule.year if schedule else datetime.now().year
+    title = f"Отчёт по отпускам за {year} год"
+    if date_from and date_to:
+        title += f" (с {date_from.strftime('%d.%m.%Y')} по {date_to.strftime('%d.%m.%Y')})"
+    elif date_from:
+        title += f" (с {date_from.strftime('%d.%m.%Y')})"
+    
+    elements.append(Paragraph(title, title_style))
+    elements.append(Spacer(1, 10*mm))
+    
+    headers = ["ФИО", "Должность", "Направление"]
+    for m in range(1, 13):
+        month_name = ""  # "Янв", "Фев" и т.д.
+        months = ["", "Янв", "Фев", "Мар", "Апр", "Май", "Июн",
+                  "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
+        month_name = months[m]
+        headers.append(month_name)
+    
+    headers.append("Всего дней")
+    
+    table_data = [headers]
+    
+    for item in report_data:
+        row = [
+            Paragraph(f"<b>{item['employee_name']}</b><br/>{item['department']}", 
+                     ParagraphStyle('CellStyle', fontSize=8)),
+            Paragraph(item['position'] or "", ParagraphStyle('CellStyle', fontSize=8)),
+            Paragraph(item['direction'] or "", ParagraphStyle('CellStyle', fontSize=8))
+        ]
+        
+        total_days = 0
+        
+        for m in range(1, 13):
+            days_in_month = 0
+            last_vac_type = 1
+            for vac in item['vacations']:
+                vac_start = vac.start_date
+                vac_end = vac.end_date
+                month_start_date = f"{year}-{m:02d}-01"
+                month_end_days = (m + 1) if m < 12 else 1
+                month_end_date = f"{year}-{month_end_days:02d}-01"
+                
+                # Фильтр по дате
+                if date_from:
+                    date_from_obj = datetime.strptime(date_from.strftime('%Y-%m-%d'), "%Y-%m-%d").date()
+                    if vac_end < date_from_obj:
+                        continue
+                if date_to:
+                    date_to_obj = datetime.strptime(date_to.strftime('%Y-%m-%d'), "%Y-%m-%d").date()
+                    if vac_start > date_to_obj:
+                        continue
+                
+                if vac_start <= month_end_date and vac_end >= month_start_date:
+                    calc_start = vac_start if vac_start > datetime.strptime(month_start_date, "%Y-%m-%d").date() else month_start_date
+                    calc_end = vac_end if vac_end < datetime.strptime(month_end_date, "%Y-%m-%d").date() else month_end_date
+                    days = (calc_end - calc_start).days
+                    if days > 0:
+                        days_in_month += days
+                        total_days += days
+                        last_vac_type = vac.type_vacation_id
+            
+            if days_in_month > 0:
+                row.append(Paragraph(
+                    f'<font color="#ffffff">{days_in_month}</font>',
+                    ParagraphStyle('CellStyle', fontSize=8, alignment=1)
+                ))
+            else:
+                row.append(Paragraph("", ParagraphStyle('CellStyle', fontSize=8)))
+        
+        row.append(Paragraph(f"<b>{total_days}</b>", ParagraphStyle('CellStyle', fontSize=8, alignment=1)))
+        table_data.append(row)
+    
+    col_count = len(headers)
+    col_widths = [4*cm, 4*cm, 3*cm] + [3.5*cm] * (col_count - 3) + [2.5*cm]
+    
+    t = Table(table_data, colWidths=col_widths)
+    
+    style_commands = [
+        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#667eea')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#cccccc')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f9f9f9')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [HexColor('#f9f9f9'), white]),
+    ]
+    
+    t.setStyle(TableStyle(style_commands))
+    elements.append(t)
+    
+    elements.append(Spacer(1, 20*mm))
+    footer_style = ParagraphStyle('Footer', fontSize=8, alignment=2)
+    elements.append(Paragraph(f"Дата формирования: {datetime.now().strftime('%d.%m.%Y %H:%M')}", footer_style))
+    
+    c.build(elements)
+
+
+@app.route("/reports")
+@login_required
+@require_permission("view_reports")
+def reports_page():
+    return render_template("reports.html")
+
+
+@app.route("/api/reports/generate", methods=["POST"])
+@login_required
+@require_permission("view_reports")
+def generate_report():
+    data = request.get_json()
+    
+    schedule_id = data.get("schedule_id")
+    scope = data.get("scope")  # employee, department, schedule
+    employee_id = data.get("employee_id")
+    date_from = data.get("date_from")
+    date_to = data.get("date_to")
+    
+    if not schedule_id:
+        return jsonify({"error": "Выберите график"}), 400
+    
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+    
+    # Фильтруем сотрудников в зависимости от scope
+    employees_to_report = []
+    
+    if scope == "employee" and employee_id:
+        # Отчёт по конкретному сотруднику
+        se = ScheduleEmployee.query.filter_by(
+            schedule_id=schedule_id,
+            user_id=employee_id
+        ).first()
+        if se:
+            employees_to_report.append(se)
+    elif scope == "department":
+        # Отчёт по отделу (все сотрудники графика)
+        employees_to_report = schedule.employees
+    else:  # scope == "schedule"
+        # Отчёт по всему графику
+        employees_to_report = schedule.employees
+    
+    if not employees_to_report:
+        return jsonify({"error": "Нет сотрудников для отчёта"}), 400
+    
+    # Собираем данные
+    report_data = []
+    for se in employees_to_report:
+        employee = se.employee
+        vacations = []
+        for v in se.vacation_entries:
+            # Фильтр по дате
+            if date_from:
+                date_from_obj = datetime.strptime(date_from, "%Y-%m-%d").date()
+                if v.end_date < date_from_obj:
+                    continue
+            if date_to:
+                date_to_obj = datetime.strptime(date_to, "%Y-%m-%d").date()
+                if v.start_date > date_to_obj:
+                    continue
+            vacations.append(v)
+        
+        report_data.append({
+            "department": schedule.department.name if schedule.department else "",
+            "employee_name": f"{employee.last_name} {employee.first_name}",
+            "position": employee.position,
+            "direction": employee.direction,
+            "vacations": vacations
+        })
+    
+    # Формируем имя файла
+    report_name = f"Отчёт_{schedule.year}"
+    if schedule.department:
+        report_name += f"_{schedule.department.name}"
+    
+    if scope == "employee" and employee_id:
+        user = User.query.get(employee_id)
+        if user:
+            report_name += f"_{user.last_name}"
+    
+    reports_dir = os.path.join("static", "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    
+    filename = f"{report_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+    file_path = os.path.join(reports_dir, filename)
+    abs_file_path = os.path.abspath(file_path)
+    
+    # Парсим даты для PDF
+    parsed_date_from = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
+    parsed_date_to = datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
+    
+    generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data)
+    
+    # Сохраняем отчёт в БД
+    report = Report(
+        name=filename,
+        schedule_id=schedule_id,
+        department_id=schedule.department_id,
+        scope=scope,
+        employee_id=employee_id if scope == "employee" else None,
+        date_from=parsed_date_from,
+        date_to=parsed_date_to,
+        file_path=file_path,
+        created_by=current_user.id
+    )
+    db.session.add(report)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "report_id": report.id,
+        "file_path": file_path
+    })
+
+
+@app.route("/api/reports/<int:report_id>/download")
+@login_required
+@require_permission("view_reports")
+def download_report(report_id):
+    report = Report.query.get_or_404(report_id)
+    file_path = os.path.join(app.root_path, report.file_path)
+    
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name=report.name
+    )
+
+
+@app.route("/api/reports")
+@login_required
+@require_permission("view_reports")
+def get_reports():
+    reports = Report.query.order_by(Report.created_at.desc()).all()
+    
+    return jsonify([{
+        "id": r.id,
+        "name": r.name,
+        "department": r.department.name if r.department else "Все отделы",
+        "schedule": r.schedule.name if r.schedule else "",
+        "scope": r.scope,
+        "date_from": r.date_from.strftime("%Y-%m-%d") if r.date_from else None,
+        "date_to": r.date_to.strftime("%Y-%m-%d") if r.date_to else None,
+        "employee": r.employee.last_name + " " + r.employee.first_name if r.employee else "",
+        "created_at": r.created_at.strftime("%d.%m.%Y %H:%M"),
+        "file_path": r.file_path
+    } for r in reports])
+
+
+@app.route("/api/reports/<int:report_id>", methods=["DELETE"])
+@login_required
+@require_permission("view_reports")
+def delete_report(report_id):
+    report = Report.query.get_or_404(report_id)
+    
+    file_path = os.path.join(app.root_path, report.file_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    
+    db.session.delete(report)
     db.session.commit()
     
     return jsonify({"success": True})

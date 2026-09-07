@@ -104,8 +104,8 @@
     <div id="toastContainer"></div>
 
     <script>
-        window.userRoleId = {{ current_user.role_id }};
-        window.userDeptId = {{ current_user.department_id }};
+        window.userRoleId = {{ current_user.role_id | default(1) }};
+        window.userDeptId = {{ current_user.department_id | default(0) }};
     </script>
 
     <script src="{{ url_for('static', filename='js/administration.js') }}"></script>
@@ -113,6 +113,7 @@
     <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
     <script src="{{ url_for('static', filename='js/permissions.js') }}"></script>
     <script src="{{ url_for('static', filename='js/schedule.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
 
 </body>
 </html>

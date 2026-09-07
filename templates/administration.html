@@ -101,11 +101,9 @@
 <script>
 window.userRoleId = {{
         (current_user.role.id if current_user.is_authenticated and current_user.role else 1)
-        | tojson
     }};
 window.userDeptId = {{
-        (current_user.department.id if current_user.is_authenticated and current_user.department else None)
-        | tojson
+        (current_user.department.id if current_user.is_authenticated and current_user.department else 0)
     }};
 </script>
 
