@@ -4,14 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="07.09.2026">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="07.09.2026 (2)">
       <change afterPath="$PROJECT_DIR$/models/report.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/templates/reports.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/schedule.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/schedule.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,8 +18,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="HTML File" />
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -79,11 +76,11 @@
       <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\static\css" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\models" />
+      <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\static\img" />
       <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\templates" />
+      <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\models" />
       <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\templates\email" />
       <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\static\js" />
-      <recent name="C:\Users\Maxim-PC\PycharmProjects\Technokad_Schedule\static\css" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -189,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788808687147</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="07.09.2026 (2)">
+      <option name="closed" value="true" />
+      <created>1788813200425</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1788813200425</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -212,6 +217,7 @@
     <MESSAGE value="04.09.2026 (2)" />
     <MESSAGE value="05.09.2026" />
     <MESSAGE value="07.09.2026" />
-    <option name="LAST_COMMIT_MESSAGE" value="07.09.2026" />
+    <MESSAGE value="07.09.2026 (2)" />
+    <option name="LAST_COMMIT_MESSAGE" value="07.09.2026 (2)" />
   </component>
 </project>

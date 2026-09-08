@@ -73,6 +73,24 @@ login_manager.login_message_category = "warning"
 mail.init_app(app)
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    """
+        Обработка ошибок 404 - страница не найдена.
+
+        Возвращает кастомную страницу 404 для всех несуществующих маршрутов.
+    """
+    # Для API-маршрутов возвращаем JSON
+    if request.path.startswith('/api/'):
+        return jsonify({
+            "error": "Страница не найдена",
+            "message": "Запрашиваемый ресурс не существует"
+        }), 404
+    
+    # Для всех остальных запросов возвращаем HTML-страницу
+    return render_template('404.html'), 404
+
+
 @app.route('/captcha', methods=['GET', 'POST'])
 def captcha():
     if request.method == 'POST':
@@ -1300,11 +1318,20 @@ def add_employee_to_schedule(schedule_id):
         return jsonify({"error": "Не указаны данные сотрудника"}), 400
 
     # Создаём связь
-    schedule_employee = ScheduleEmployee(
-        schedule_id=schedule.id,
-        employee_id=employee.id,
-        user_id=current_user.id if current_user.is_authenticated else None
-    )
+    if data.get("employee_id"):
+        # При добавлении из списка пользователей используем user_id добавляемого сотрудника
+        schedule_employee = ScheduleEmployee(
+            schedule_id=schedule.id,
+            employee_id=employee.id,
+            user_id=user_id
+        )
+    else:
+        # При ручном добавлении используем current_user
+        schedule_employee = ScheduleEmployee(
+            schedule_id=schedule.id,
+            employee_id=employee.id,
+            user_id=current_user.id if current_user.is_authenticated else None
+        )
 
     db.session.add(schedule_employee)
     db.session.commit()
@@ -1631,7 +1658,7 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data):
 @login_required
 @require_permission("view_reports")
 def reports_page():
-    return render_template("reports.html")
+    return render_template("report.html")
 
 
 @app.route("/api/reports/generate", methods=["POST"])

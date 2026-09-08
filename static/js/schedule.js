@@ -619,10 +619,25 @@ function updateUi(){
     toggle(el.btnDeleteSchedule, !state.suggestMode);
 
     // Блокируем кнопки в режиме редактирования
-    toggle(el.btnAddEmployee, true, true);
     toggle(el.btnTransfer, true, true);
     toggle(el.btnSuggest, true, true);
     toggle(el.btnCreateSchedule, true, true);
+    
+    // В режиме планирования отпуска блокируем кнопку добавления сотрудника
+    if(state.suggestMode) {
+        toggle(el.btnAddEmployee, true, true);
+        el.btnAddEmployee.style.opacity = '0.5';
+        el.btnAddEmployee.style.cursor = 'not-allowed';
+    } else {
+        toggle(el.btnAddEmployee, true, !isAdmin);
+        if(!isAdmin) {
+            el.btnAddEmployee.style.opacity = '0.5';
+            el.btnAddEmployee.style.cursor = 'not-allowed';
+        } else {
+            el.btnAddEmployee.style.opacity = '1';
+            el.btnAddEmployee.style.cursor = 'pointer';
+        }
+    }
 }
 
 function handleEditClick(){
@@ -2244,9 +2259,21 @@ function renderSchedule(data){
         if(state.currentUserId) {
             const currentUserEmp = data.employees.find(e => {
                 // Сравниваем по user_id (приводим к числу)
-                const userIdMatch = e.user_id !== null && Number(e.user_id) === Number(state.currentUserId);
+                const userIdMatch = e.user_id !== null && e.user_id !== undefined && Number(e.user_id) === Number(state.currentUserId);
                 // Сравниваем по email
-                const emailMatch = e.email === state.currentEmail;
+                const emailMatch = e.email && state.currentEmail && e.email === state.currentEmail;
+                
+                // Отладочная информация
+                if(userIdMatch || emailMatch) {
+                    console.log("✅ Found current user in schedule:", {
+                        schedule_employee_id: e.schedule_employee_id,
+                        user_id: e.user_id,
+                        currentUserId: state.currentUserId,
+                        email: e.email,
+                        currentEmail: state.currentEmail
+                    });
+                }
+                
                 return userIdMatch || emailMatch;
             });
             if(currentUserEmp) {
@@ -2256,6 +2283,16 @@ function renderSchedule(data){
         
         const isCurrentUser = currentEmpScheduleEmployeeId && 
                               emp.schedule_employee_id == currentEmpScheduleEmployeeId;
+        
+        // Отладочная информация для каждой строки
+        if(state.currentUserId) {
+            console.log("📋 Row check:", {
+                emp_schedule_employee_id: emp.schedule_employee_id,
+                emp_user_id: emp.user_id,
+                currentUserId: state.currentUserId,
+                isCurrentUser: isCurrentUser
+            });
+        }
 
         // Создаём ячейки для месяцев
         const year = data?.year || 2026;
