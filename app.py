@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+MSK = ZoneInfo("Europe/Moscow")
+
 import requests
 from flask import session
 
@@ -1528,127 +1530,244 @@ def reorder_employees(schedule_id):
     return jsonify({"success": True})
 
 
-def generate_pdf(file_path, schedule, date_from, date_to, report_data):
+def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_name="", user_info=None, scope="", extra_info=None):
     """
     Генерация PDF-отчёта с таблицей отпусков.
     """
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    
+    # Регистрируем шрифт с поддержкой кириллицы
+    try:
+        pdfmetrics.registerFont(TTFont('TimesNewRoman', 'C:/Windows/Fonts/times.ttf'))
+        pdfmetrics.registerFont(TTFont('TimesNewRomanBold', 'C:/Windows/Fonts/timesbd.ttf'))
+        pdfmetrics.registerFont(TTFont('TimesNewRomanItalic', 'C:/Windows/Fonts/timesi.ttf'))
+        pdfmetrics.registerFont(TTFont('TimesNewRomanBoldItalic', 'C:/Windows/Fonts/timesbi.ttf'))
+    except:
+        pass  # Если шрифт не найден, используем стандартный
+    
     c = SimpleDocTemplate(
         file_path,
         pagesize=A4,
-        rightMargin=2*cm,
-        leftMargin=2*cm,
-        topMargin=2*cm,
-        bottomMargin=2*cm
+        rightMargin=1.5*cm,
+        leftMargin=1.5*cm,
+        topMargin=1.5*cm,
+        bottomMargin=1.5*cm
     )
     
-    styles = getSampleStyleSheet()
+    styles_dict = getSampleStyleSheet()
     
+    # Создаём стили с кириллицей
     title_style = ParagraphStyle(
         'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=16,
-        spaceAfter=30,
+        parent=styles_dict['Normal'],
+        fontName='TimesNewRomanBold',
+        fontSize=14,
+        spaceAfter=12,
         alignment=1
+    )
+    
+    base_style = ParagraphStyle(
+        'BaseStyle',
+        parent=styles_dict['Normal'],
+        fontName='TimesNewRoman',
+        fontSize=9,
+        leading=11
+    )
+    
+    header_style = ParagraphStyle(
+        'HeaderStyle',
+        parent=styles_dict['Normal'],
+        fontName='TimesNewRomanBold',
+        fontSize=8,
+        leading=10,
+        textColor=white
+    )
+    
+    cell_style = ParagraphStyle(
+        'CellStyle',
+        parent=styles_dict['Normal'],
+        fontName='TimesNewRoman',
+        fontSize=8,
+        leading=10
+    )
+    
+    info_style = ParagraphStyle(
+        'UserInfo',
+        parent=styles_dict['Normal'],
+        fontName='TimesNewRoman',
+        fontSize=8,
+        leading=10,
+        alignment=2,
+        spaceAfter=3
     )
     
     elements = []
     
     year = schedule.year if schedule else datetime.now().year
-    title = f"Отчёт по отпускам за {year} год"
-    if date_from and date_to:
-        title += f" (с {date_from.strftime('%d.%m.%Y')} по {date_to.strftime('%d.%m.%Y')})"
-    elif date_from:
-        title += f" (с {date_from.strftime('%d.%m.%Y')})"
     
+    # Информация о пользователе (справа сверху)
+    if user_info:
+        info_style = ParagraphStyle(
+            'UserInfo',
+            parent=styles_dict['Normal'],
+            fontName='TimesNewRoman',
+            fontSize=9,
+            leading=11,
+            alignment=2,
+            spaceAfter=4
+        )
+        elements.append(Paragraph("<b>Отчет сформировал:</b>", info_style))
+        elements.append(Paragraph(f"<b>Фамилия, имя:</b> {user_info.get('full_name', '')}", info_style))
+        if user_info.get('department'):
+            elements.append(Paragraph(f"<b>Отдел:</b> {user_info['department']}", info_style))
+        if user_info.get('position'):
+            elements.append(Paragraph(f"<b>Должность:</b> {user_info['position']}", info_style))
+        
+        # Перевод типа отчета
+        scope_translations = {
+            'schedule': 'по графику',
+            'department': 'по отделу',
+            'employee': 'по сотруднику',
+            'direction': 'по подразделению'
+        }
+        elements.append(Paragraph(f"Тип отчета: {scope_translations.get(scope, scope)}", info_style))
+        
+        # Дополнительная информация по типу отчета
+        if extra_info:
+            if scope == "employee" and extra_info.get('employee_name'):
+                elements.append(Paragraph(f"<b>Сотрудник:</b> {extra_info['employee_name']}", info_style))
+            elif scope == "direction" and extra_info.get('direction'):
+                elements.append(Paragraph(f"<b>Подразделение:</b> {extra_info['direction']}", info_style))
+        
+        if date_from and date_to:
+            elements.append(Paragraph(f"Период: {date_from.strftime('%d.%m.%Y')} - {date_to.strftime('%d.%m.%Y')}", info_style))
+        elif date_from:
+            elements.append(Paragraph(f"Период: с {date_from.strftime('%d.%m.%Y')}", info_style))
+        
+        elements.append(Spacer(1, 8*mm))
+    
+    # Наименование отчета (по центру)
+    title = report_name if report_name else f"Отчет по отпускам за {year} год"
     elements.append(Paragraph(title, title_style))
-    elements.append(Spacer(1, 10*mm))
+    elements.append(Spacer(1, 6*mm))
     
-    headers = ["ФИО", "Должность", "Направление"]
-    for m in range(1, 13):
-        month_name = ""  # "Янв", "Фев" и т.д.
-        months = ["", "Янв", "Фев", "Мар", "Апр", "Май", "Июн",
-                  "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
-        month_name = months[m]
-        headers.append(month_name)
-    
-    headers.append("Всего дней")
+    # Создаем компактную таблицу с информацией о сотрудниках
+    headers = ["№", "Фамилия Имя", "Должность", "Направление", "Отгуляно дней", "Остаток отпуска"]
     
     table_data = [headers]
     
-    for item in report_data:
+    # Стандартная продолжительность отпуска в России - 28 дней
+    standard_vacation_days = 28
+    
+    for idx, item in enumerate(report_data, 1):
+        # Разбираем имя сотрудника
+        name_parts = item['employee_name'].split()
+        last_name = name_parts[0] if len(name_parts) > 0 else ""
+        first_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+        full_name = f"{last_name} {first_name}"
+        
+        # Считаем отгулянные дни в выбранном периоде
+        worked_days = 0
+        
+        # Конвертируем даты в объекты date если это строки
+        if date_from and not isinstance(date_from, type(datetime.now().date())):
+            date_from_obj = datetime.strptime(date_from, "%Y-%m-%d").date()
+        else:
+            date_from_obj = date_from
+        
+        if date_to and not isinstance(date_to, type(datetime.now().date())):
+            date_to_obj = datetime.strptime(date_to, "%Y-%m-%d").date()
+        else:
+            date_to_obj = date_to
+        
+        for vac in item['vacations']:
+            vac_start = vac.start_date
+            vac_end = vac.end_date
+            
+            # Фильтр по дате
+            if date_from_obj and vac_end < date_from_obj:
+                continue
+            if date_to_obj and vac_start > date_to_obj:
+                continue
+            
+            # Ограничиваем диапазон
+            if date_from_obj:
+                vac_start = max(vac_start, date_from_obj)
+            if date_to_obj:
+                vac_end = min(vac_end, date_to_obj)
+            
+            if vac_end >= vac_start:
+                worked_days += (vac_end - vac_start).days + 1
+        
+        # Остаток отпуска
+        remaining_days = standard_vacation_days - worked_days
+        if remaining_days < 0:
+            remaining_days = 0
+        
         row = [
-            Paragraph(f"<b>{item['employee_name']}</b><br/>{item['department']}", 
-                     ParagraphStyle('CellStyle', fontSize=8)),
-            Paragraph(item['position'] or "", ParagraphStyle('CellStyle', fontSize=8)),
-            Paragraph(item['direction'] or "", ParagraphStyle('CellStyle', fontSize=8))
+            Paragraph(str(idx), cell_style),
+            Paragraph(f"<b>{full_name}</b>", cell_style),
+            Paragraph(item['position'] or "", cell_style),
+            Paragraph(item['direction'] or "", cell_style),
+            Paragraph(str(worked_days), cell_style),
+            Paragraph(str(remaining_days), cell_style)
         ]
         
-        total_days = 0
-        
-        for m in range(1, 13):
-            days_in_month = 0
-            last_vac_type = 1
-            for vac in item['vacations']:
-                vac_start = vac.start_date
-                vac_end = vac.end_date
-                month_start_date = f"{year}-{m:02d}-01"
-                month_end_days = (m + 1) if m < 12 else 1
-                month_end_date = f"{year}-{month_end_days:02d}-01"
-                
-                # Фильтр по дате
-                if date_from:
-                    date_from_obj = datetime.strptime(date_from.strftime('%Y-%m-%d'), "%Y-%m-%d").date()
-                    if vac_end < date_from_obj:
-                        continue
-                if date_to:
-                    date_to_obj = datetime.strptime(date_to.strftime('%Y-%m-%d'), "%Y-%m-%d").date()
-                    if vac_start > date_to_obj:
-                        continue
-                
-                if vac_start <= month_end_date and vac_end >= month_start_date:
-                    calc_start = vac_start if vac_start > datetime.strptime(month_start_date, "%Y-%m-%d").date() else month_start_date
-                    calc_end = vac_end if vac_end < datetime.strptime(month_end_date, "%Y-%m-%d").date() else month_end_date
-                    days = (calc_end - calc_start).days
-                    if days > 0:
-                        days_in_month += days
-                        total_days += days
-                        last_vac_type = vac.type_vacation_id
-            
-            if days_in_month > 0:
-                row.append(Paragraph(
-                    f'<font color="#ffffff">{days_in_month}</font>',
-                    ParagraphStyle('CellStyle', fontSize=8, alignment=1)
-                ))
-            else:
-                row.append(Paragraph("", ParagraphStyle('CellStyle', fontSize=8)))
-        
-        row.append(Paragraph(f"<b>{total_days}</b>", ParagraphStyle('CellStyle', fontSize=8, alignment=1)))
         table_data.append(row)
     
     col_count = len(headers)
-    col_widths = [4*cm, 4*cm, 3*cm] + [3.5*cm] * (col_count - 3) + [2.5*cm]
+    col_widths = [0.8*cm, 4*cm, 3.5*cm, 3*cm, 2.5*cm, 2.5*cm]
     
     t = Table(table_data, colWidths=col_widths)
     
     style_commands = [
         ('BACKGROUND', (0, 0), (-1, 0), HexColor('#667eea')),
         ('TEXTCOLOR', (0, 0), (-1, 0), white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTNAME', (0, 0), (-1, 0), 'TimesNewRomanBold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 1), (-1, -1), 'TimesNewRoman'),
         ('FONTSIZE', (0, 1), (-1, -1), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#cccccc')),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f9f9f9')),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [HexColor('#f9f9f9'), white]),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
     ]
     
     t.setStyle(TableStyle(style_commands))
     elements.append(t)
     
-    elements.append(Spacer(1, 20*mm))
-    footer_style = ParagraphStyle('Footer', fontSize=8, alignment=2)
+    elements.append(Spacer(1, 8*mm))
+    
+    # Блок подписи (слева внизу)
+    signature_style = ParagraphStyle('Signature', parent=base_style, fontSize=10, alignment=0)
+    signature_text = "_______________ /_____________"
+    elements.append(Paragraph(signature_text, signature_style))
+    
+    # Подписи под чертами - table с двумя колонками
+    sig_table_data = [
+        [Paragraph("<b>Подпись</b>", cell_style), Paragraph("<b>Расшифровка</b>", cell_style)]
+    ]
+    sig_table = Table(sig_table_data, colWidths=[4*cm, 32*cm])
+    sig_style_cmds = [
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'LEFT'),
+        ('LEFTPADDING', (0, 0), (0, 0), 0),
+        ('RIGHTPADDING', (0, 0), (0, 0), 0),
+        ('LEFTPADDING', (1, 0), (1, 0), 0),
+        ('RIGHTPADDING', (1, 0), (1, 0), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+    ]
+    sig_table.setStyle(TableStyle(sig_style_cmds))
+    elements.append(sig_table)
+    elements.append(Spacer(1, 6*mm))
+    
+    footer_style = ParagraphStyle('Footer', parent=base_style, fontSize=8, alignment=2)
     elements.append(Paragraph(f"Дата формирования: {datetime.now().strftime('%d.%m.%Y %H:%M')}", footer_style))
     
     c.build(elements)
@@ -1658,115 +1777,169 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data):
 @login_required
 @require_permission("view_reports")
 def reports_page():
-    return render_template("report.html")
+    """Страница формирования отчетов"""
+    return render_template("reports.html")
 
 
 @app.route("/api/reports/generate", methods=["POST"])
 @login_required
 @require_permission("view_reports")
 def generate_report():
-    data = request.get_json()
-    
-    schedule_id = data.get("schedule_id")
-    scope = data.get("scope")  # employee, department, schedule
-    employee_id = data.get("employee_id")
-    date_from = data.get("date_from")
-    date_to = data.get("date_to")
-    
-    if not schedule_id:
-        return jsonify({"error": "Выберите график"}), 400
-    
-    schedule = VacationSchedule.query.get_or_404(schedule_id)
-    
-    # Фильтруем сотрудников в зависимости от scope
-    employees_to_report = []
-    
-    if scope == "employee" and employee_id:
-        # Отчёт по конкретному сотруднику
-        se = ScheduleEmployee.query.filter_by(
-            schedule_id=schedule_id,
-            user_id=employee_id
-        ).first()
-        if se:
-            employees_to_report.append(se)
-    elif scope == "department":
-        # Отчёт по отделу (все сотрудники графика)
-        employees_to_report = schedule.employees
-    else:  # scope == "schedule"
-        # Отчёт по всему графику
-        employees_to_report = schedule.employees
-    
-    if not employees_to_report:
-        return jsonify({"error": "Нет сотрудников для отчёта"}), 400
-    
-    # Собираем данные
-    report_data = []
-    for se in employees_to_report:
-        employee = se.employee
-        vacations = []
-        for v in se.vacation_entries:
-            # Фильтр по дате
-            if date_from:
-                date_from_obj = datetime.strptime(date_from, "%Y-%m-%d").date()
-                if v.end_date < date_from_obj:
-                    continue
-            if date_to:
-                date_to_obj = datetime.strptime(date_to, "%Y-%m-%d").date()
-                if v.start_date > date_to_obj:
-                    continue
-            vacations.append(v)
+    try:
+        data = request.get_json()
         
-        report_data.append({
-            "department": schedule.department.name if schedule.department else "",
-            "employee_name": f"{employee.last_name} {employee.first_name}",
-            "position": employee.position,
-            "direction": employee.direction,
-            "vacations": vacations
+        schedule_id = data.get("schedule_id")
+        scope = data.get("scope")  # employee, department, schedule, direction
+        employee_id = data.get("employee_id")
+        direction = data.get("direction")
+        date_from = data.get("date_from")
+        date_to = data.get("date_to")
+        
+        if not schedule_id:
+            return jsonify({"error": "Выберите график"}), 400
+        
+        schedule = VacationSchedule.query.get_or_404(schedule_id)
+        
+        # Фильтруем сотрудников в зависимости от scope
+        employees_to_report = []
+        
+        if scope == "direction" and direction:
+            # Отчёт по направлению
+            for se in schedule.employees:
+                if se.employee.direction == direction:
+                    employees_to_report.append(se)
+        elif scope == "employee" and employee_id:
+            # Отчёт по конкретному сотруднику
+            # employee_id может быть user_id или schedule_employee_id
+            se = ScheduleEmployee.query.filter_by(
+                schedule_id=schedule_id,
+                user_id=employee_id
+            ).first()
+            
+            # Если не нашли по user_id, ищем по schedule_employee_id
+            if not se:
+                se = ScheduleEmployee.query.get(int(employee_id))
+                if se and se.schedule_id == schedule_id:
+                    pass
+                else:
+                    se = None
+            
+            if se:
+                employees_to_report.append(se)
+        elif scope == "department":
+            # Отчёт по отделу (все сотрудники графика)
+            employees_to_report = schedule.employees
+        else:  # scope == "schedule"
+            # Отчёт по всему графику
+            employees_to_report = schedule.employees
+        
+        if not employees_to_report:
+            return jsonify({"error": "Нет сотрудников для отчёта"}), 400
+        
+        # Собираем данные
+        report_data = []
+        for se in employees_to_report:
+            employee = se.employee
+            vacations = []
+            for v in se.vacation_entries:
+                # Фильтр по дате
+                if date_from:
+                    date_from_obj = datetime.strptime(date_from, "%Y-%m-%d").date()
+                    if v.end_date < date_from_obj:
+                        continue
+                if date_to:
+                    date_to_obj = datetime.strptime(date_to, "%Y-%m-%d").date()
+                    if v.start_date > date_to_obj:
+                        continue
+                vacations.append(v)
+            
+            report_data.append({
+                "department": schedule.department.name if schedule.department else "",
+                "employee_name": f"{employee.last_name} {employee.first_name}",
+                "position": employee.position,
+                "direction": employee.direction,
+                "vacations": vacations
+            })
+        
+        # Формируем имя файла
+        report_name = f"Отчёт_{schedule.year}"
+        if schedule.department:
+            report_name += f"_{schedule.department.name}"
+        
+        if scope == "employee" and employee_id:
+            user = User.query.get(int(employee_id))
+            if user:
+                report_name += f"_{user.last_name}"
+        
+        reports_dir = os.path.join("static", "reports")
+        os.makedirs(reports_dir, exist_ok=True)
+        
+        filename = f"{report_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+        file_path = os.path.join(reports_dir, filename)
+        abs_file_path = os.path.abspath(file_path)
+        
+        # Парсим даты для PDF
+        parsed_date_from = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
+        parsed_date_to = datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
+        
+        # Информация о пользователе для PDF
+        user_info = None
+        if current_user.is_authenticated:
+            user_info = {
+                'full_name': f"{current_user.last_name} {current_user.first_name}",
+                'department': current_user.department.name if current_user.department else '',
+                'position': current_user.position.name if current_user.position else ''
+            }
+        
+        # Дополнительная информация для PDF
+        extra_info = {}
+        if scope == "employee" and employee_id:
+            user = User.query.get(int(employee_id))
+            if user:
+                extra_info['employee_name'] = f"{user.last_name} {user.first_name}"
+        elif scope == "direction" and direction:
+            extra_info['direction'] = direction
+        
+        # Сохраняем заготовку отчёта в БД
+        report = Report(
+            name=filename,
+            schedule_id=schedule_id,
+            department_id=schedule.department_id,
+            scope=scope,
+            employee_id=employee_id if scope == "employee" else None,
+            date_from=parsed_date_from,
+            date_to=parsed_date_to,
+            file_path=file_path,
+            status='success',
+            created_by=current_user.id
+        )
+        db.session.add(report)
+        db.session.commit()
+        
+        try:
+            generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data, report_name, user_info, scope, extra_info)
+        except Exception as e:
+            report.status = 'error'
+            db.session.commit()
+            return jsonify({
+                "success": False,
+                "error": "Отчет не был сформирован из-за внутренней ошибки. Попробуйте позже или обратитесь к администратору."
+            }), 500
+        
+        return jsonify({
+            "success": True,
+            "report_id": report.id,
+            "file_path": file_path
         })
     
-    # Формируем имя файла
-    report_name = f"Отчёт_{schedule.year}"
-    if schedule.department:
-        report_name += f"_{schedule.department.name}"
-    
-    if scope == "employee" and employee_id:
-        user = User.query.get(employee_id)
-        if user:
-            report_name += f"_{user.last_name}"
-    
-    reports_dir = os.path.join("static", "reports")
-    os.makedirs(reports_dir, exist_ok=True)
-    
-    filename = f"{report_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
-    file_path = os.path.join(reports_dir, filename)
-    abs_file_path = os.path.abspath(file_path)
-    
-    # Парсим даты для PDF
-    parsed_date_from = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
-    parsed_date_to = datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
-    
-    generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data)
-    
-    # Сохраняем отчёт в БД
-    report = Report(
-        name=filename,
-        schedule_id=schedule_id,
-        department_id=schedule.department_id,
-        scope=scope,
-        employee_id=employee_id if scope == "employee" else None,
-        date_from=parsed_date_from,
-        date_to=parsed_date_to,
-        file_path=file_path,
-        created_by=current_user.id
-    )
-    db.session.add(report)
-    db.session.commit()
-    
-    return jsonify({
-        "success": True,
-        "report_id": report.id,
-        "file_path": file_path
-    })
+    except Exception as e:
+        import traceback
+        app.logger.error(f"Error generating report: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({
+            "success": False,
+            "error": f"Отчет не был сформирован из-за внутренней ошибки: {str(e)}. Попробуйте позже или обратитесь к администратору."
+        }), 500
 
 
 @app.route("/api/reports/<int:report_id>/download")
@@ -1797,9 +1970,10 @@ def get_reports():
         "scope": r.scope,
         "date_from": r.date_from.strftime("%Y-%m-%d") if r.date_from else None,
         "date_to": r.date_to.strftime("%Y-%m-%d") if r.date_to else None,
-        "employee": r.employee.last_name + " " + r.employee.first_name if r.employee else "",
-        "created_at": r.created_at.strftime("%d.%m.%Y %H:%M"),
-        "file_path": r.file_path
+        "created_by": f"{r.created_by_user.last_name} {r.created_by_user.first_name}" if r.created_by_user else "",
+        "created_at": r.created_at.astimezone(MSK).strftime("%d.%m.%Y %H:%M"),
+        "file_path": r.file_path,
+        "status": r.status
     } for r in reports])
 
 
@@ -1818,6 +1992,49 @@ def delete_report(report_id):
     
     return jsonify({"success": True})
 
+
+@app.route("/api/schedules/<int:schedule_id>/employees")
+@login_required
+def get_schedule_employees(schedule_id):
+    """
+        Получение списка сотрудников графика.
+
+        Возвращает всех сотрудников, присутствующих в графике.
+    """
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+    
+    employees = []
+    for se in schedule.employees:
+        employee = se.employee
+        user = User.query.get(se.user_id) if se.user_id else None
+        
+        employees.append({
+            "id": se.user_id if se.user_id else se.id,  # user_id если есть, иначе schedule_employee_id
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "position": employee.position,
+            "email": user.email if user else None
+        })
+    
+    return jsonify({"employees": employees})
+
+
+@app.route("/api/schedules/<int:schedule_id>/directions")
+@login_required
+def get_schedule_directions(schedule_id):
+    """
+        Получение уникальных направлений из графика.
+
+        Возвращает список направлений, которые есть у сотрудников в графике.
+    """
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+    
+    directions = set()
+    for se in schedule.employees:
+        if se.employee.direction:
+            directions.add(se.employee.direction)
+    
+    return jsonify({"directions": sorted(list(directions))})
 
 
 

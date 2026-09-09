@@ -1,0 +1,412 @@
+/* =====================================================
+   Стили страницы отчетов
+===================================================== */
+
+/* Сообщения - только для страницы отчетов */
+.reports-page .admin-message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    position: relative;
+}
+
+.reports-page .admin-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reports-page .admin-success {
+    background: rgba(22, 163, 74, 0.15);
+    border: 1px solid rgba(22, 163, 74, 0.3);
+    color: #16a34a;
+}
+
+.reports-page .admin-error {
+    background: rgba(220, 38, 38, 0.15);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #dc2626;
+}
+
+.reports-page .admin-warning {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+}
+
+.reports-page .admin-info {
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #6366f1;
+}
+
+/* Светлые темы - только для страницы отчетов */
+body.theme1 .reports-page .admin-message,
+body.theme3 .reports-page .admin-message {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+body.theme1 .reports-page .admin-success,
+body.theme3 .reports-page .admin-success {
+    color: #15803d;
+    background: rgba(22, 163, 74, 0.1);
+}
+
+body.theme1 .reports-page .admin-error,
+body.theme3 .reports-page .admin-error {
+    color: #b91c1c;
+    background: rgba(220, 38, 38, 0.1);
+}
+
+body.theme1 .reports-page .admin-warning,
+body.theme3 .reports-page .admin-warning {
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+body.theme1 .reports-page .admin-info,
+body.theme3 .reports-page .admin-info {
+    color: #4338ca;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.reports-page {
+    padding: 0;
+    margin: 0;
+    display: block;
+    width: 100%;
+    color: var(--text-color);
+}
+
+/* Стили для полей ввода */
+.reports-page .input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border, #444);
+    font-size: 14px;
+    background: var(--input-bg, #2a2a2a);
+    color: var(--text-color, #e6e6e6);
+    box-sizing: border-box;
+    outline: none;
+    box-shadow: none;
+}
+
+.reports-page .input::placeholder {
+    color: var(--input-placeholder, #888);
+}
+
+.reports-page .input:focus {
+    border-color: #6366f1;
+    box-shadow: none;
+}
+
+.reports-page .input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.reports-page h2 {
+    margin: 0 0 16px 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Секция формы */
+.reports-form-section {
+    background: var(--modal-bg);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reports-form-section h3 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Группы формы */
+.reports-form-section .form-group {
+    margin-bottom: 16px;
+}
+
+.reports-form-section .form-group label {
+    display: block;
+    text-align: left;
+    margin-bottom: 12px;
+    margin-top: 4px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Период */
+.period-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.period-field {
+    flex: 1;
+}
+
+.period-field label {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+/* Кнопка сформировать */
+#generateReportBtn {
+    margin-top: 20px;
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#generateReportBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Секция списка отчетов */
+.reports-list-section {
+    background: var(--modal-bg);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reports-list-section h3 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.reports-table-container {
+    overflow-x: auto;
+}
+
+/* Таблица отчетов */
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--modal-bg);
+    color: var(--modal-text);
+}
+
+.reports-table th {
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: left;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.15);
+    white-space: nowrap;
+}
+
+.reports-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 14px;
+}
+
+.reports-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.08);
+}
+
+/* Ширина колонок */
+.reports-table .col-name {
+    min-width: 200px;
+}
+
+.reports-table .col-type {
+    min-width: 120px;
+}
+
+.reports-table .col-date {
+    min-width: 140px;
+}
+
+.reports-table .col-author {
+    min-width: 180px;
+}
+
+.reports-table .col-status {
+    min-width: 120px;
+}
+
+.reports-table .col-action {
+    min-width: 120px;
+}
+
+/* Статусы */
+.status-success {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.status-error {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.status-formatted {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.status-formatting {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.status-not-formatted {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* Отключенные элементы */
+.disabled-action {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Ссылка на PDF */
+.pdf-link {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.pdf-link:hover {
+    color: #818cf8;
+    text-decoration: underline;
+}
+
+/* Пустая таблица */
+.reports-table td.empty {
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    text-align: center;
+}
+
+/* Кастомное модальное окно подтверждения */
+.custom-modal {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    backdrop-filter: blur(3px);
+}
+
+.custom-modal-content {
+    position: relative;
+    background: var(--modal-bg);
+    color: var(--modal-text);
+    padding: 60px 32px 28px 32px;
+    border-radius: 12px;
+    width: 420px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    animation: modalFade 0.2s ease;
+}
+
+.custom-modal-content h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.custom-modal-content p {
+    margin-bottom: 24px;
+    color: var(--modal-subtext);
+}
+
+@keyframes modalFade {
+    from { transform: translateY(-8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+#confirmDeleteBtn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #dc2626 !important;
+    color: white !important;
+}
+
+#confirmDeleteBtn:hover {
+    background: #ef4444 !important;
+}
+
+#cancelDeleteBtn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f59e0b !important;
+    color: white !important;
+}
+
+#cancelDeleteBtn:hover {
+    background: #d97706 !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .period-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .reports-table {
+        font-size: 13px;
+    }
+    
+    .reports-form-section,
+    .reports-list-section {
+        padding: 16px;
+    }
+    
+    .reports-table th,
+    .reports-table td {
+        padding: 8px 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .reports-page h2 {
+        font-size: 18px;
+    }
+    
+    .reports-form-section h3,
+    .reports-list-section h3 {
+        font-size: 16px;
+    }
+    
+    .reports-table {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,103 @@
+<h2>Формирование отчетов</h2>
+
+<div id="messageBox" class="admin-message"></div>
+
+<div class="reports-page">
+    <!-- Форма формирования отчета -->
+    <div class="reports-form-section">
+        <h3>Параметры для формирования:</h3>
+        
+        <!-- Наименование отчета -->
+        <div class="form-group">
+            <label>Наименование отчета:</label>
+            <input type="text" id="reportName" class="input" placeholder="Введите название">
+        </div>
+        
+        <!-- Отдел -->
+        <div class="form-group">
+            <label>Отдел:</label>
+            <select id="reportDepartment" class="input">
+                <option value="">Выберите отдел</option>
+                <option value="1">Отдел по работе с клиентами</option>
+                <option value="2">Отдел технической поддержки</option>
+            </select>
+        </div>
+        
+        <!-- График -->
+        <div class="form-group">
+            <label>График:</label>
+            <select id="reportSchedule" class="input" disabled>
+                <option value="">Сначала выберите отдел</option>
+            </select>
+        </div>
+        
+        <!-- Тип отчета -->
+        <div class="form-group">
+            <label>Тип отчета:</label>
+            <select id="reportType" class="input" disabled>
+                <option value="">Сначала выберите график</option>
+                <option value="department">По отделу</option>
+                <option value="direction">По направлению</option>
+                <option value="employee">По сотруднику</option>
+            </select>
+        </div>
+        
+        <!-- Выбор сотрудника (показывается только для типа "По сотруднику") -->
+        <div id="employeeSelectBlock" class="form-group hidden">
+            <label>Сотрудник:</label>
+            <select id="reportEmployee" class="input">
+                <option value="">Выберите сотрудника</option>
+            </select>
+        </div>
+        
+        <!-- Выбор направления (показывается только для типа "По направлению") -->
+        <div id="directionSelectBlock" class="form-group hidden">
+            <label>Направление:</label>
+            <select id="reportDirection" class="input">
+                <option value="">Выберите направление</option>
+            </select>
+        </div>
+        
+        <!-- Период -->
+        <div class="form-group period-group">
+            <label>Период:</label>
+            <div class="period-row">
+                <div class="period-field">
+                    <label>С:</label>
+                    <input type="date" id="reportDateFrom" class="input">
+                </div>
+                <div class="period-field">
+                    <label>По:</label>
+                    <input type="date" id="reportDateTo" class="input">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопка сформировать -->
+        <button id="generateReportBtn" class="btn btn-success">Сформировать</button>
+    </div>
+    
+    <!-- Список сформированных отчетов -->
+    <div class="reports-list-section">
+        <h3>История отчетов</h3>
+        
+        <div class="reports-table-container">
+            <table id="reportsTable" class="reports-table">
+                <thead>
+                    <tr>
+                        <th class="col-name">Наименование отчета</th>
+                        <th class="col-type">Тип отчета</th>
+                        <th class="col-date">Дата формирования</th>
+                        <th class="col-author">Кем сформирован</th>
+                        <th class="col-status">Статус</th>
+                        <th class="col-action">Ссылка</th>
+                        <th class="col-delete">Удалить</th>
+                    </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                    <!-- Динамически заполняется -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
