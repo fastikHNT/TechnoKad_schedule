@@ -1794,11 +1794,26 @@ def generate_report():
         direction = data.get("direction")
         date_from = data.get("date_from")
         date_to = data.get("date_to")
+        user_name = data.get("name", "")  # Пользовательское наименование
         
         if not schedule_id:
             return jsonify({"error": "Выберите график"}), 400
         
         schedule = VacationSchedule.query.get_or_404(schedule_id)
+        
+        # Преобразуем employee_id в int
+        employee_id_int = None
+        if employee_id:
+            try:
+                employee_id_int = int(employee_id)
+            except (ValueError, TypeError):
+                employee_id_int = None
+        
+        # ID сотрудника для отчета (user_id из ScheduleEmployee)
+        report_employee_id = None
+        
+        # Преобразуем direction в строку
+        direction = str(direction) if direction else None
         
         # Фильтруем сотрудников в зависимости от scope
         employees_to_report = []
@@ -1808,17 +1823,27 @@ def generate_report():
             for se in schedule.employees:
                 if se.employee.direction == direction:
                     employees_to_report.append(se)
-        elif scope == "employee" and employee_id:
+        elif scope == "employee" and employee_id_int:
             # Отчёт по конкретному сотруднику
-            # employee_id может быть user_id или schedule_employee_id
-            se = ScheduleEmployee.query.filter_by(
-                schedule_id=schedule_id,
-                user_id=employee_id
+            # employee_id - это employee.id из Employee таблицы
+            se = None
+            
+            # Ищем по employee_id (связь с таблицей Employee)
+            se = ScheduleEmployee.query.filter(
+                ScheduleEmployee.schedule_id == schedule_id,
+                ScheduleEmployee.employee_id == employee_id_int
             ).first()
             
-            # Если не нашли по user_id, ищем по schedule_employee_id
+            # Если не нашли, ищем по user_id
             if not se:
-                se = ScheduleEmployee.query.get(int(employee_id))
+                se = ScheduleEmployee.query.filter_by(
+                    schedule_id=schedule_id,
+                    user_id=employee_id_int
+                ).first()
+            
+            # Если всё ещё не нашли, ищем по schedule_employee_id
+            if not se:
+                se = ScheduleEmployee.query.get(employee_id_int)
                 if se and se.schedule_id == schedule_id:
                     pass
                 else:
@@ -1826,6 +1851,8 @@ def generate_report():
             
             if se:
                 employees_to_report.append(se)
+                # Сохраняем user_id для отчета
+                report_employee_id = se.user_id or report_employee_id
         elif scope == "department":
             # Отчёт по отделу (все сотрудники графика)
             employees_to_report = schedule.employees
@@ -1862,19 +1889,14 @@ def generate_report():
             })
         
         # Формируем имя файла
-        report_name = f"Отчёт_{schedule.year}"
+        report_file_name = f"Отчёт_{schedule.year}"
         if schedule.department:
-            report_name += f"_{schedule.department.name}"
-        
-        if scope == "employee" and employee_id:
-            user = User.query.get(int(employee_id))
-            if user:
-                report_name += f"_{user.last_name}"
+            report_file_name += f"_{schedule.department.name}"
         
         reports_dir = os.path.join("static", "reports")
         os.makedirs(reports_dir, exist_ok=True)
         
-        filename = f"{report_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"{report_file_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
         file_path = os.path.join(reports_dir, filename)
         abs_file_path = os.path.abspath(file_path)
         
@@ -1893,8 +1915,9 @@ def generate_report():
         
         # Дополнительная информация для PDF
         extra_info = {}
-        if scope == "employee" and employee_id:
-            user = User.query.get(int(employee_id))
+        if scope == "employee" and report_employee_id:
+            # report_employee_id - это user_id из ScheduleEmployee
+            user = User.query.get(report_employee_id)
             if user:
                 extra_info['employee_name'] = f"{user.last_name} {user.first_name}"
         elif scope == "direction" and direction:
@@ -1902,11 +1925,12 @@ def generate_report():
         
         # Сохраняем заготовку отчёта в БД
         report = Report(
+            user_name=user_name if user_name else None,
             name=filename,
             schedule_id=schedule_id,
             department_id=schedule.department_id,
             scope=scope,
-            employee_id=employee_id if scope == "employee" else None,
+            employee_id=report_employee_id if scope == "employee" else None,
             date_from=parsed_date_from,
             date_to=parsed_date_to,
             file_path=file_path,
@@ -1917,7 +1941,7 @@ def generate_report():
         db.session.commit()
         
         try:
-            generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data, report_name, user_info, scope, extra_info)
+            generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data, user_name if user_name else report_file_name, user_info, scope, extra_info)
         except Exception as e:
             report.status = 'error'
             db.session.commit()
@@ -1964,8 +1988,10 @@ def get_reports():
     
     return jsonify([{
         "id": r.id,
+        "user_name": r.user_name,
         "name": r.name,
         "department": r.department.name if r.department else "Все отделы",
+        "department_id": r.department_id,
         "schedule": r.schedule.name if r.schedule else "",
         "scope": r.scope,
         "date_from": r.date_from.strftime("%Y-%m-%d") if r.date_from else None,
@@ -2009,7 +2035,7 @@ def get_schedule_employees(schedule_id):
         user = User.query.get(se.user_id) if se.user_id else None
         
         employees.append({
-            "id": se.user_id if se.user_id else se.id,  # user_id если есть, иначе schedule_employee_id
+            "id": employee.id,  # employee.id из таблицы Employee
             "first_name": employee.first_name,
             "last_name": employee.last_name,
             "position": employee.position,

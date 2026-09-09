@@ -8,7 +8,8 @@ class Report(db.Model):
     __tablename__ = "reports"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    user_name = db.Column(db.String(255))  # Пользовательское наименование отчета
+    name = db.Column(db.String(255), nullable=False)  # Имя файла
     schedule_id = db.Column(db.Integer, db.ForeignKey("vacation_schedules.id"))
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     scope = db.Column(db.String(50))  # employee, department, schedule

@@ -132,25 +132,39 @@ function initAdminPage() {
         if (!roleSelect) return;
 
         const currentRoleId = window.userRoleId;
+        const rowRoleId = Number(roleSelect.value);
 
-        // Для разработчика - блокируем изменение роли полностью
+        // Для разработчика - можно менять Админ и Супер-админ, но не Разработчик и не себе
         if (currentRoleId === 4) {
-            roleSelect.disabled = true;
-            return;
-        }
-
-        // Для супер-админа - нельзя назначать разработчиков
-        if (currentRoleId === 3) {
             Array.from(roleSelect.options).forEach(option => {
                 const val = Number(option.value);
+                // Блокируем Разработчик
                 if (val === 4) {
                     option.disabled = true;
                     option.classList.add("disabled-option");
                 }
             });
             
-            // Если у сотрудника уже стоит роль разработчика - блокируем изменение
-            if (Number(roleSelect.value) === 4) {
+            // Если у сотрудника уже стоит роль разработчика (это мы) - блокируем изменение
+            if (rowRoleId === 4) {
+                roleSelect.disabled = true;
+            }
+            return;
+        }
+
+        // Для супер-админа - нельзя назначать разработчиков и других супер-админов
+        if (currentRoleId === 3) {
+            Array.from(roleSelect.options).forEach(option => {
+                const val = Number(option.value);
+                // Блокируем Разработчик и Супер-админ
+                if (val === 4 || val === 3) {
+                    option.disabled = true;
+                    option.classList.add("disabled-option");
+                }
+            });
+            
+            // Если у сотрудника уже стоит роль супер-админа - блокируем изменение
+            if (rowRoleId === 3) {
                 roleSelect.disabled = true;
             }
             return;
@@ -158,7 +172,7 @@ function initAdminPage() {
 
         // Для админа - можно назначать только пользователя
         if (currentRoleId === 2) {
-            const forbiddenRoles = [3, 4]; // Супер-админ, разработчик
+            const forbiddenRoles = [2, 3, 4]; // Админ, Супер-админ, разработчик
             
             Array.from(roleSelect.options).forEach(option => {
                 const val = Number(option.value);
@@ -169,7 +183,7 @@ function initAdminPage() {
             });
 
             // Если у сотрудника уже стоит запрещённая роль - блокируем селектор
-            if (forbiddenRoles.includes(Number(roleSelect.value))) {
+            if (forbiddenRoles.includes(rowRoleId)) {
                 roleSelect.disabled = true;
             }
         }

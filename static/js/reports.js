@@ -112,8 +112,74 @@
             reportsState.userRole = user.role_id;
             reportsState.userDepartmentId = user.department_id;
 
-            // Для обычных сотрудников - блокируем фильтры и показываем только свой отдел
-            if (reportsState.userRole !== 2 && reportsState.userRole !== 3 && reportsState.userRole !== 4) {
+            // Для админов (role_id = 2) - показываем только их отдел, блокируем изменение
+            if (reportsState.userRole === 2) {
+                const deptSelect = document.getElementById('reportDepartment');
+                if (deptSelect && reportsState.userDepartmentId) {
+                    // Ищем опцию с нужным department_id ДО очистки
+                    let deptName = '';
+                    for (let i = 0; i < deptSelect.options.length; i++) {
+                        if (Number(deptSelect.options[i].value) === reportsState.userDepartmentId) {
+                            deptName = deptSelect.options[i].textContent;
+                            break;
+                        }
+                    }
+                    
+                    // Если не нашли в опциях, пробуем получить из API
+                    if (!deptName) {
+                        try {
+                            const optsResp = await fetch('/api/admin/options');
+                            if (optsResp.ok) {
+                                const opts = await optsResp.json();
+                                const dept = opts.departments?.find(d => Number(d.id) === reportsState.userDepartmentId);
+                                if (dept) deptName = dept.name;
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                    }
+                    
+                    // Если всё ещё нет названия, используем дефолтное
+                    if (!deptName) {
+                        deptName = 'Отдел';
+                    }
+                    
+                    // Оставляем только один отдел текущего админа
+                    deptSelect.innerHTML = '';
+                    const opt = document.createElement('option');
+                    opt.value = reportsState.userDepartmentId;
+                    opt.textContent = deptName;
+                    deptSelect.appendChild(opt);
+                    deptSelect.value = reportsState.userDepartmentId;
+                    
+                    // Блокируем изменение
+                    deptSelect.disabled = true;
+                    
+                    // Автоматически загружаем графики (без очистки deptSelect)
+                    const schedules = await reportsApi.getSchedules(reportsState.userDepartmentId);
+                    reportsState.schedules = schedules;
+                    
+                    const scheduleSelect = document.getElementById('reportSchedule');
+                    if (scheduleSelect) {
+                        scheduleSelect.innerHTML = '<option value="">Сначала выберите график</option>';
+                        if (schedules.length === 0) {
+                            showMessage('Для выбранного отдела графики не найдены', 'warning');
+                            scheduleSelect.disabled = true;
+                        } else {
+                            schedules.forEach(s => {
+                                const opt = document.createElement('option');
+                                opt.value = s.id;
+                                opt.textContent = s.name + (s.year ? ` (${s.year} год)` : '');
+                                scheduleSelect.appendChild(opt);
+                            });
+                            scheduleSelect.disabled = false;
+                            showMessage('Выберите график из списка', 'info');
+                        }
+                    }
+                }
+            }
+            // Для обычных сотрудников (role_id = 1) - блокируем фильтры
+            else if (reportsState.userRole !== 3 && reportsState.userRole !== 4) {
                 const deptSelect = document.getElementById('reportDepartment');
                 if (deptSelect) {
                     deptSelect.disabled = true;
@@ -142,11 +208,10 @@
 
         // Фильтрация по роли
         let filteredReports = reportsState.reports;
-        if (reportsState.userRole !== 2 && reportsState.userRole !== 3 && reportsState.userRole !== 4) {
+        if (reportsState.userRole === 2) {
             // Для админов - только отчеты своего отдела
             filteredReports = reportsState.reports.filter(r => {
-                // TODO: реализовать фильтрацию по department_id
-                return true;
+                return Number(r.department_id) === Number(reportsState.userDepartmentId);
             });
         }
 
@@ -158,8 +223,9 @@
         filteredReports.forEach(report => {
             const tr = document.createElement('tr');
             const isErrored = report.status === 'error';
+            const displayName = report.user_name || report.name;
             tr.innerHTML = `
-                <td class="col-name">${report.name}</td>
+                <td class="col-name">${displayName}</td>
                 <td class="col-type">${getReportTypeTranslation(report.scope)}</td>
                 <td class="col-date">${report.created_at}</td>
                 <td class="col-author">${report.created_by}</td>
@@ -181,7 +247,6 @@
 
     // Обработчик изменения отдела
     async function onDepartmentChange() {
-        console.log('onDepartmentChange triggered');
         const deptId = document.getElementById('reportDepartment').value;
         const scheduleSelect = document.getElementById('reportSchedule');
         const employeeSelect = document.getElementById('reportEmployee');
@@ -189,11 +254,8 @@
         const employeeBlock = document.getElementById('employeeSelectBlock');
         const directionBlock = document.getElementById('directionSelectBlock');
         const directionSelect = document.getElementById('reportDirection');
-        const reportName = document.getElementById('reportName');
         const dateFrom = document.getElementById('reportDateFrom');
         const dateTo = document.getElementById('reportDateTo');
-
-        console.log('Selected deptId:', deptId);
         
         // Сбрасываем все поля
         scheduleSelect.innerHTML = '<option value="">Сначала выберите график</option>';
@@ -218,7 +280,6 @@
 
         if (!deptId) return;
 
-        console.log('Fetching schedules for dept:', deptId);
         const schedules = await reportsApi.getSchedules(deptId);
         reportsState.schedules = schedules;
 
@@ -489,7 +550,7 @@
             const directionSelect = document.getElementById('reportDirection');
             const selectedDirection = directionSelect ? directionSelect.value : null;
             
-            await reportsApi.generateReport({
+            const payload = {
                 name: reportName,
                 schedule_id: scheduleId,
                 scope: reportType,
@@ -497,28 +558,51 @@
                 direction: reportType === 'direction' ? selectedDirection : null,
                 date_from: dateFrom,
                 date_to: dateTo
-            });
+            };
+            
+            await reportsApi.generateReport(payload);
 
             showMessage('Отчет успешно сформирован', 'success');
             
             // Небольшая задержка перед обновлением, чтобы БД успела сохранить
             setTimeout(() => {
                 loadReports();
+                resetForm();
             }, 300);
-            
-            // Очистка формы
-            document.getElementById('reportName').value = '';
-            document.getElementById('reportDateFrom').value = '';
-            document.getElementById('reportDateTo').value = '';
         } catch (error) {
             showMessage('Ошибка: ' + error.message, 'error');
             // Обновляем список отчетов даже при ошибке
             loadReports();
+            // Сбрасываем форму при ошибке
+            resetForm();
         } finally {
             // Возвращаем кнопку
             btn.disabled = false;
             btn.textContent = 'Сформировать';
         }
+    }
+
+    // Сброс формы
+    function resetForm() {
+        document.getElementById('reportName').value = '';
+        document.getElementById('reportDepartment').value = '';
+        document.getElementById('reportSchedule').innerHTML = '<option value="">Сначала выберите отдел</option>';
+        document.getElementById('reportSchedule').disabled = true;
+        document.getElementById('reportType').innerHTML = '<option value="">Сначала выберите график</option>';
+        document.getElementById('reportType').disabled = true;
+        document.getElementById('reportEmployee').innerHTML = '<option value="">Выберите сотрудника</option>';
+        document.getElementById('reportEmployee').disabled = true;
+        document.getElementById('reportDirection').innerHTML = '<option value="">Выберите направление</option>';
+        document.getElementById('reportDirection').disabled = true;
+        document.getElementById('employeeSelectBlock').classList.add('hidden');
+        document.getElementById('directionSelectBlock').classList.add('hidden');
+        
+        // Даты оставляем по умолчанию (текущий год)
+        const currentYear = new Date().getFullYear();
+        const dateFrom = document.getElementById('reportDateFrom');
+        const dateTo = document.getElementById('reportDateTo');
+        if (dateFrom) dateFrom.value = `${currentYear}-01-01`;
+        if (dateTo) dateTo.value = `${currentYear}-12-31`;
     }
 
     // Кастомное модальное окно подтверждения удаления
@@ -588,16 +672,8 @@
         const typeSelect = document.getElementById('reportType');
         const generateBtn = document.getElementById('generateReportBtn');
 
-        console.log('Setting up event listeners:', {
-            deptSelect: !!deptSelect,
-            scheduleSelect: !!scheduleSelect,
-            typeSelect: !!typeSelect,
-            generateBtn: !!generateBtn
-        });
-
         if (deptSelect) {
             deptSelect.addEventListener('change', onDepartmentChange);
-            console.log('Added change listener to deptSelect');
         }
         if (scheduleSelect) {
             scheduleSelect.addEventListener('change', () => {
@@ -651,11 +727,6 @@
             typeSelect.innerHTML = '<option value="">Сначала выберите график</option>';
             typeSelect.disabled = true;
         }
-        
-        // Показываем начальное уведомление
-        setTimeout(() => {
-            showMessage('Выберите отдел для формирования отчета', 'info');
-        }, 500);
     }
 
     // Экспорт только initReportsPage в глобальную область

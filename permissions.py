@@ -106,9 +106,9 @@ def can_assign_role(new_role_id, target_role_id=None):
     Проверяет, может ли текущий пользователь назначить новую роль.
 
     Логика:
-    - Разработчик не может назначать роли (остается только своей)
-    - Супер-админ не может назначать роль Разработчик и не может снимать роль Разработчика
-    - Админ может назначать только роль пользователя
+    - Разработчик может назначать Админ и Супер-админ, но не Разработчик и не себе
+    - Супер-админ может назначать Админ и Пользователь, но не Разработчик и не Супер-админ
+    - Админ может назначать только Пользователя
     - Пользователь не может назначать роли
 
     Параметры:
@@ -116,18 +116,33 @@ def can_assign_role(new_role_id, target_role_id=None):
     - target_role_id: текущая роль пользователя (для проверки снятия роли)
     """
 
+    # Приводим к int на всякий случай
+    new_role_id = int(new_role_id)
+    target_role_id = int(target_role_id) if target_role_id is not None else None
+
     if current_user.role_id == ROLE_DEVELOPER:
-        # Разработчик не может менять роли
+        # Разработчик не может назначать Разработчик
+        if new_role_id == ROLE_DEVELOPER:
+            return False
+        # Разработчик не может менять свою собственную роль
+        if target_role_id == ROLE_DEVELOPER:
+            return False
+        # Может назначать Админ, Супер-админ и Пользователь
+        if new_role_id in [ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_EMPLOYEE]:
+            return True
         return False
 
     if current_user.role_id == ROLE_SUPER_ADMIN:
         # Супер-админ не может назначать разработчиками
         if new_role_id == ROLE_DEVELOPER:
             return False
-        # Супер-админ не может снимать роль разработчика
-        if target_role_id == ROLE_DEVELOPER:
+        # Супер-админ не может менять других супер-админов
+        if target_role_id == ROLE_SUPER_ADMIN:
             return False
-        return True
+        # Может назначать Админ и Пользователь
+        if new_role_id in [ROLE_ADMIN, ROLE_EMPLOYEE]:
+            return True
+        return False
 
     if current_user.role_id == ROLE_ADMIN:
         # Админ может назначать только пользователя
