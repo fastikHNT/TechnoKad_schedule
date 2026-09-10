@@ -2,6 +2,29 @@ function toggleProfileMenu() {
     const menu = document.getElementById("profileMenu");
     if (menu) {
         menu.classList.toggle("open");
+        
+        // При открытии профиля всегда скрываем превью аватара
+        if (menu.classList.contains("open")) {
+            const avatarPreview = document.getElementById("avatarPreview");
+            if (avatarPreview) {
+                avatarPreview.classList.add("hidden");
+            }
+            
+            // Сбрасываем поле ввода файла
+            const fileInput = document.getElementById("avatarInput");
+            if (fileInput) {
+                fileInput.value = "";
+            }
+            
+            // Сбрасываем имя файла
+            const fileName = document.getElementById("fileName");
+            if (fileName) {
+                fileName.textContent = "Выбрать изображение";
+            }
+            
+            // Сбрасываем pending файл
+            pendingAvatarFile = null;
+        }
     }
 }
 
@@ -131,6 +154,7 @@ function cancelAvatarUpload() {
     }
     if (avatarPreview) {
         avatarPreview.classList.add("hidden");
+        avatarPreview.dataset.wasHidden = "true"; // Запоминаем что было скрыто
     }
     
     pendingAvatarFile = null;

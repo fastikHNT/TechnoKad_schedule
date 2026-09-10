@@ -302,7 +302,13 @@ function initAdminPage() {
         
         // Показываем уведомление о successfulной загрузке
         const filterText = adminFilter.options[adminFilter.selectedIndex].text;
-        showMessage(`Загружен список сотрудников`, "success");
+        let message = `Загружен список сотрудников`;
+        if (filterText !== "Все отделы" && filterText !== "Удалённые") {
+            // Убираем слово "Отдел" из начала, делаем с маленькой буквы и добавляем "отдела"
+            const deptName = filterText.replace(/^Отдел\s/i, "").toLowerCase();
+            message = `Загружен список сотрудников отдела ${deptName}`;
+        }
+        showMessage(message, "info");
     }
 
     // ================= Фильтр по типам пользователей  =================

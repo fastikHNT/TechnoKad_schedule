@@ -5,17 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="09.09.2026">
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_generate_pdf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_import.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/report.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/report.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/permissions.py" beforeDir="false" afterPath="$PROJECT_DIR$/permissions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/profile.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/profile.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/schedule.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/schedule.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/js/administration.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/administration.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/reports.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/reports.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/report.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/reports.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/reports.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/profile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/schedule.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/schedule.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -209,7 +205,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>

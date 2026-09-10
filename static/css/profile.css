@@ -12,22 +12,17 @@
    AVATAR
 ================================================== */
 
-.avatar{
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    object-fit:cover;
-    transition:transform 0.2s ease;
-}
-
 .avatar-wrapper{
-    width:40px;
-    height:40px;
+    width:60px;
+    height:60px;
     cursor:pointer;
     display:flex;
     align-items:center;
     justify-content:center;
     position:relative;
+    pointer-events: none;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
 .avatar-wrapper:hover .avatar{
@@ -51,6 +46,16 @@
     font-weight:600;
     font-size:14px;
     letter-spacing:1px;
+    pointer-events: auto;
+}
+
+.avatar{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    object-fit:cover;
+    transition:transform 0.2s ease;
+    pointer-events: auto;
 }
 
 /* ==================================================
@@ -240,6 +245,10 @@
     text-align:center;
 }
 
+.avatar-preview.hidden{
+    display:none !important;
+}
+
 .avatar-preview img{
     width:150px;
     height:150px;
@@ -259,20 +268,31 @@
     flex:1;
 }
 
-.avatar-preview-buttons .btn-primary:first-child{
-    background:#22c55e;
+.avatar-preview-buttons .btn-primary:first-child {
+    background: var(--button-bg);
 }
 
-.avatar-preview-buttons .btn-primary:first-child:hover{
-    background:#16a34a;
+.avatar-preview-buttons .btn-primary:first-child:hover {
+    background: var(--button-hover);
 }
 
-.avatar-preview-buttons .btn-primary:last-child{
-    background:#ef4444;
+.avatar-preview-buttons .btn-primary:last-child {
+    background: #ef4444;
 }
 
-.avatar-preview-buttons .btn-primary:last-child:hover{
-    background:#dc2626;
+.avatar-preview-buttons .btn-primary:last-child:hover {
+    background: #dc2626;
+}
+
+/* Темная тема - корректировка кнопки отмены */
+body.theme2 .avatar-preview-buttons .btn-primary:last-child,
+body.theme4 .avatar-preview-buttons .btn-primary:last-child {
+    background: #dc2626;
+}
+
+body.theme2 .avatar-preview-buttons .btn-primary:last-child:hover,
+body.theme4 .avatar-preview-buttons .btn-primary:last-child:hover {
+    background: #b91c1c;
 }
 
 /* ==================================================

@@ -1180,7 +1180,7 @@ body.theme3 .custom-modal-content p {
 .schedule-page .btn-save,
 #vacationModal .btn-save {
     padding: 10px 24px;
-    background: #16a34a !important;
+    background: var(--button-bg);
     color: white;
     border: none;
     border-radius: 8px;
@@ -1191,7 +1191,7 @@ body.theme3 .custom-modal-content p {
 
 .schedule-page .btn-save:hover,
 #vacationModal .btn-save:hover {
-    background: #15803d !important;
+    background: var(--button-bg);
     transform: translateY(-2px);
 }
 
@@ -1209,7 +1209,8 @@ body.theme3 .custom-modal-content p {
 
 .schedule-page .btn-cancel:hover,
 #vacationModal .btn-cancel:hover {
-    background: #d97706 !important;
+    background: #f59e0b !important;
+    transform: translateY(-2px);
 }
 
 .schedule-page .btn-delete,
@@ -1271,6 +1272,54 @@ body.theme3 .custom-modal-content p {
     color: var(--modal-subtext);
     font-size: 15px;
     line-height: 1.5;
+}
+
+/* =====================================================
+   Модалка добавления сотрудника - кнопка закрытия
+===================================================== */
+
+.ce-modal-content {
+    position: relative;
+    overflow: visible !important;
+}
+
+.ce-modal-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 10000;
+    pointer-events: auto;
+    backdrop-filter: blur(4px);
+}
+
+.ce-modal-close:hover {
+    background: rgba(239, 68, 68, 0.9);
+    border-color: rgba(239, 68, 68, 1);
+    transform: scale(1.1);
+}
+
+/* Тёмная тема */
+body.theme2 .ce-modal-close {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+body.theme2 .ce-modal-close:hover {
+    background: rgba(248, 113, 113, 0.9);
 }
 
 #confirmDeleteBtn,
