@@ -47,7 +47,7 @@ const pages = {
 
             if (page === "admin") {
 
-                switchPage((wrapper) => {
+                switchPage((wrapper, onComplete) => {
 
                     fetch("/admin/")
                         .then(r => {
@@ -65,6 +65,8 @@ const pages = {
 
                             wrapper.innerHTML = html
 
+                            if (onComplete) onComplete();
+
                             if (typeof initAdminPage === "function") {
                                 initAdminPage()
                             }
@@ -73,38 +75,49 @@ const pages = {
                         .catch(err => {
                             console.error("Ошибка :", err)
                             showMessage("Ошибка загрузки страницы", "error")
+                            if (onComplete) onComplete()
                         })
 
                 })
 
             } else if (page === "vacation") {
 
-                switchPage(async (wrapper) => {
+                switchPage((wrapper, onComplete) => {
 
-                const html = await fetch("/schedule").then(r => r.text())
+                fetch("/schedule").then(r => r.text()).then(html => {
+                    wrapper.innerHTML = html
+                    // После загрузки HTML кэшируем DOM элементы
+                    if (typeof cacheDom === "function") {
+                        cacheDom()
+                    }
+                    if (onComplete) onComplete()
+                })
 
-                wrapper.innerHTML = html
-
-                if (typeof initSchedulePage === "function") {
-                    initSchedulePage()
-                }
-            })
+                }, () => {
+                    // Потом инициализируем
+                    if (typeof initSchedulePage === "function") {
+                        initSchedulePage()
+                    }
+                })
 
             } else if (page === "reports") {
 
-                switchPage((wrapper) => {
+                switchPage((wrapper, onComplete) => {
                     fetch("/reports").then(r => r.text()).then(html => {
                         wrapper.innerHTML = html
-                        if (typeof initReportsPage === "function") {
-                            initReportsPage()
-                        }
+                        if (onComplete) onComplete()
                     })
+                }, () => {
+                    if (typeof initReportsPage === "function") {
+                        initReportsPage()
+                    }
                 })
 
             } else if (pages[page]) {
 
-                switchPage((wrapper) => {
+                switchPage((wrapper, onComplete) => {
                 wrapper.innerHTML = pages[page]
+                if (onComplete) onComplete()
                 })
             }
         })
@@ -149,20 +162,30 @@ const pages = {
         }
 
     /* ===== АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ ===== */
-    function switchPage(renderCallback){
+    function switchPage(renderCallback, initCallback){
 
         const wrapper = document.createElement("div")
         wrapper.classList.add("page-anim")
 
-        renderCallback(wrapper)
-
         content.innerHTML = ""
-
         content.appendChild(wrapper)
 
-        requestAnimationFrame(() => {
-            wrapper.classList.add("show")
-        })
+        // Загружаем данные
+        if (renderCallback) {
+            renderCallback(wrapper, () => {
+                // После загрузки контента вызываем инициализацию
+                if (initCallback && typeof initCallback === "function") {
+                    setTimeout(() => {
+                        initCallback()
+                    }, 100)
+                }
+                
+                // После всего запускаем анимацию появления
+                setTimeout(() => {
+                    wrapper.classList.add("show")
+                }, 50)
+            })
+        }
     }
 
     /* открытие секций */

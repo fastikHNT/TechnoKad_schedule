@@ -8,7 +8,7 @@ from flask import session
 
 from models.schedule import VacationSchedule
 
-RECAPTCHA_SECRET_KEY = "6LfgCSQtAAAAAOSljwxPwatX3zfBF7YMj9co5-m3"
+RECAPTCHA_SECRET_KEY = "6LciAbUtAAAAAAFp2YOSvgte3Rq12_W6wnP2v9aj"
 
 from flask import Flask, render_template, request, redirect, flash, url_for
 from werkzeug.security import generate_password_hash, check_password_hash

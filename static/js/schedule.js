@@ -514,7 +514,7 @@ function updateUi(){
     // Блокируем чекбокс если график не выбран или пользователь не администратор
     if(el.isDefaultCheckbox){
         el.isDefaultCheckbox.disabled = !hasSchedule || !isAdmin;
-        
+
         // Добавляем/убираем класс для визуального отображения disabled
         const label = el.isDefaultCheckbox.closest('.schedule-default-label');
         if(label) {
@@ -561,7 +561,7 @@ function updateUi(){
 
         // Показываем кнопку "Редактировать" только для администраторов
         toggle(el.btnEdit, true, !isAdmin);
-        
+
         // Визуально выделяем disabled кнопки
         if(!isAdmin) {
             el.btnAddEmployee.style.opacity = '0.5';
@@ -619,25 +619,10 @@ function updateUi(){
     toggle(el.btnDeleteSchedule, !state.suggestMode);
 
     // Блокируем кнопки в режиме редактирования
+    toggle(el.btnAddEmployee, true, true);
     toggle(el.btnTransfer, true, true);
     toggle(el.btnSuggest, true, true);
     toggle(el.btnCreateSchedule, true, true);
-    
-    // В режиме планирования отпуска блокируем кнопку добавления сотрудника
-    if(state.suggestMode) {
-        toggle(el.btnAddEmployee, true, true);
-        el.btnAddEmployee.style.opacity = '0.5';
-        el.btnAddEmployee.style.cursor = 'not-allowed';
-    } else {
-        toggle(el.btnAddEmployee, true, !isAdmin);
-        if(!isAdmin) {
-            el.btnAddEmployee.style.opacity = '0.5';
-            el.btnAddEmployee.style.cursor = 'not-allowed';
-        } else {
-            el.btnAddEmployee.style.opacity = '1';
-            el.btnAddEmployee.style.cursor = 'pointer';
-        }
-    }
 }
 
 function handleEditClick(){
@@ -807,7 +792,7 @@ function enableSuggestMode(){
     }
 
     // Проверяем, что текущий пользователь есть в графике
-    const currentUserInSchedule = state.selectedSchedule.employees?.some(emp => 
+    const currentUserInSchedule = state.selectedSchedule.employees?.some(emp =>
         emp.user_id === state.currentUserId || emp.email === state.currentEmail
     );
 
@@ -851,7 +836,7 @@ async function cancelEdit(){
         state.pendingChanges.modifiedVacations.length > 0 ||
         state.pendingChanges.deletedVacations.length > 0 ||
         (state.pendingChanges.employeeOrder && state.pendingChanges.employeeOrder.length > 0))){
-        
+
         showDeleteConfirmModal(
             "Отмена редактирования",
             "Вы уверены, что хотите отменить все изменения и восстановить исходный график?",
@@ -914,7 +899,7 @@ async function onDefaultChange(){
         showMessage("Недостаточно прав", "error");
         return;
     }
-    
+
     if(!state.selectedSchedule){
         return;
     }
@@ -937,14 +922,14 @@ async function onDefaultChange(){
     } else {
         // Проверяем, есть ли другие графики по умолчанию в отделе
         const hasOtherDefaults = state.schedules.some(s => s.is_default && s.id !== state.selectedSchedule.id);
-        
+
         if(!hasOtherDefaults){
             // Блокируем снятие чекбокса
             el.isDefaultCheckbox.checked = true;
             showMessage("Невозможно снять отметку: в отделе должен быть хотя бы один график по умолчанию", "warning");
             return;
         }
-        
+
         // Снимаем флаг "по умолчанию"
         const result = await api.removeDefault(state.selectedSchedule.id);
         if(result){
@@ -1040,7 +1025,7 @@ async function saveAllChanges(){
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ employee_order: state.pendingChanges.employeeOrder })
             });
-            
+
             if(reorderResponse.ok) changesCount++;
             success = success && reorderResponse.ok;
         }
@@ -1142,28 +1127,28 @@ function showDeleteConfirmModalAboveModal(title, text, callback){
     el.deleteModalTitle.textContent = title;
     el.deleteModalText.textContent = text;
     deleteCallback = callback;
-    
+
     // Скрываем vacationModal временно
     const vacationModal = document.getElementById("vacationModal");
     if(vacationModal) {
         vacationModal.dataset.wasVisible = "true";
         vacationModal.style.display = "none";
     }
-    
+
     el.deleteConfirmModal.style.zIndex = "5000";
     toggle(el.deleteConfirmModal, true);
 }
 
 function closeDeleteConfirmModal(){
     deleteCallback = null;
-    
+
     // Восстанавливаем vacationModal если он был
     const vacationModal = document.getElementById("vacationModal");
     if(vacationModal && vacationModal.dataset.wasVisible === "true") {
         vacationModal.style.display = "";
         delete vacationModal.dataset.wasVisible;
     }
-    
+
     el.deleteConfirmModal.style.zIndex = "";
     toggle(el.deleteConfirmModal, false);
 }
@@ -1209,7 +1194,7 @@ function setupCloseButton(){
 async function showEmployeeList(){
     toggle(el.ceListBlock, true);
     toggle(el.ceManualBlock, false);
-    
+
     // Подсвечиваем активную кнопку
     el.ceModeList?.classList.add("active");
     el.ceModeManual?.classList.remove("active");
@@ -1245,7 +1230,7 @@ async function showEmployeeList(){
         `;
         container.appendChild(div);
     });
-    
+
     // Показываем фильтр по направлению только для отдела ТП
     if(el.ceDirectionFilterBlock) {
         if(state.departmentId === "2") {
@@ -1254,7 +1239,7 @@ async function showEmployeeList(){
             toggle(el.ceDirectionFilterBlock, false);
         }
     }
-    
+
     // Предотвращаем закрытие модалки при клике на элементы списка
     if(el.ceListBlock) {
         el.ceListBlock.addEventListener("click", function(e){
@@ -1272,7 +1257,7 @@ async function addEmployeeFromList(user){
     if(success){
         showMessage(`Сотрудник ${user.first_name} ${user.last_name} добавлен в график`, "success");
         closeCreateEmployeeModal();
-        
+
         // Перезагружаем график
         const data = await api.getSchedule(state.selectedSchedule.id);
         state.selectedSchedule = data;
@@ -1283,7 +1268,7 @@ async function addEmployeeFromList(user){
 // Добавление выбранного сотрудника из списка
 async function addSelectedEmployees(){
     const checkedItems = el.ceUsersList.querySelectorAll(".ce-user-item input:checked");
-    
+
     if(checkedItems.length === 0){
         showMessage("Выберите хотя бы одного сотрудника", "warning");
         return;
@@ -1303,12 +1288,12 @@ async function addSelectedEmployees(){
     for(const checkbox of checkedItems) {
         const item = checkbox.closest(".ce-user-item");
         const userId = item.dataset.userId;
-        
+
         const result = await api.addEmployee(state.selectedSchedule.id, {
             employee_id: parseInt(userId),
             direction: selectedDirection || null
         });
-        
+
         if(!result){
             success = false;
             break;
@@ -1318,7 +1303,7 @@ async function addSelectedEmployees(){
     if(success){
         showMessage(`${checkedItems.length} сотрудников добавлено в график`, "success");
         closeCreateEmployeeModal();
-        
+
         // Перезагружаем график
         const data = await api.getSchedule(state.selectedSchedule.id);
         state.selectedSchedule = data;
@@ -1333,22 +1318,22 @@ function showManualEntry(){
     // Кнопки остаются видимыми - не скрываем ceModeRow
     toggle(el.ceListBlock, false);
     toggle(el.ceManualBlock, true);
-    
+
     // Подсвечиваем активную кнопку
     el.ceModeManual?.classList.add("active");
     el.ceModeList?.classList.remove("active");
-    
+
     // Очищаем поля, но сохраняем отдел из графика
     el.ceFirstName.value = "";
     el.ceLastName.value = "";
     el.cePosition.value = "";
-    
+
     // Всегда блокируем отдел, если есть выбранный график
     const deptId = state.selectedSchedule?.department_id;
     if(deptId && el.ceDepartment) {
         el.ceDepartment.value = deptId;
         el.ceDepartment.disabled = true;
-        
+
         // Показываем/скрываем блок направления
         if(el.ceDirectionBlock) {
             if(deptId == 2) {
@@ -1377,10 +1362,10 @@ function setupInputHandlers(){
 // Заполнение выпадающего списка годов
 function setupYearSelect(){
     if(!el.csYear) return;
-    
+
     const currentYear = new Date().getFullYear();
     el.csYear.innerHTML = "";
-    
+
     for(let year = currentYear; year <= 2040; year++){
         const opt = document.createElement("option");
         opt.value = year;
@@ -1394,17 +1379,17 @@ function showModeSelection(){
     toggle(el.ceModeRow, true);
     toggle(el.ceListBlock, false);
     toggle(el.ceManualBlock, false);
-    
+
     // Убираем подсветку
     el.ceModeList?.classList.remove("active");
     el.ceModeManual?.classList.remove("active");
-    
+
     // Если отдел уже установлен (из графика), блокируем его и показываем/скрываем направление
     const deptId = state.selectedSchedule?.department_id;
     if(deptId && el.ceDepartment) {
         el.ceDepartment.value = deptId;
         el.ceDepartment.disabled = true;
-        
+
         if(el.ceDirectionBlock) {
             if(deptId == 2) {
                 toggle(el.ceDirectionBlock, true);
@@ -1465,13 +1450,13 @@ async function addEmployeeManual(){
     if(success){
         showMessage(`Сотрудник ${lastName} ${firstName} добавлен в график`, "success");
         closeCreateEmployeeModal();
-        
+
         // Очищаем форму
         el.ceFirstName.value = "";
         el.ceLastName.value = "";
         el.cePosition.value = "";
         el.ceDirection.value = "";
-        
+
         // Перезагружаем график
         const data = await api.getSchedule(state.selectedSchedule.id);
         state.selectedSchedule = data;
@@ -1495,7 +1480,7 @@ function capitalizeName(name){
 // Загрузка должностей для отдела
 async function loadPositions(departmentId){
     const deptId = departmentId || state.departmentId;
-    
+
     if(!deptId){
         el.cePosition.innerHTML = '<option value="">Сначала выберите отдел</option>';
         return;
@@ -1505,7 +1490,7 @@ async function loadPositions(departmentId){
     const positions = await r.json();
 
     el.cePosition.innerHTML = '<option value="">Выберите должность</option>';
-    
+
     positions.forEach(pos => {
         const opt = document.createElement("option");
         opt.value = pos.id;
@@ -1519,7 +1504,7 @@ function setupDepartmentHandler(){
     el.ceDepartment?.addEventListener("change", function(){
         const deptId = this.value;
         loadPositions(deptId);
-        
+
         // Показываем поле направления только для отдела ТП (id=2)
         if(el.ceDirectionBlock) {
             if(deptId === "2") {
@@ -1540,7 +1525,7 @@ function filterEmployees(){
     items.forEach(item => {
         const name = item.querySelector(".ce-user-name").textContent.toLowerCase();
         const position = item.querySelector(".ce-user-position").textContent.toLowerCase();
-        
+
         if(name.includes(searchTerm) || position.includes(searchTerm)){
             item.style.display = "";
         } else {
@@ -1671,11 +1656,11 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
     if(isEditMode && vacationData){
         // Проверяем, что отпуск в том же году, что и график
         const vacYear = new Date(vacationData.start_date).getFullYear();
-        
+
         if(vacYear === year) {
             document.getElementById("vacStartDate").value = vacationData.start_date;
             document.getElementById("vacEndDate").value = vacationData.end_date;
-            
+
             // Устанавливаем тип отпуска
             const typeRadio = modal.querySelector(`input[name="vacationType"][value="${vacationData.type_vacation_id}"]`);
             if(typeRadio) typeRadio.checked = true;
@@ -1694,7 +1679,7 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
                 toggle(deleteBtn, false);
             }
             modal.dataset.vacationId = vacationData.id;
-            
+
             // Для редактирования: min/max в рамках месяца для начала, до конца года для окончания
             document.getElementById("vacStartDate").min = monthStart;
             document.getElementById("vacEndDate").min = monthStart;
@@ -1711,20 +1696,20 @@ function showVacationModal(scheduleEmployeeId, month, employeeName, vacationData
         // Режим добавления - ставим начало выбранного месяца, конец - конец выбранного месяца
         document.getElementById("vacStartDate").value = monthStart;
         document.getElementById("vacEndDate").value = monthEnd;
-        
+
         // Для suggestMode устанавливаем тип "Запланированный" (type=3)
         if(state.suggestMode) {
             const plannedType = modal.querySelector('input[name="vacationType"][value="3"]');
             if(plannedType) plannedType.checked = true;
         }
-        
+
         // Для нового отпуска: start date ограничена выбранным месяцем
         document.getElementById("vacStartDate").min = monthStart;
         document.getElementById("vacStartDate").max = monthEnd;
         // end date от даты начала до конца года
         document.getElementById("vacEndDate").min = monthStart;
         document.getElementById("vacEndDate").max = yearEnd;
-        
+
         toggle(document.getElementById("vacDeleteBtn"), false);
         delete modal.dataset.vacationId;
     }
@@ -1748,7 +1733,7 @@ async function saveVacation(){
     const scheduleEmployeeId = modal.dataset.scheduleEmployeeId;
     const startDate = document.getElementById("vacStartDate").value;
     const endDate = document.getElementById("vacEndDate").value;
-    
+
     // Получаем выбранный тип отпуска
     const selectedType = modal.querySelector('input[name="vacationType"]:checked');
     const typeVacationId = selectedType ? parseInt(selectedType.value) : 1;
@@ -1769,7 +1754,7 @@ async function saveVacation(){
         const year = state.selectedSchedule?.year || 2026;
         const monthStart = new Date(year, month, 1);
         const start = new Date(startDate);
-        
+
         if(start < monthStart) {
             const monthNames = ["январь", "февраль", "март", "апрель", "май", "июнь",
                                "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
@@ -1782,7 +1767,7 @@ async function saveVacation(){
     const year = state.selectedSchedule?.year || 2026;
     const startYear = new Date(startDate).getFullYear();
     const endYear = new Date(endDate).getFullYear();
-    
+
     if(startYear !== year || endYear !== year) {
         showMessage(`Отпуск должен быть в ${year} году`, "warning");
         return;
@@ -1791,7 +1776,7 @@ async function saveVacation(){
     // Если режим редактирования
     if(modal.dataset.vacationId){
         const vacationId = parseInt(modal.dataset.vacationId);
-        
+
         if(state.editMode && !state.suggestMode){
             // Находим оригинальные данные отпуска для сравнения
             let originalVacation = null;
@@ -1806,26 +1791,26 @@ async function saveVacation(){
                     if(originalVacation) break;
                 }
             }
-            
+
             // Проверяем, изменилось ли что-то по сравнению с оригиналом
             const originalTypeId = originalVacation ? parseInt(originalVacation.type_vacation_id) : null;
             const originalStart = originalVacation ? originalVacation.start_date : null;
             const originalEnd = originalVacation ? originalVacation.end_date : null;
-            
+
             const hasTypeChanged = originalTypeId !== null && originalTypeId !== typeVacationId;
             const hasStartChanged = originalStart !== null && originalStart !== startDate;
             const hasEndChanged = originalEnd !== null && originalEnd !== endDate;
-            
+
             // Проверяем, есть ли вообще изменения
             const hasAnyChanges = state.pendingChanges.modifiedVacations.length > 0 ||
                                  state.pendingChanges.addedVacations.length > 0 ||
                                  state.pendingChanges.deletedVacations.length > 0 ||
                                  Object.keys(state.pendingChanges.updatedNames).length > 0 ||
                                  state.pendingChanges.employeeOrder;
-            
+
             // Если это уже было добавлено в pendingChanges, просто обновляем
             const existingChange = state.pendingChanges.modifiedVacations.findIndex(v => v.id === vacationId);
-            
+
             if(existingChange !== -1) {
                 // Уже есть в pendingChanges, обновляем
                 state.pendingChanges.modifiedVacations[existingChange].startDate = startDate;
@@ -1845,7 +1830,7 @@ async function saveVacation(){
                 closeVacationModal();
                 return;
             }
-            
+
             closeVacationModal();
             showMessage("Отпуск изменён (сохранится при нажатии \"Сохранить\")", "info");
         } else {
@@ -1858,7 +1843,7 @@ async function saveVacation(){
             if(success){
                 closeVacationModal();
                 showMessage("Отпуск обновлён", "success");
-                
+
                 // Перезагружаем график
                 if(state.selectedSchedule){
                     const data = await api.getSchedule(state.selectedSchedule.id);
@@ -1877,7 +1862,7 @@ async function saveVacation(){
                 endDate: endDate,
                 typeId: typeVacationId
             });
-            
+
             closeVacationModal();
             showMessage("Отпуск добавлен (сохранится при нажатии \"Сохранить\")", "info");
         } else {
@@ -1885,7 +1870,7 @@ async function saveVacation(){
             const schedule = state.selectedSchedule;
             const newStart = new Date(startDate);
             const newEnd = new Date(endDate);
-            
+
             // Проверка 1: пересечение отпусков сотрудников одного направления
             const directionCheck = checkDirectionOverlap(newStart, newEnd, scheduleEmployeeId, schedule);
             if (directionCheck.overlap) {
@@ -1893,7 +1878,7 @@ async function saveVacation(){
                 showMessage(`Нельзя запланировать отпуск на эти даты: сотрудник ${directionCheck.employeeName} (${directionCheck.direction}) уже находится в отпуске.`, "error");
                 return;
             }
-            
+
             // Проверка 2: максимум 14 дней летом
             const summerCheck = checkSummerVacationLimit(scheduleEmployeeId, newStart, newEnd, schedule);
             if (!summerCheck.limit) {
@@ -1901,7 +1886,7 @@ async function saveVacation(){
                 showMessage(summerCheck.message, "error");
                 return;
             }
-            
+
             // Проверка 3: пересечение отпусков руководителя и заместителя
             const headCheck = checkHeadDeputyOverlap(scheduleEmployeeId, newStart, newEnd, schedule);
             if (headCheck.overlap) {
@@ -1913,7 +1898,7 @@ async function saveVacation(){
                 }
                 return;
             }
-            
+
             // Проверка 4: максимум 28 дней в году
             const yearlyCheck = checkYearlyVacationLimit(scheduleEmployeeId, newStart, newEnd, typeVacationId, schedule);
             if (!yearlyCheck.limit) {
@@ -1921,20 +1906,20 @@ async function saveVacation(){
                 showMessage(yearlyCheck.message, "error");
                 return;
             }
-            
+
             // Все проверки пройдены - сохраняем отпуск
             const success = await api.addVacation(scheduleEmployeeId, startDate, endDate, typeVacationId);
 
             if(success){
                 closeVacationModal();
                 showMessage("Отпуск успешно запланирован", "success");
-                
+
                 // Выходим из режима редактирования
                 state.editMode = false;
                 state.suggestMode = false;
                 state.originalSchedule = null;
                 document.body.classList.remove("suggest-mode");
-                
+
                 // Перезагружаем график и обновляем UI
                 if(state.selectedSchedule){
                     const data = await api.getSchedule(state.selectedSchedule.id);
@@ -1978,14 +1963,14 @@ async function deleteCurrentVacation(){
                 if(success){
                     closeVacationModal();
                     showMessage("Отпуск удалён", "success");
-                    
+
                     // Выходим из режима редактирования
                     state.editMode = false;
                     state.suggestMode = false;
                     state.originalSchedule = null;
                     document.body.classList.remove("suggest-mode");
                     toggle(el.btnDeleteSchedule, true);
-                    
+
                     // Перезагружаем график и обновляем UI
                     if(state.selectedSchedule){
                         const data = await api.getSchedule(state.selectedSchedule.id);
@@ -2074,7 +2059,7 @@ function bindEvents(){
     el.ceSearch?.addEventListener("click", function(e){
         e.stopPropagation();
     });
-    
+
     // Фильтр по направлению (устанавливает значение для добавления)
     el.ceDirectionFilter?.addEventListener("change", function(){
         // Просто запоминаем выбранное значение, фильтрация не нужна
@@ -2132,11 +2117,11 @@ function bindEvents(){
         if(r.ok){
             showMessage("График успешно создан", "success");
             closeCreateScheduleModal();
-            
+
             // Очищаем форму
             el.csName.value = "";
             if(el.csIsDefault) el.csIsDefault.checked = false;
-            
+
             // Перезагружаем список графиков
             if(state.departmentId){
                 await onDepartmentChange();
@@ -2185,7 +2170,7 @@ window.initSchedulePage = initSchedule;
 // Загрузка данных текущего пользователя
 async function loadCurrentUser(){
     const user = await api.getCurrentUser();
-    
+
     if(user && user.department_id){
         state.userDepartmentId = user.department_id;
         state.currentUserId = user.id;
@@ -2193,11 +2178,11 @@ async function loadCurrentUser(){
         state.currentFirstName = user.first_name || "";
         state.currentLastName = user.last_name || "";
         state.userRole = user.role_id;
-        
+
         // Устанавливаем отдел пользователя
         el.departmentFilter.value = user.department_id;
         await onDepartmentChange();
-        
+
         // Для обычных сотрудников сразу загружаем график по умолчанию
         if(state.userRole !== 2 && state.userRole !== 3 && state.userRole !== 4) {
             // Блокируем фильтры
@@ -2207,7 +2192,7 @@ async function loadCurrentUser(){
             el.scheduleFilter.style.opacity = '0.5';
             el.departmentFilter.style.cursor = 'not-allowed';
             el.scheduleFilter.style.cursor = 'not-allowed';
-            
+
             // Блокируем чекбокс
             el.isDefaultCheckbox.disabled = true;
             const label = el.isDefaultCheckbox.closest('.schedule-default-label');
@@ -2216,7 +2201,7 @@ async function loadCurrentUser(){
             }
         }
     }
-    
+
     // Загружаем типы отпусков
     state.vacationTypes = await api.getVacationTypes();
 }
@@ -2232,7 +2217,7 @@ function renderSchedule(data){
 
     // Всегда показываем контейнер
     toggle(grid, true);
-    
+
     // Показываем легенды только если есть график
     toggle(el.directionLegend, !!data);
     toggle(el.vacationLegend, !!data);
@@ -2259,40 +2244,18 @@ function renderSchedule(data){
         if(state.currentUserId) {
             const currentUserEmp = data.employees.find(e => {
                 // Сравниваем по user_id (приводим к числу)
-                const userIdMatch = e.user_id !== null && e.user_id !== undefined && Number(e.user_id) === Number(state.currentUserId);
+                const userIdMatch = e.user_id !== null && Number(e.user_id) === Number(state.currentUserId);
                 // Сравниваем по email
-                const emailMatch = e.email && state.currentEmail && e.email === state.currentEmail;
-                
-                // Отладочная информация
-                if(userIdMatch || emailMatch) {
-                    console.log("✅ Found current user in schedule:", {
-                        schedule_employee_id: e.schedule_employee_id,
-                        user_id: e.user_id,
-                        currentUserId: state.currentUserId,
-                        email: e.email,
-                        currentEmail: state.currentEmail
-                    });
-                }
-                
+                const emailMatch = e.email === state.currentEmail;
                 return userIdMatch || emailMatch;
             });
             if(currentUserEmp) {
                 currentEmpScheduleEmployeeId = currentUserEmp.schedule_employee_id;
             }
         }
-        
-        const isCurrentUser = currentEmpScheduleEmployeeId && 
+
+        const isCurrentUser = currentEmpScheduleEmployeeId &&
                               emp.schedule_employee_id == currentEmpScheduleEmployeeId;
-        
-        // Отладочная информация для каждой строки
-        if(state.currentUserId) {
-            console.log("📋 Row check:", {
-                emp_schedule_employee_id: emp.schedule_employee_id,
-                emp_user_id: emp.user_id,
-                currentUserId: state.currentUserId,
-                isCurrentUser: isCurrentUser
-            });
-        }
 
         // Создаём ячейки для месяцев
         const year = data?.year || 2026;
