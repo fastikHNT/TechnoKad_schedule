@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="14.09.2026 Добавил кнопку с модалкой на страницу &quot;График отпусков&quot; - &quot;Служебная записка&quot;, данные должны заполняться пользователем (валидация полей на фронте), декоратор /api/memo/generate формирует записку в соответствии с внутренним шаблоном">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="14.09.2026 Формирование служебной записки по шаблону (доделано)">
+      <change beforePath="$PROJECT_DIR$/static/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/schedule.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/schedule.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -234,6 +234,7 @@
     <MESSAGE value="11.09.2026" />
     <MESSAGE value="14.09.2026 Убрал min-height: 400px из .page-anim. Блок должен растягиваться по мере заполнения контентом" />
     <MESSAGE value="14.09.2026 Добавил кнопку с модалкой на страницу &quot;График отпусков&quot; - &quot;Служебная записка&quot;, данные должны заполняться пользователем (валидация полей на фронте), декоратор /api/memo/generate формирует записку в соответствии с внутренним шаблоном" />
-    <option name="LAST_COMMIT_MESSAGE" value="14.09.2026 Добавил кнопку с модалкой на страницу &quot;График отпусков&quot; - &quot;Служебная записка&quot;, данные должны заполняться пользователем (валидация полей на фронте), декоратор /api/memo/generate формирует записку в соответствии с внутренним шаблоном" />
+    <MESSAGE value="14.09.2026 Формирование служебной записки по шаблону (доделано)" />
+    <option name="LAST_COMMIT_MESSAGE" value="14.09.2026 Формирование служебной записки по шаблону (доделано)" />
   </component>
 </project>

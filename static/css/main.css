@@ -506,8 +506,8 @@ header{
 ================================================== */
 
 #memoModal .custom-modal-content {
-    max-height: 80vh;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
 }
 
 #memoModal .custom-modal-content label {

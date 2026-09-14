@@ -2271,6 +2271,8 @@ function initSchedule(){
 
     setupYearSelect();
 
+    setupLowercaseFields();
+
     state.editMode=false;
     state.suggestMode=false;
     state.selectedSchedule=null;
@@ -2804,6 +2806,35 @@ function openMemoModal(){
     el.memoTransferTo.value = "";
     el.memoReason.value = "";
     el.memoModal.classList.remove("hidden");
+}
+
+// Автоматически переводим первый символ в нижний регистр для полей должности/отдела/причины
+function setupLowercaseFields(){
+    const lowercaseFields = [
+        "memoHeadPosition",
+        "memoHeadDepartment",
+        "memoEmployeePosition",
+        "memoEmployeeDepartment",
+        "memoReason"
+    ];
+    lowercaseFields.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener("input", function(){
+                if(this.selectionStart === 0 && this.selectionEnd === 0 && this.value.length > 1){
+                    // Не трогаем, если курсор не в начале — меняем только первый символ при первом вводе
+                }
+                // При фокусе в начале — следующий символ введётся правильно
+                // При редактировании в середине — не трогаем
+            });
+            // При потере фокуса исправляем первый символ если он заглавный и это начало поля
+            el.addEventListener("blur", function(){
+                if(this.value.length > 0){
+                    this.value = this.value.charAt(0).toLowerCase() + this.value.slice(1);
+                }
+            });
+        }
+    });
 }
 
 function closeMemoModal(){
