@@ -500,3 +500,75 @@ header{
     transform:rotate(207deg);
     transform-origin:60px 60px;
 }
+
+/* ==================================================
+   МОДАЛЬНОЕ ОКНО СЛУЖЕБНАЯ ЗАПИСКА
+================================================== */
+
+#memoModal .custom-modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#memoModal .custom-modal-content label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+#memoModal .custom-modal-content .input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+#memoModal .custom-modal-content .input::placeholder {
+    color: var(--input-placeholder);
+}
+
+#memoModal .custom-modal-content .modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    justify-content: flex-end;
+}
+
+#memoModal .custom-modal-content .btn-save,
+#memoModal .custom-modal-content .btn-cancel {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#memoModal .custom-modal-content .btn-save {
+    background: var(--button-bg);
+    color: white;
+}
+
+#memoModal .custom-modal-content .btn-save:hover {
+    background: var(--button-hover);
+}
+
+#memoModal .custom-modal-content .btn-save:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#memoModal .custom-modal-content .btn-cancel {
+    background: #6b7280;
+    color: white;
+}
+
+#memoModal .custom-modal-content .btn-cancel:hover {
+    background: #4b5563;
+}

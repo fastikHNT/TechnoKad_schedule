@@ -2064,6 +2064,193 @@ def get_schedule_directions(schedule_id):
 
 
 
+@app.route("/api/memo/generate", methods=["POST"])
+@login_required
+def generate_memo():
+    """
+        Генерация служебной записки в PDF по шаблону.
+    """
+    try:
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.colors import HexColor
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.utils import ImageReader
+        from io import BytesIO
+        from datetime import datetime
+        import os
+
+        data = request.get_json()
+
+        head_name = data.get("head_name", "")
+        head_position = data.get("head_position", "")
+        head_department = data.get("head_department", "")
+        employee_name = data.get("employee_name", "")
+        employee_position = data.get("employee_position", "")
+        employee_department = data.get("employee_department", "")
+        vac_from = data.get("vac_from", "")
+        vac_to = data.get("vac_to", "")
+        transfer_from = data.get("transfer_from", "")
+        transfer_to = data.get("transfer_to", "")
+        reason = data.get("reason", "")
+
+        # Форматируем даты
+        def fmt_date_full(date_str):
+            """Формат: __.__.____"""
+            if not date_str:
+                return "__.__.__"
+            try:
+                d = datetime.strptime(date_str, "%Y-%m-%d")
+                return d.strftime("%d.%m.%Y")
+            except:
+                return "__.__.__"
+
+        # Регистрируем шрифт
+        try:
+            pdfmetrics.registerFont(TTFont('TimesNewRoman', 'C:/Windows/Fonts/times.ttf'))
+            pdfmetrics.registerFont(TTFont('TimesNewRomanBold', 'C:/Windows/Fonts/timesbd.ttf'))
+        except:
+            pass
+
+        # Строим PDF с помощью canvas для полного контроля
+        buffer = BytesIO()
+        c = canvas.Canvas(buffer, pagesize=A4)
+        page_width, page_height = A4
+
+        # Отступы
+        left_margin = 2 * cm
+        right_margin = 2 * cm
+
+        # ===== Логотип из файла (левый верхний угол) =====
+        logo_path = os.path.join(app.root_path, "static", "img", "logo_for_memo.png")
+        if os.path.exists(logo_path):
+            try:
+                logo_img = ImageReader(logo_path)
+                logo_width = 6 * cm
+                logo_height = 2.3 * cm
+                c.drawImage(
+                    logo_img,
+                    left_margin,
+                    page_height - logo_height - 0.3 * cm,
+                    width=logo_width,
+                    height=logo_height,
+                    preserveAspectRatio=True
+                )
+            except:
+                pass
+
+        # ===== Шапка справа: данные руководителя =====
+        # Поднимаем выше и уменьшаем отступ справа
+        header_right_x = page_width - 1 * cm
+        header_y = page_height - 2.5 * cm
+
+        c.setFont('TimesNewRoman', 12)
+        c.setFillColor(HexColor('#111827'))
+
+        # "Кому" блок (правое выравнивание)
+        c.drawRightString(header_right_x, header_y, "Генеральному директору")
+        header_y -= 13
+        c.drawRightString(header_right_x, header_y, 'ООО "ТехноКад"')
+        header_y -= 13
+        c.drawRightString(header_right_x, header_y, "Елисееву О.Н.")
+        header_y -= 15
+
+        # "от" блок (правое выравнивание)
+        c.drawRightString(header_right_x, header_y, "от")
+        header_y -= 14
+
+        # Блок с данными - всё правое выравнивание, одинаковый отступ справа
+        data_line_h = 14
+
+        c.drawRightString(header_right_x, header_y, f"ФИО: {head_name}")
+        header_y -= data_line_h
+        c.drawRightString(header_right_x, header_y, f"Должность: {head_position}")
+        header_y -= data_line_h
+        c.drawRightString(header_right_x, header_y, f"Отдел: {head_department}")
+        header_y -= data_line_h
+
+        # "Управления по работе с клиентами" (правое выравнивание)
+        c.drawRightString(header_right_x, header_y - 4, "Управления по работе с клиентами")
+
+        # ===== Заголовок по центру =====
+        title_y = page_height - 11.2 * cm
+        c.setFont('TimesNewRomanBold', 12)
+        title_text = "служебная записка."
+        title_width = c.stringWidth(title_text, 'TimesNewRomanBold', 12)
+        c.drawString((page_width - title_width) / 2, title_y, title_text)
+
+        # ===== Основной текст (центрирован, с переносом длинных строк) =====
+        body_y = title_y - 18
+        body_font = 'TimesNewRoman'
+        body_size = 12
+
+        # Ограничиваем ширину текста для центрирования
+        text_margin = 3.5 * cm
+        max_text_width = page_width - 2 * text_margin
+
+        def wrap_line(text, max_w, font, size):
+            """Разбивает длинную строку на несколько по максимальной ширине"""
+            words = text.split()
+            lines = []
+            current = ""
+            for word in words:
+                test = (current + " " + word) if current else word
+                if c.stringWidth(test, font, size) <= max_w:
+                    current = test
+                else:
+                    if current:
+                        lines.append(current)
+                    current = word
+            if current:
+                lines.append(current)
+            if not lines:
+                lines.append("")
+            return lines
+
+        line1 = f"Прошу перенести очередной оплачиваемый отпуск {employee_position}"
+        line2 = f"отдела {employee_department} Управления по работе с клиентами {employee_name}"
+        line3 = f"с {fmt_date_full(vac_from)}-{fmt_date_full(vac_to)} г. на {fmt_date_full(transfer_from)}-{fmt_date_full(transfer_to)} г. в связи с {reason}."
+
+        c.setFont(body_font, body_size)
+        all_lines = []
+        for raw in [line1, line2, line3]:
+            all_lines.extend(wrap_line(raw, max_text_width, body_font, body_size))
+
+        for line in all_lines:
+            tw = c.stringWidth(line, body_font, body_size)
+            c.drawString((page_width - tw) / 2, body_y, line)
+            body_y -= 14
+
+        # ===== Подпись и дата =====
+        sig_y = body_y - 20
+
+        c.setFont('TimesNewRoman', 12)
+        c.drawString(left_margin, sig_y, f"Дата: {fmt_date_full(vac_from)} г.")
+
+        sig_line_y = sig_y - 14
+        # Линия под "Подпись:" - короткая, не пересекающая текст
+        c.line(left_margin, sig_line_y + 3, left_margin + 60, sig_line_y + 3)
+
+        # Сохраняем страницу
+        c.showPage()
+        c.save()
+        buffer.seek(0)
+
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='Служебная_записка.pdf'
+        )
+
+    except Exception as e:
+        import traceback
+        app.logger.error(f"Error generating memo: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": f"Ошибка генерации документа: {str(e)}"}), 500
+
+
 if __name__ == "__main__":
     """
         Точка входа для запуска приложения в режиме разработки.

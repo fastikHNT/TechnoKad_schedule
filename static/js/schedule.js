@@ -305,7 +305,24 @@ const DOM = {
     cancelSaveBtn:"#cancelSaveBtn",
 
     directionLegend:"#directionLegend",
-    vacationLegend:"#vacationLegend"
+    vacationLegend:"#vacationLegend",
+
+    // Memo
+    memoBtn:"#memoBtn",
+    memoModal:"#memoModal",
+    memoHeadName:"#memoHeadName",
+    memoHeadPosition:"#memoHeadPosition",
+    memoHeadDepartment:"#memoHeadDepartment",
+    memoEmployeeName:"#memoEmployeeName",
+    memoEmployeePosition:"#memoEmployeePosition",
+    memoEmployeeDepartment:"#memoEmployeeDepartment",
+    memoVacFrom:"#memoVacFrom",
+    memoVacTo:"#memoVacTo",
+    memoTransferFrom:"#memoTransferFrom",
+    memoTransferTo:"#memoTransferTo",
+    memoReason:"#memoReason",
+    memoGenerateBtn:"#memoGenerateBtn",
+    memoCancelBtn:"#memoCancelBtn"
 };
 
 let el = {};
@@ -1985,6 +2002,104 @@ async function deleteCurrentVacation(){
 }
 
 
+// ===== Служебная записка =====
+
+function openMemoModal(){
+    toggle(el.memoModal, true);
+}
+
+function closeMemoModal(){
+    toggle(el.memoModal, false);
+    // Очищаем поля
+    if(el.memoHeadName) el.memoHeadName.value = "";
+    if(el.memoHeadPosition) el.memoHeadPosition.value = "";
+    if(el.memoHeadDepartment) el.memoHeadDepartment.value = "";
+    if(el.memoEmployeeName) el.memoEmployeeName.value = "";
+    if(el.memoEmployeePosition) el.memoEmployeePosition.value = "";
+    if(el.memoVacFrom) el.memoVacFrom.value = "";
+    if(el.memoVacTo) el.memoVacTo.value = "";
+    if(el.memoTransferFrom) el.memoTransferFrom.value = "";
+    if(el.memoTransferTo) el.memoTransferTo.value = "";
+    if(el.memoReason) el.memoReason.value = "";
+}
+
+async function generateMemo(){
+    const headName = el.memoHeadName?.value.trim();
+    const headPosition = el.memoHeadPosition?.value.trim();
+    const headDepartment = el.memoHeadDepartment?.value.trim();
+    const employeeName = el.memoEmployeeName?.value.trim();
+    const employeePosition = el.memoEmployeePosition?.value.trim();
+    const vacFrom = el.memoVacFrom?.value;
+    const vacTo = el.memoVacTo?.value;
+    const transferFrom = el.memoTransferFrom?.value;
+    const transferTo = el.memoTransferTo?.value;
+    const reason = el.memoReason?.value.trim();
+
+    if(!headName || !headPosition || !headDepartment){
+        showMessage("Заполните данные руководителя","warning");
+        return;
+    }
+    if(!employeeName || !employeePosition){
+        showMessage("Заполните данные сотрудника","warning");
+        return;
+    }
+    if(!vacFrom || !vacTo){
+        showMessage("Укажите период текущего отпуска","warning");
+        return;
+    }
+    if(!transferFrom || !transferTo){
+        showMessage("Укажите период переноса отпуска","warning");
+        return;
+    }
+    if(!reason){
+        showMessage("Укажите причину","warning");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/memo/generate", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                head_name: headName,
+                head_position: headPosition,
+                head_department: headDepartment,
+                employee_name: employeeName,
+                employee_position: employeePosition,
+                vac_from: vacFrom,
+                vac_to: vacTo,
+                transfer_from: transferFrom,
+                transfer_to: transferTo,
+                reason: reason
+            })
+        });
+
+        if(!response.ok){
+            const error = await response.json();
+            showMessage(error.error || "Ошибка генерации","error");
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Служебная_записка.pdf";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showMessage("Служебная записка сформирована","success");
+        closeMemoModal();
+
+    } catch(err) {
+        showMessage("Ошибка при генерации документа","error");
+    }
+}
+
+// ===== Конец: Служебная записка =====
+
 // Слушатели событий
 function bindEvents(){
 
@@ -2088,6 +2203,11 @@ function bindEvents(){
     // Кнопки подтверждения сохранения
     el.confirmSaveBtn?.addEventListener("click", confirmSaveAction);
     el.cancelSaveBtn?.addEventListener("click", closeSaveConfirmModal);
+
+    // Служебная записка
+    el.memoBtn?.addEventListener("click", openMemoModal);
+    el.memoCancelBtn?.addEventListener("click", closeMemoModal);
+    el.memoGenerateBtn?.addEventListener("click", generateMemo);
 
     // Создание графика
     el.confirmCreateScheduleBtn?.addEventListener("click", async () => {
@@ -2666,6 +2786,120 @@ function handleNameEdit(e){
         }
     });
 }
+
+// ==================== СЛУЖЕБНАЯ ЗАПИСКА ====================
+
+function openMemoModal(){
+    if(!el.memoModal) return;
+    // Очищаем форму
+    el.memoHeadName.value = "";
+    el.memoHeadPosition.value = "";
+    el.memoHeadDepartment.value = "";
+    el.memoEmployeeName.value = "";
+    el.memoEmployeePosition.value = "";
+    el.memoEmployeeDepartment.value = "";
+    el.memoVacFrom.value = "";
+    el.memoVacTo.value = "";
+    el.memoTransferFrom.value = "";
+    el.memoTransferTo.value = "";
+    el.memoReason.value = "";
+    el.memoModal.classList.remove("hidden");
+}
+
+function closeMemoModal(){
+    if(el.memoModal) {
+        el.memoModal.classList.add("hidden");
+    }
+}
+
+async function generateMemo(){
+    // Валидация всех полей
+    const headName = el.memoHeadName.value.trim();
+    const headPosition = el.memoHeadPosition.value.trim();
+    const headDepartment = el.memoHeadDepartment.value.trim();
+    const employeeName = el.memoEmployeeName.value.trim();
+    const employeePosition = el.memoEmployeePosition.value.trim();
+    const employeeDepartment = el.memoEmployeeDepartment.value.trim();
+    const vacFrom = el.memoVacFrom.value;
+    const vacTo = el.memoVacTo.value;
+    const transferFrom = el.memoTransferFrom.value;
+    const transferTo = el.memoTransferTo.value;
+    const reason = el.memoReason.value.trim();
+
+    if(!headName || !headPosition || !headDepartment){
+        showMessage("Заполните данные руководителя","warning");
+        return;
+    }
+    if(!employeeName || !employeePosition || !employeeDepartment){
+        showMessage("Заполните данные сотрудника","warning");
+        return;
+    }
+    if(!vacFrom || !vacTo){
+        showMessage("Укажите период текущего отпуска","warning");
+        return;
+    }
+    if(!transferFrom || !transferTo){
+        showMessage("Укажите период переноса отпуска","warning");
+        return;
+    }
+    if(!reason){
+        showMessage("Укажите причину","warning");
+        return;
+    }
+
+    // Отключаем кнопку
+    el.memoGenerateBtn.disabled = true;
+    el.memoGenerateBtn.textContent = "Генерация...";
+
+    try {
+        const response = await fetch("/api/memo/generate", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                head_name: headName,
+                head_position: headPosition,
+                head_department: headDepartment,
+                employee_name: employeeName,
+                employee_position: employeePosition,
+                employee_department: employeeDepartment,
+                vac_from: vacFrom,
+                vac_to: vacTo,
+                transfer_from: transferFrom,
+                transfer_to: transferTo,
+                reason: reason
+            })
+        });
+
+        if(!response.ok){
+            const error = await response.json();
+            showMessage(error.error || "Ошибка генерации PDF","error");
+            return;
+        }
+
+        // Получаем Blob и открываем в новом окне
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Служебная_записка.pdf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        closeMemoModal();
+        showMessage("Служебная записка сформирована","success");
+
+    } catch(err) {
+        showMessage("Ошибка при генерации документа","error");
+        console.error(err);
+    } finally {
+        el.memoGenerateBtn.disabled = false;
+        el.memoGenerateBtn.textContent = "Сформировать";
+    }
+}
+
+// ==================== УДАЛЕНИЕ СОТРУДНИКА ====================
 
 // Обработчик удаления
 async function deleteEmployeeFromSchedule(){

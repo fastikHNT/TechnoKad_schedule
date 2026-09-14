@@ -38,6 +38,7 @@
 
         <div class="toolbar-right">
             <button id="createScheduleBtn" class="btn btn-success">Создать график</button>
+            <button id="memoBtn" class="btn btn-secondary">Служебная записка</button>
         </div>
 
 
@@ -280,6 +281,38 @@
             <div class="modal-buttons">
                 <button id="confirmSaveBtn" class="btn btn-success">Да</button>
                 <button id="cancelSaveBtn" class="btn btn-warning">Нет</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно служебной записки -->
+    <div id="memoModal" class="custom-modal hidden">
+        <div class="custom-modal-content" style="width: 520px;">
+            <h3>Формирование служебной записки</h3>
+
+            <label>Руководитель:</label>
+            <input type="text" id="memoHeadName" class="input" placeholder="ФИО руководителя в родительном падеже">
+            <input type="text" id="memoHeadPosition" class="input" placeholder="Должность руководителя">
+            <input type="text" id="memoHeadDepartment" class="input" placeholder="Отдел руководителя">
+
+            <label>Сотрудник:</label>
+            <input type="text" id="memoEmployeeName" class="input" placeholder="ФИО сотрудника в дательном падеже">
+            <input type="text" id="memoEmployeePosition" class="input" placeholder="Должность сотрудника в дательном падеже">
+            <input type="text" id="memoEmployeeDepartment" class="input" placeholder="Отдел сотрудника">
+            <label>Период текущего отпуска:</label>
+            <input type="date" id="memoVacFrom" class="input">
+            <input type="date" id="memoVacTo" class="input">
+
+            <label>Период переноса отпуска:</label>
+            <input type="date" id="memoTransferFrom" class="input">
+            <input type="date" id="memoTransferTo" class="input">
+
+            <label>Причина (в связи с):</label>
+            <input type="text" id="memoReason" class="input" placeholder="Введите причину">
+
+            <div class="modal-buttons">
+                <button id="memoGenerateBtn" class="btn-save">Сформировать</button>
+                <button id="memoCancelBtn" class="btn-cancel">Отмена</button>
             </div>
         </div>
     </div>
