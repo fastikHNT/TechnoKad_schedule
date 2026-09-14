@@ -300,7 +300,6 @@ header{
     opacity:0;
     transform:translateY(20px);
     transition: opacity 2s ease, transform 2s ease;
-    min-height: 400px;
 }
 
 /* Spinner виден всегда */
