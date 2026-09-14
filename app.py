@@ -2106,6 +2106,16 @@ def generate_memo():
             except:
                 return "__.__.__"
 
+        # Формат: число.месяц - число.месяц.год
+        def fmt_date_range(date_from, date_to):
+            """Формат: __.__ - __.__.__"""
+            try:
+                d_from = datetime.strptime(date_from, "%Y-%m-%d")
+                d_to = datetime.strptime(date_to, "%Y-%m-%d")
+                return f"{d_from.strftime('%d.%m')} - {d_to.strftime('%d.%m.%Y')}"
+            except:
+                return "__.__ - __.__.__"
+
         # Регистрируем шрифт
         try:
             pdfmetrics.registerFont(TTFont('TimesNewRoman', 'C:/Windows/Fonts/times.ttf'))
@@ -2145,92 +2155,124 @@ def generate_memo():
         header_right_x = page_width - 1 * cm
         header_y = page_height - 2.5 * cm
 
-        c.setFont('TimesNewRoman', 12)
         c.setFillColor(HexColor('#111827'))
 
-        # "Кому" блок (правое выравнивание)
+        
+        c.setFont('TimesNewRomanBold', 12)
         c.drawRightString(header_right_x, header_y, "Генеральному директору")
         header_y -= 13
-        c.drawRightString(header_right_x, header_y, 'ООО "ТехноКад"')
+        c.drawRightString(header_right_x, header_y, 'ООО «ТехноКад»')
         header_y -= 13
         c.drawRightString(header_right_x, header_y, "Елисееву О.Н.")
         header_y -= 15
-
-        # "от" блок (правое выравнивание)
         c.drawRightString(header_right_x, header_y, "от")
         header_y -= 14
 
-        # Блок с данными - всё правое выравнивание, одинаковый отступ справа
+        # Обычным: ФИО / Должность / Отдел
+        c.setFont('TimesNewRoman', 12)
         data_line_h = 14
 
-        c.drawRightString(header_right_x, header_y, f"ФИО: {head_name}")
+        c.drawRightString(header_right_x, header_y, f"Ф.И.О: {head_name}")
         header_y -= data_line_h
         c.drawRightString(header_right_x, header_y, f"Должность: {head_position}")
         header_y -= data_line_h
         c.drawRightString(header_right_x, header_y, f"Отдел: {head_department}")
         header_y -= data_line_h
 
-        # "Управления по работе с клиентами" (правое выравнивание)
+        # Обычным: "Управления по работе с клиентами"
         c.drawRightString(header_right_x, header_y - 4, "Управления по работе с клиентами")
 
         # ===== Заголовок по центру =====
         title_y = page_height - 11.2 * cm
         c.setFont('TimesNewRomanBold', 12)
-        title_text = "служебная записка."
+        title_text = "Служебная записка"
         title_width = c.stringWidth(title_text, 'TimesNewRomanBold', 12)
         c.drawString((page_width - title_width) / 2, title_y, title_text)
 
-        # ===== Основной текст (центрирован, с переносом длинных строк) =====
-        body_y = title_y - 18
+        # ===== Основной текст  =====
+        # Отступ между заголовком и текстом
+        body_y = title_y - 60
         body_font = 'TimesNewRoman'
         body_size = 12
+        left_margin_body = 3 * cm    # левое поле 3 см
+        right_margin_body = 1.5 * cm  # правое поле 1.5 см
+        para_indent = 1.25 * cm       # абзацный отступ
+        line_height = 14              # высота строки
 
-        # Ограничиваем ширину текста для центрирования
-        text_margin = 3.5 * cm
-        max_text_width = page_width - 2 * text_margin
-
-        def wrap_line(text, max_w, font, size):
-            """Разбивает длинную строку на несколько по максимальной ширине"""
-            words = text.split()
-            lines = []
-            current = ""
-            for word in words:
-                test = (current + " " + word) if current else word
-                if c.stringWidth(test, font, size) <= max_w:
-                    current = test
-                else:
-                    if current:
-                        lines.append(current)
-                    current = word
-            if current:
-                lines.append(current)
-            if not lines:
-                lines.append("")
-            return lines
-
-        line1 = f"Прошу перенести очередной оплачиваемый отпуск {employee_position}"
-        line2 = f"отдела {employee_department} Управления по работе с клиентами {employee_name}"
-        line3 = f"с {fmt_date_full(vac_from)}-{fmt_date_full(vac_to)} г. на {fmt_date_full(transfer_from)}-{fmt_date_full(transfer_to)} г. в связи с {reason}."
+        # Доступная ширина текста
+        text_width = page_width - left_margin_body - right_margin_body
 
         c.setFont(body_font, body_size)
-        all_lines = []
-        for raw in [line1, line2, line3]:
-            all_lines.extend(wrap_line(raw, max_text_width, body_font, body_size))
 
-        for line in all_lines:
-            tw = c.stringWidth(line, body_font, body_size)
-            c.drawString((page_width - tw) / 2, body_y, line)
-            body_y -= 14
+        # Функция для рисования текста: 1-я строка с красной строки, остальные с одинаковым левым и правым краем
+        def draw_text_block(y, text):
+            words = text.split()
+            if not words:
+                return y - line_height
+
+            lines = []
+            current_line = ""
+            for word in words:
+                test = (current_line + " " + word) if current_line else word
+                if c.stringWidth(test, body_font, body_size) <= text_width:
+                    current_line = test
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = word
+            if current_line:
+                lines.append(current_line)
+            if not lines:
+                lines = [words[0]]
+
+            # Правый край всех строк
+            right_edge = left_margin_body + text_width
+
+            # Рисуем строки — все строки с одинаковым правым краем
+            for i, line in enumerate(lines):
+                lw = c.stringWidth(line, body_font, body_size)
+                if i == 0:
+                    # Первая строка — с красной строки, дополняем пробелами до правого края
+                    draw_x = left_margin_body + para_indent
+                    spaces_needed = right_edge - draw_x - lw
+                    if spaces_needed < 0:
+                        spaces_needed = 0
+                    space_char_width = c.stringWidth(" ", body_font, body_size)
+                    num_spaces = int(spaces_needed / space_char_width)
+                    full_line = line + " " * num_spaces
+                    c.drawString(draw_x, y, full_line)
+                else:
+                    # Остальные строки — дополняем пробелами до правого края
+                    draw_x = left_margin_body
+                    spaces_needed = right_edge - draw_x - lw
+                    if spaces_needed < 0:
+                        spaces_needed = 0
+                    space_char_width = c.stringWidth(" ", body_font, body_size)
+                    num_spaces = int(spaces_needed / space_char_width)
+                    full_line = line + " " * num_spaces
+                    c.drawString(draw_x, y, full_line)
+                y -= line_height
+            return y
+
+        # Весь текст одним блоком
+        full_text = f"Прошу перенести очередной оплачиваемый отпуск {employee_position} " \
+                    f"отдела {employee_department} Управления по работе с клиентами {employee_name} " \
+                    f"с {fmt_date_range(vac_from, vac_to)} г. на {fmt_date_range(transfer_from, transfer_to)} г. в связи с {reason}."
+        body_y = draw_text_block(body_y, full_text)
 
         # ===== Подпись и дата =====
-        sig_y = body_y - 20
+        # Отступ 4 строки между телом записки и датой
+        sig_y = body_y - 56
 
         c.setFont('TimesNewRoman', 12)
-        c.drawString(left_margin, sig_y, f"Дата: {fmt_date_full(vac_from)} г.")
+        date_x = left_margin_body
 
-        sig_line_y = sig_y - 14
-        # Линия под "Подпись:" - короткая, не пересекающая текст
-        c.line(left_margin, sig_line_y + 3, left_margin + 60, sig_line_y + 3)
+        # Дата
+        c.drawString(date_x, sig_y, f"Дата: {fmt_date_full(vac_from)} г.")
+
+        # Отступ 3 строки между датой и подписью
+        sig_text_y = sig_y - 42
+        c.drawString(date_x, sig_text_y, "Подпись: ________")
 
         # Сохраняем страницу
         c.showPage()
