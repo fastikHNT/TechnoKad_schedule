@@ -508,22 +508,29 @@ header{
 #memoModal .custom-modal-content {
     max-height: none;
     overflow-y: visible;
+    padding: 16px 20px;
+}
+
+#memoModal .custom-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
 }
 
 #memoModal .custom-modal-content label {
     display: block;
-    margin-top: 12px;
-    margin-bottom: 4px;
+    margin-top: 6px;
+    margin-bottom: 2px;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 #memoModal .custom-modal-content .input {
     width: 100%;
-    padding: 8px 10px;
+    padding: 6px 8px;
     border: 1px solid var(--input-border);
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     background: var(--input-bg);
     color: var(--text-color);
     box-sizing: border-box;
@@ -536,7 +543,7 @@ header{
 #memoModal .custom-modal-content .modal-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 16px;
+    margin-top: 12px;
     justify-content: flex-end;
 }
 
@@ -571,4 +578,11 @@ header{
 
 #memoModal .custom-modal-content .btn-cancel:hover {
     background: #4b5563;
+}
+
+/* Кнопка Служебная записка — disabled для обычных пользователей */
+#memoBtn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }

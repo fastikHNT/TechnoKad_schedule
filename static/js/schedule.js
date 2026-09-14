@@ -339,6 +339,23 @@ function toggle(element,show,disable=false){
     element.disabled = disable;
 }
 
+// Проверка: имеет ли пользователь права на служебную записку (админ, супер-админ, разработчик)
+function canAccessMemo(){
+    return state.userRole === 2 || state.userRole === 3 || state.userRole === 4;
+}
+
+// Управление видимостью/доступностью кнопки служебная записка
+function toggleMemoBtn(){
+    if(!el.memoBtn) return;
+    if(canAccessMemo()){
+        el.memoBtn.classList.remove('disabled');
+        el.memoBtn.disabled = false;
+    } else {
+        el.memoBtn.classList.add('disabled');
+        el.memoBtn.disabled = true;
+    }
+}
+
 function toggleGroup(names,show){
     names.forEach(n=>toggle(el[n],show));
 }
@@ -557,6 +574,9 @@ function updateUi(){
             "btnSuggest"
         ], false);
 
+        // Блокируем кнопку служебная записка если не админ
+        toggleMemoBtn();
+
         return;
     }
 
@@ -589,6 +609,7 @@ function updateUi(){
             el.btnDeleteSchedule.style.cursor = 'not-allowed';
             el.btnEdit.style.opacity = '0.5';
             el.btnEdit.style.cursor = 'not-allowed';
+            el.memoBtn.classList.add('disabled');
         } else {
             el.btnAddEmployee.style.opacity = '1';
             el.btnAddEmployee.style.cursor = 'pointer';
@@ -598,6 +619,7 @@ function updateUi(){
             el.btnDeleteSchedule.style.cursor = 'pointer';
             el.btnEdit.style.opacity = '1';
             el.btnEdit.style.cursor = 'pointer';
+            el.memoBtn.classList.remove('disabled');
         }
 
         // Блокируем фильтры для обычных сотрудников
@@ -640,6 +662,9 @@ function updateUi(){
     toggle(el.btnTransfer, true, true);
     toggle(el.btnSuggest, true, true);
     toggle(el.btnCreateSchedule, true, true);
+
+    // Блокируем кнопку служебная записка в режиме редактирования
+    toggleMemoBtn();
 }
 
 function handleEditClick(){
@@ -2326,6 +2351,9 @@ async function loadCurrentUser(){
 
     // Загружаем типы отпусков
     state.vacationTypes = await api.getVacationTypes();
+
+    // Блокируем кнопку служебная записка если не админ
+    toggleMemoBtn();
 }
 
 function renderSchedule(data){
