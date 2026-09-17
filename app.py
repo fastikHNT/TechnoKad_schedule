@@ -2106,7 +2106,6 @@ def generate_memo():
             except:
                 return "__.__.__"
 
-        # Формат: число.месяц - число.месяц.год
         def fmt_date_range(date_from, date_to):
             """Формат: __.__ - __.__.__"""
             try:

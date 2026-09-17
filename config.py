@@ -40,4 +40,8 @@ class Config:
     MAIL_DEFAULT_SENDER = "technokadschedule@gmail.com"
 
     # Настройки домена для генерации ссылок в письмах
-    SERVER_NAME = "localhost:5000"
+    SERVER_NAME = "technokad.tech"  # Для продакшена
+    # SERVER_NAME = "localhost:5000"  # Для разработки
+
+    # Принудительное использование HTTPS
+    PREFERRED_URL_SCHEME = "https"
