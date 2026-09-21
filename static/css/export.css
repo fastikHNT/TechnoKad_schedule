@@ -1,0 +1,80 @@
+/* =====================================================
+   Стили страницы выгрузки
+===================================================== */
+
+/* Модальное окно выбора формата */
+.export-format-options {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 24px 0;
+}
+
+.export-format-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.export-format-option:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px);
+}
+
+.export-format-option:active {
+    transform: translateY(0);
+}
+
+.format-icon {
+    width: 48px;
+    height: 48px;
+}
+
+.format-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Светлые темы */
+body.theme1 .export-format-option,
+body.theme3 .export-format-option {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+body.theme1 .export-format-option:hover,
+body.theme3 .export-format-option:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+}
+
+body.theme1 .format-label,
+body.theme3 .format-label {
+    color: #1a1a1a;
+}
+
+/* =====================================================
+   Строка кнопки выгрузки
+===================================================== */
+.bottom-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-start;
+}
+
+#exportBtn {
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: 600;
+}

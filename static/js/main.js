@@ -120,6 +120,23 @@ const pages = {
                     }
                 })
 
+            } else if (page === "export") {
+
+                switchPage((wrapper, onComplete) => {
+                    fetch(location.origin + "/export").then(r => r.text()).then(html => {
+                        wrapper.innerHTML = html
+                        if (onComplete) onComplete()
+                    }).catch(err => {
+                        console.error("Ошибка :", err)
+                        wrapper.innerHTML = "<h2>Выгрузка данных</h2>"
+                        if (onComplete) onComplete()
+                    })
+                }, () => {
+                    if (typeof initExportPage === "function") {
+                        initExportPage()
+                    }
+                })
+
             } else if (pages[page]) {
 
                 switchPage((wrapper, onComplete) => {

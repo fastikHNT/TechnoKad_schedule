@@ -1,0 +1,135 @@
+<h2>Выгрузка графиков</h2>
+
+<div class="schedule-page">
+
+    <div id="messageBox" class="admin-message"></div>
+
+    <div class="schedule-toolbar">
+        <div class="toolbar-left">
+            <div class="filters-with-edit">
+                <div class="filters-row">
+                    <div class="filter-box">
+                        <select id="exportDepartmentFilter" class="admin-filter">
+                            <option value="">Выберите отдел</option>
+                            <option value="1">Отдел по работе с клиентами</option>
+                            <option value="2">Отдел технической поддержки</option>
+                        </select>
+                    </div>
+                    <div class="filter-box">
+                        <select id="exportScheduleFilter" class="admin-filter" disabled>
+                            <option value="">Выберите график</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Легенда направлений -->
+    <div id="exportDirectionLegend" class="direction-legend hidden">
+        <div class="legend-title">Направления:</div>
+        <div class="legend-item">
+            <span class="legend-color legend-po-ecp"></span>
+            <span class="legend-text">ПО/ЭЦП</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-te-tg"></span>
+            <span class="legend-text">ТЭ/ТГ</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-to-tm"></span>
+            <span class="legend-text">ТО/ТМ</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-grp"></span>
+            <span class="legend-text">ГРП</span>
+        </div>
+    </div>
+
+    <!-- Легенда типов отпуска -->
+    <div id="exportVacationLegend" class="vacation-legend hidden">
+        <div class="legend-title">Типы отпуска:</div>
+        <div class="legend-item">
+            <span class="legend-color legend-main"></span>
+            <span class="legend-text">Основной отпуск</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-education"></span>
+            <span class="legend-text">Учебный отпуск</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-planned"></span>
+            <span class="legend-text">Запланированный отпуск</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-decreetal"></span>
+            <span class="legend-text">Декретный отпуск</span>
+        </div>
+    </div>
+
+    <!-- Таблица графика -->
+    <div id="exportVacationGrid" class="vacation-grid-container hidden">
+        <table id="exportScheduleTable" class="schedule-table schedule-grid">
+            <thead>
+                <tr>
+                    <th class="col-name">Имя</th>
+                    <th class="col-name">Фамилия</th>
+                    <th class="col-position">Должность</th>
+                    <th class="col-month">Янв</th>
+                    <th class="col-month">Фев</th>
+                    <th class="col-month">Мар</th>
+                    <th class="col-month">Апр</th>
+                    <th class="col-month">Май</th>
+                    <th class="col-month">Июн</th>
+                    <th class="col-month">Июл</th>
+                    <th class="col-month">Авг</th>
+                    <th class="col-month">Сен</th>
+                    <th class="col-month">Окт</th>
+                    <th class="col-month">Ноя</th>
+                    <th class="col-month">Дек</th>
+                </tr>
+            </thead>
+            <tbody id="exportScheduleTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Кнопка выгрузки -->
+    <div class="bottom-row hidden" id="exportButtonRow">
+        <button id="exportBtn" class="btn btn-success">Выгрузить</button>
+    </div>
+
+    <!-- Модальное окно выбора формата выгрузки -->
+    <div id="exportFormatModal" class="custom-modal hidden">
+        <div class="custom-modal-content" style="width: 400px;">
+            <h3>Выберите формат выгрузки</h3>
+            <p>В каком формате выгрузить график?</p>
+            <div class="export-format-options">
+                <div class="export-format-option" id="exportPdfOption">
+                    <svg class="format-icon" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span class="format-label">PDF</span>
+                </div>
+                <div class="export-format-option" id="exportExcelOption">
+                    <svg class="format-icon" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="8" y1="13" x2="16" y2="13"></line>
+                        <line x1="8" y1="17" x2="16" y2="17"></line>
+                        <polyline points="12 11 12 17"></polyline>
+                    </svg>
+                    <span class="format-label">Excel</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="exportCancelBtn" class="btn-cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+</div>

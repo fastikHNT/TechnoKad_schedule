@@ -4,9 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Ограничил ширину основных полей формы до 400px, поля периода остались как было.">
+      <change afterPath="$PROJECT_DIR$/static/css/export.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js/export.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/export.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/reports.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/reports.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/main.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -243,6 +248,7 @@
     <MESSAGE value="21.09.2026 Для формирования служебной записки шрифты тянутся из папки public_html на хостинге, также модальное окно в случае успешного/безуспешного формирования закрывается, чтобы не перекрывало вывод showmessage" />
     <MESSAGE value="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки" />
     <MESSAGE value="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage" />
-    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage" />
+    <MESSAGE value="21.09.2026 Ограничил ширину основных полей формы до 400px, поля периода остались как было." />
+    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Ограничил ширину основных полей формы до 400px, поля периода остались как было." />
   </component>
 </project>

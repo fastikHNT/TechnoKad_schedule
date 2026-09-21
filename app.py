@@ -2376,6 +2376,344 @@ def generate_memo():
         return jsonify({"error": f"Ошибка генерации документа: {str(e)}"}), 500
 
 
+# =====================================================
+# Страница выгрузки
+# =====================================================
+
+@app.route("/export")
+@login_required
+def export_page():
+    return render_template("export.html")
+
+
+@app.route("/api/export/schedules/<int:department_id>")
+@login_required
+def get_export_schedules(department_id):
+    schedules = VacationSchedule.query.filter_by(
+        department_id=department_id
+    ).all()
+
+    return jsonify([
+        {
+            "id": s.id,
+            "name": s.name,
+            "year": s.year,
+            "is_default": s.is_default
+        }
+        for s in schedules
+    ])
+
+
+@app.route("/api/export/schedule/<int:schedule_id>")
+@login_required
+def get_export_schedule(schedule_id):
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+
+    employees_data = []
+
+    for se in schedule.employees:
+        employee = se.employee
+
+        vacations = []
+        for v in se.vacation_entries:
+            vacations.append({
+                "id": v.id,
+                "start_date": v.start_date.strftime("%Y-%m-%d"),
+                "end_date": v.end_date.strftime("%Y-%m-%d"),
+                "type_vacation_id": v.type_vacation_id
+            })
+
+        employees_data.append({
+            "id": employee.id,
+            "schedule_employee_id": se.id,
+            "user_id": se.user_id,
+            "email": employee.email,
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "position": employee.position,
+            "direction": employee.direction,
+            "vacations": vacations
+        })
+
+    return jsonify({
+        "id": schedule.id,
+        "name": schedule.name,
+        "year": schedule.year,
+        "department_id": schedule.department_id,
+        "is_default": schedule.is_default,
+        "employees": employees_data
+    })
+
+
+@app.route("/api/export/pdf/<int:schedule_id>")
+@login_required
+def export_schedule_pdf(schedule_id):
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.lib.colors import HexColor, white
+    from io import BytesIO
+
+    # Регистрируем шрифт
+    font_dir = os.path.join(app.root_path, "fonts")
+    regular_path = os.path.join(font_dir, "times.ttf")
+    bold_path = os.path.join(font_dir, "timesbd.ttf")
+
+    font_registered = False
+    if os.path.exists(regular_path) and os.path.exists(bold_path):
+        try:
+            pdfmetrics.registerFont(TTFont('TimesNewRoman', regular_path))
+            pdfmetrics.registerFont(TTFont('TimesNewRomanBold', bold_path))
+            pdfmetrics.registerFontFamily('TimesNewRoman', normal='TimesNewRoman', bold='TimesNewRomanBold')
+            font_registered = True
+            app.logger.info("Fonts loaded for export PDF successfully")
+        except Exception as e:
+            app.logger.error(f"Font load error: {e}")
+            import traceback
+            app.logger.error(traceback.format_exc())
+    else:
+        if not os.path.exists(regular_path):
+            app.logger.error(f"Font not found: {regular_path}")
+        if not os.path.exists(bold_path):
+            app.logger.error(f"Font not found: {bold_path}")
+
+    font_name = 'TimesNewRomanBold' if font_registered else 'Times-Bold'
+    font_name_regular = 'TimesNewRoman' if font_registered else 'Times-Roman'
+    app.logger.info(f"Using font: {font_name} (regular: {font_name_regular}), registered: {font_registered}")
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
+    styles = getSampleStyleSheet()
+
+    # Стили
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=14, alignment=1, spaceAfter=12)
+    cell_style = ParagraphStyle('CellStyle', parent=styles['Normal'], fontName='TimesNewRoman', fontSize=8, leading=10)
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=8, leading=10, textColor=white)
+
+    elements = []
+
+    # Заголовок
+    elements.append(Paragraph(f"{schedule.name} ({schedule.year} г.)", title_style))
+
+    # Данные таблицы
+    months = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
+    headers = ["Фамилия", "Имя", "Должность"] + months
+
+    # Цвета отпусков
+    vac_colors = {
+        1: HexColor('#1e3a8a'),
+        2: HexColor('#60a5fa'),
+        3: HexColor('#fbbf24'),
+        4: HexColor('#16a34a')
+    }
+
+    table_data = [headers]
+
+    for se in schedule.employees:
+        employee = se.employee
+        name_parts = f"{employee.first_name} {employee.last_name}".split()
+        last_name = name_parts[0] if name_parts else ""
+        first_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
+        # Определяем отпуска по месяцам
+        month_vacations = [None] * 12
+        for v in se.vacation_entries:
+            vac_start = v.start_date
+            vac_end = v.end_date
+            start_month = vac_start.month - 1
+            end_month = vac_end.month - 1
+            for m in range(start_month, end_month + 1):
+                if 0 <= m < 12:
+                    month_vacations[m] = v
+
+        row = [last_name, first_name, employee.position or ""]
+
+        for m in range(12):
+            vacation = month_vacations[m]
+            if vacation:
+                color = vac_colors.get(vacation.type_vacation_id, HexColor('#1e3a8a'))
+                # Создаём ячейку с цветным фоном
+                cell = Paragraph("", cell_style)
+                row.append(cell)
+            else:
+                row.append("")
+
+        table_data.append(row)
+
+    # Создаём таблицу
+    col_widths = [3*cm, 3*cm, 4*cm] + [2.5*cm] * 12
+    table = Table(table_data, colWidths=col_widths, repeatRows=1)
+
+    # Стили таблицы
+    style_commands = [
+        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#1e3a8a')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), white),
+        ('FONTNAME', (0, 0), (-1, 0), 'TimesNewRomanBold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'TimesNewRoman'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#cccccc')),
+        ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f9fafb')),
+        # Чередование цветов строк
+    ]
+
+    for i in range(1, len(table_data), 2):
+        style_commands.append(('BACKGROUND', (0, i), (-1, i), HexColor('#ffffff')))
+
+    # Раскраска ячеек с отпусками
+    for row_idx, se in enumerate(schedule.employees):
+        month_vacations = [None] * 12
+        for v in se.vacation_entries:
+            vac_start = v.start_date
+            vac_end = v.end_date
+            start_month = vac_start.month - 1
+            end_month = vac_end.month - 1
+            for m in range(start_month, end_month + 1):
+                if 0 <= m < 12:
+                    month_vacations[m] = v
+
+        for m in range(12):
+            if month_vacations[m]:
+                color = vac_colors.get(month_vacations[m].type_vacation_id, HexColor('#1e3a8a'))
+                style_commands.append(('BACKGROUND', (3 + m, row_idx + 1), (3 + m, row_idx + 1), color))
+                style_commands.append(('VALIGN', (3 + m, row_idx + 1), (3 + m, row_idx + 1), 'MIDDLE'))
+
+    style_commands.append(('TOPPADDING', (0, 0), (-1, -1), 3))
+    style_commands.append(('BOTTOMPADDING', (0, 0), (-1, -1), 3))
+    style_commands.append(('LEFTPADDING', (0, 0), (-1, -1), 4))
+    style_commands.append(('RIGHTPADDING', (0, 0), (-1, -1), 4))
+
+    table.setStyle(TableStyle(style_commands))
+    elements.append(table)
+
+    doc.build(elements)
+    buffer.seek(0)
+
+    safe_name = "".join(c for c in schedule.name if c.isalnum() or c in ' _-').rstrip()
+    download_name = f"График_{safe_name}_{schedule.year}.pdf"
+
+    return send_file(
+        buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=download_name
+    )
+
+
+@app.route("/api/export/excel/<int:schedule_id>")
+@login_required
+def export_schedule_excel(schedule_id):
+    schedule = VacationSchedule.query.get_or_404(schedule_id)
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    from io import BytesIO
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = schedule.name[:31]
+
+    # Стили
+    header_font = Font(name='Times New Roman', bold=True, size=11, color='FFFFFF')
+    header_fill = PatternFill(start_color='1E3A8A', end_color='1E3A8A', fill_type='solid')
+    normal_font = Font(name='Times New Roman', size=10)
+    center_align = Alignment(horizontal='center', vertical='center')
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+
+    # Цвета отпусков
+    vac_colors = {
+        1: '1E3A8A',
+        2: '60A5FA',
+        3: 'FBBF24',
+        4: '16A34A'
+    }
+
+    months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
+    headers = ['ФИ', 'Должность'] + months
+
+    # Заголовок
+    ws.merge_cells('A1:' + get_column_letter(len(headers) + 1) + '1')
+    title_cell = ws['A1']
+    title_cell.value = f"{schedule.name} ({schedule.year} г.)"
+    title_cell.font = Font(name='Times New Roman', bold=True, size=14)
+    title_cell.alignment = Alignment(horizontal='center')
+    ws.row_dimensions[1].height = 30
+
+    # Заголовки таблицы
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=3, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_align
+        cell.border = thin_border
+
+    # Данные
+    for row_idx, se in enumerate(schedule.employees, 4):
+        employee = se.employee
+
+        # Определяем отпуска по месяцам
+        month_vacations = [None] * 12
+        for v in se.vacation_entries:
+            vac_start = v.start_date
+            vac_end = v.end_date
+            start_month = vac_start.month - 1
+            end_month = vac_end.month - 1
+            for m in range(start_month, end_month + 1):
+                if 0 <= m < 12:
+                    month_vacations[m] = v
+
+        # ФИ
+        ws.cell(row=row_idx, column=1, value=f"{employee.first_name} {employee.last_name}").font = normal_font
+        ws.cell(row=row_idx, column=1).border = thin_border
+
+        # Должность
+        ws.cell(row=row_idx, column=2, value=employee.position or "").font = normal_font
+        ws.cell(row=row_idx, column=2).border = thin_border
+
+        # Месяцы
+        for m in range(12):
+            cell = ws.cell(row=row_idx, column=3 + m)
+            cell.border = thin_border
+            cell.alignment = center_align
+
+            vacation = month_vacations[m]
+            if vacation:
+                color = vac_colors.get(vacation.type_vacation_id, '1E3A8A')
+                cell.fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
+
+    # Ширина колонок
+    ws.column_dimensions['A'].width = 20
+    ws.column_dimensions['B'].width = 25
+    for col in range(3, 15):
+        ws.column_dimensions[get_column_letter(col)].width = 12
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    safe_name = "".join(c for c in schedule.name if c.isalnum() or c in ' _-').rstrip()
+    download_name = f"График_{safe_name}_{schedule.year}.xlsx"
+
+    return send_file(
+        buffer,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=download_name
+    )
+
+
 if __name__ == "__main__":
     """
         Точка входа для запуска приложения в режиме разработки.
@@ -2383,4 +2721,4 @@ if __name__ == "__main__":
         Запускает Flask-сервер с включённым debug-режимом.
         Используется при прямом запуске файла.
     """
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
