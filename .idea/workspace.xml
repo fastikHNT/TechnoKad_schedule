@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/reports.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/reports.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/reports.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/reports.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -242,6 +242,7 @@
     <MESSAGE value="21.09.2026 Добавил возможность удаления списка несформированных отчетов." />
     <MESSAGE value="21.09.2026 Для формирования служебной записки шрифты тянутся из папки public_html на хостинге, также модальное окно в случае успешного/безуспешного формирования закрывается, чтобы не перекрывало вывод showmessage" />
     <MESSAGE value="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки" />
-    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки" />
+    <MESSAGE value="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage" />
+    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage" />
   </component>
 </project>

@@ -98,6 +98,16 @@ body.theme3 .reports-page .admin-info {
     box-shadow: none;
 }
 
+/* Ограничиваем ширину основных полей формы */
+.reports-form-section .form-group:not(.period-group) {
+    max-width: 400px;
+}
+
+/* Поля периода оставляем на полную ширину строки */
+.reports-form-section .period-group {
+    max-width: none;
+}
+
 .reports-page .input::placeholder {
     color: var(--input-placeholder, #888);
 }
