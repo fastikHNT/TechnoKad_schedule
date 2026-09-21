@@ -2193,12 +2193,18 @@ def generate_memo():
             except:
                 return "__.__ - __.__.__"
 
-        # Регистрируем шрифт
+        # Регистрируем шрифт из папки fonts проекта
+        font_dir = os.path.join(app.root_path, "fonts")
+        regular_path = os.path.join(font_dir, "times.ttf")
+        bold_path = os.path.join(font_dir, "timesbd.ttf")
         try:
-            pdfmetrics.registerFont(TTFont('TimesNewRoman', 'C:/Windows/Fonts/times.ttf'))
-            pdfmetrics.registerFont(TTFont('TimesNewRomanBold', 'C:/Windows/Fonts/timesbd.ttf'))
-        except:
-            pass
+            if os.path.exists(regular_path) and os.path.exists(bold_path):
+                pdfmetrics.registerFont(TTFont('TimesNewRoman', regular_path))
+                pdfmetrics.registerFont(TTFont('TimesNewRomanBold', bold_path))
+            else:
+                app.logger.warning(f"Memo fonts not found at {regular_path} or {bold_path}, using default")
+        except Exception as e:
+            app.logger.warning(f"Font registration error for memo: {e}")
 
         # Строим PDF с помощью canvas для полного контроля
         buffer = BytesIO()

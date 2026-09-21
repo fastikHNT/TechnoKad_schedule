@@ -2102,6 +2102,7 @@ async function generateMemo(){
         if(!response.ok){
             const error = await response.json();
             showMessage(error.error || "Ошибка генерации","error");
+            closeMemoModal();
             return;
         }
 
@@ -2120,6 +2121,7 @@ async function generateMemo(){
 
     } catch(err) {
         showMessage("Ошибка при генерации документа","error");
+        closeMemoModal();
     }
 }
 
