@@ -25,9 +25,10 @@
 }
 
 .export-format-option:hover {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.5);
+    background: var(--row-selected);
+    border-color: var(--accent);
     transform: translateY(-2px);
+    box-shadow: 0 0 10px var(--accent);
 }
 
 .export-format-option:active {
@@ -35,8 +36,14 @@
 }
 
 .format-icon {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    transition: transform 0.2s;
+}
+
+.export-format-option:hover .format-icon {
+    transform: scale(1.1);
 }
 
 .format-label {
@@ -54,8 +61,8 @@ body.theme3 .export-format-option {
 
 body.theme1 .export-format-option:hover,
 body.theme3 .export-format-option:hover {
-    background: rgba(102, 126, 234, 0.15);
-    border-color: #667eea;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
 }
 
 body.theme1 .format-label,
