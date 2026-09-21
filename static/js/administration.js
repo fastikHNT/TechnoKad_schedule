@@ -308,7 +308,7 @@ function initAdminPage() {
             const deptName = filterText.replace(/^Отдел\s/i, "").toLowerCase();
             message = `Загружен список сотрудников отдела ${deptName}`;
         }
-        showMessage(message, "info");
+        showMessage(message, "success");
     }
 
     // ================= Фильтр по типам пользователей  =================
@@ -848,7 +848,7 @@ function initAdminPage() {
         const filteredUsers = getFilteredUsers();
         
         let message = ``;
-        let type = "info";
+        let type = "success";
         
         switch(filterValue) {
             case "ork":
@@ -875,6 +875,66 @@ function initAdminPage() {
 
     // Загружаем данные при инициализации страницы
     loadData();
+    }
+
+    // ========================
+    // Вспомогательные функции
+    // ========================
+
+    /**
+     * Отображает информационное сообщение пользователю
+     * @param {string} message - Текст сообщения
+     * @param {string} type - Тип сообщения (info, success, error, warning)
+     */
+    function showMessage(message, type = "info") {
+        const alertArea = document.getElementById("alert-area");
+        if (!alertArea) return;
+
+        // Создаём элемент алерта
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `admin-message admin-${type} show`;
+        alertDiv.style.borderLeft = `4px solid ${getBorderColor(type)}`;
+
+        const boldStart = message.indexOf('<strong>');
+        const boldEnd = message.indexOf('</strong>');
+        if (boldStart !== -1 && boldEnd !== -1) {
+            const beforeBold = message.substring(0, boldStart);
+            const boldText = message.substring(boldStart + 8, boldEnd + 9);
+            const afterBold = message.substring(boldEnd + 9);
+            alertDiv.innerHTML = `
+                ${beforeBold}
+                ${boldText}
+                ${afterBold}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+        } else {
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+        }
+
+        // Очищаем старые алерты (оставляем последние 5)
+        const oldAlerts = alertArea.querySelectorAll(".admin-message");
+        if (oldAlerts.length >= 5) {
+            oldAlerts[0].remove();
+        }
+
+        alertArea.appendChild(alertDiv);
+    }
+
+    /**
+     * Возвращает цвет границы для типа алерта
+     */
+    function getBorderColor(type) {
+        const colors = {
+            info: "#0dcaf0",
+            success: "#198754",
+            danger: "#dc3545",
+            warning: "#ffc107",
+            error: "#dc3545"
+        };
+        return colors[type] || colors.info;
     }
 
     // Делаем функцию глобально доступной, чтобы её можно было вызвать из HTML (например, onload)

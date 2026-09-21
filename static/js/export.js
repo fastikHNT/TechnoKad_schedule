@@ -209,7 +209,11 @@
                 const defaultSchedule = schedules.find(s => s.is_default) || schedules[0];
                 if (defaultSchedule) {
                     scheduleFilter.value = defaultSchedule.id;
-                    await onScheduleChange();
+                    try {
+                        await onScheduleChange();
+                    } catch (e) {
+                        showMessage('Произошла ошибка при загрузке графика', 'error');
+                    }
                 }
             }
         } catch (e) {
@@ -219,25 +223,25 @@
 
     // Загрузка и рендер графика при выборе
     async function onScheduleChange() {
-        const scheduleId = document.getElementById('exportScheduleFilter').value;
-        const grid = document.getElementById('exportVacationGrid');
-        const directionLegend = document.getElementById('exportDirectionLegend');
-        const vacationLegend = document.getElementById('exportVacationLegend');
-        const buttonRow = document.getElementById('exportButtonRow');
-
-        exportState.scheduleId = scheduleId ? parseInt(scheduleId) : null;
-
-        if (!scheduleId) {
-            const titleEl = document.getElementById('exportScheduleTitle');
-            if (titleEl) titleEl.classList.add('hidden');
-            toggle(grid, false);
-            toggle(directionLegend, false);
-            toggle(vacationLegend, false);
-            toggle(buttonRow, false);
-            return;
-        }
-
         try {
+            const scheduleId = document.getElementById('exportScheduleFilter').value;
+            const grid = document.getElementById('exportVacationGrid');
+            const directionLegend = document.getElementById('exportDirectionLegend');
+            const vacationLegend = document.getElementById('exportVacationLegend');
+            const buttonRow = document.getElementById('exportButtonRow');
+
+            exportState.scheduleId = scheduleId ? parseInt(scheduleId) : null;
+
+            if (!scheduleId) {
+                const titleEl = document.getElementById('exportScheduleTitle');
+                if (titleEl) titleEl.classList.add('hidden');
+                toggle(grid, false);
+                toggle(directionLegend, false);
+                toggle(vacationLegend, false);
+                toggle(buttonRow, false);
+                return;
+            }
+
             const r = await fetch(`/api/export/schedule/${scheduleId}`);
             if (!r.ok) {
                 const errorText = await r.text();
@@ -265,8 +269,10 @@
             toggle(directionLegend, true);
             toggle(vacationLegend, true);
             toggle(buttonRow, true);
+            
+            showMessage('График успешно загружен', 'success');
         } catch (e) {
-            showMessage("Ошибка загрузки графика", "error");
+            showMessage('Произошла ошибка при загрузке графика', 'error');
         }
     }
 
