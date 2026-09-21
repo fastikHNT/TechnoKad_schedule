@@ -4,7 +4,10 @@
     const exportState = {
         departmentId: null,
         scheduleId: null,
-        scheduleData: null
+        scheduleData: null,
+        currentUserId: null,
+        userRole: null,
+        userDepartmentId: null
     };
 
     let messageTimeout = null;
@@ -54,6 +57,110 @@
         return date.toLocaleDateString("ru-RU");
     }
 
+    // Маппинг названий отделов
+    const DEPARTMENT_NAMES = {
+        '1': 'Отдел по работе с клиентами',
+        '2': 'Отдел технической поддержки',
+        'ОК': 'Отдел по работе с клиентами',
+        'ОТП': 'Отдел технической поддержки'
+    };
+
+    function getDepartmentName(id, shortName) {
+        if (DEPARTMENT_NAMES[id]) return DEPARTMENT_NAMES[id];
+        if (DEPARTMENT_NAMES[shortName]) return DEPARTMENT_NAMES[shortName];
+        return shortName || 'Отдел';
+    }
+
+    // Загрузка текущего пользователя
+    async function loadCurrentUser() {
+        try {
+            const r = await fetch("/api/current-user");
+            if (!r.ok) return;
+            const user = await r.json();
+            exportState.currentUserId = user.id;
+            exportState.userRole = user.role_id;
+            exportState.userDepartmentId = user.department_id;
+
+            const deptSelect = document.getElementById('exportDepartmentFilter');
+            const scheduleFilter = document.getElementById('exportScheduleFilter');
+            
+            // Заполняем отделы для супер-админов и разработчиков
+            if (exportState.userRole === 3 || exportState.userRole === 4) {
+                // Загружаем отделы из API
+                try {
+                    const optsResp = await fetch('/api/admin/options');
+                    if (optsResp.ok) {
+                        const opts = await optsResp.json();
+                        const departments = opts.departments || [];
+                        
+                        // Очищаем и заполняем отделы
+                        deptSelect.innerHTML = '<option value="">Выберите отдел</option>';
+                        departments.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d.id;
+                            opt.textContent = getDepartmentName(d.id, d.name);
+                            deptSelect.appendChild(opt);
+                        });
+                        
+                        // Выбираем отдел текущего супер-админа/разработчика
+                        if (exportState.userDepartmentId) {
+                            deptSelect.value = exportState.userDepartmentId;
+                            await onDepartmentChange();
+                        }
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            }
+            // Для сотрудников (role_id = 1) и админов (role_id = 2) - автозаполнение отдела
+            else if (exportState.userDepartmentId) {
+                // Ищем опцию с нужным department_id
+                let deptName = '';
+                for (let i = 0; i < deptSelect.options.length; i++) {
+                    if (Number(deptSelect.options[i].value) === exportState.userDepartmentId) {
+                        deptName = deptSelect.options[i].textContent;
+                        break;
+                    }
+                }
+                
+                // Если не нашли в опциях, пробуем получить из API
+                if (!deptName) {
+                    try {
+                        const optsResp = await fetch('/api/admin/options');
+                        if (optsResp.ok) {
+                            const opts = await optsResp.json();
+                            const dept = opts.departments?.find(d => Number(d.id) === exportState.userDepartmentId);
+                            if (dept) deptName = getDepartmentName(dept.id, dept.name);
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+                
+                // Если всё ещё нет названия, используем дефолтное
+                if (!deptName) {
+                    deptName = getDepartmentName(exportState.userDepartmentId, 'Отдел');
+                }
+                
+                // Оставляем только один отдел текущего пользователя
+                deptSelect.innerHTML = '';
+                const opt = document.createElement('option');
+                opt.value = exportState.userDepartmentId;
+                opt.textContent = deptName;
+                deptSelect.appendChild(opt);
+                deptSelect.value = exportState.userDepartmentId;
+                
+                // Блокируем изменение отдела
+                deptSelect.disabled = true;
+                
+                // Автоматически загружаем графики
+                await onDepartmentChange();
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+
     // Загрузка графиков при выборе отдела
     async function onDepartmentChange() {
         const deptId = document.getElementById('exportDepartmentFilter').value;
@@ -67,8 +174,10 @@
         exportState.scheduleId = null;
         exportState.scheduleData = null;
 
+        const titleEl = document.getElementById('exportScheduleTitle');
+        if (titleEl) titleEl.classList.add('hidden');
+
         scheduleFilter.innerHTML = '<option value="">Выберите график</option>';
-        scheduleFilter.disabled = !deptId;
 
         toggle(grid, false);
         toggle(directionLegend, false);
@@ -89,6 +198,20 @@
                 opt.textContent = s.name + yearSuffix + (s.is_default ? ' 📌' : '');
                 scheduleFilter.appendChild(opt);
             });
+
+            // Разблокируем фильтр графика для админов (role_id = 2), супер-админов (3) и разработчиков (4)
+            if (exportState.userRole >= 2) {
+                scheduleFilter.disabled = false;
+            }
+
+            // Автовыбор графика по умолчанию (первый или is_default)
+            if (schedules.length > 0) {
+                const defaultSchedule = schedules.find(s => s.is_default) || schedules[0];
+                if (defaultSchedule) {
+                    scheduleFilter.value = defaultSchedule.id;
+                    await onScheduleChange();
+                }
+            }
         } catch (e) {
             // ignore
         }
@@ -105,6 +228,8 @@
         exportState.scheduleId = scheduleId ? parseInt(scheduleId) : null;
 
         if (!scheduleId) {
+            const titleEl = document.getElementById('exportScheduleTitle');
+            if (titleEl) titleEl.classList.add('hidden');
             toggle(grid, false);
             toggle(directionLegend, false);
             toggle(vacationLegend, false);
@@ -113,12 +238,9 @@
         }
 
         try {
-            console.log('Fetching schedule:', `/api/export/schedule/${scheduleId}`);
             const r = await fetch(`/api/export/schedule/${scheduleId}`);
-            console.log('Response status:', r.status);
             if (!r.ok) {
                 const errorText = await r.text();
-                console.error('Error response:', errorText);
                 let error;
                 try {
                     error = JSON.parse(errorText);
@@ -129,9 +251,15 @@
                 return;
             }
             const data = await r.json();
-            console.log('Schedule data:', data);
             exportState.scheduleData = data;
             renderSchedulePreview(data);
+
+            // Устанавливаем заголовок с названием графика
+            const titleEl = document.getElementById('exportScheduleTitle');
+            if (titleEl && data.name) {
+                titleEl.textContent = data.name;
+                titleEl.classList.remove('hidden');
+            }
 
             toggle(grid, true);
             toggle(directionLegend, true);
@@ -144,7 +272,6 @@
 
     // Рендер таблицы предпросмотра
     function renderSchedulePreview(data) {
-        console.log('Rendering schedule preview...');
         const tbody = document.getElementById('exportScheduleTableBody');
         if (!tbody) {
             console.error('Table body not found');
@@ -162,96 +289,94 @@
             }
 
             const year = data?.year || 2026;
-            console.log('Rendering', data.employees.length, 'employees');
 
             data.employees.forEach(emp => {
-            const tr = document.createElement('tr');
-            tr.dataset.employeeId = emp.schedule_employee_id;
+                const tr = document.createElement('tr');
+                tr.dataset.employeeId = emp.schedule_employee_id;
 
-            // Определяем отпуска по месяцам
-            const monthVacations = new Array(12).fill(null);
-            for (const vac of (emp.vacations || [])) {
-                const vacStart = new Date(vac.start_date);
-                const vacEnd = new Date(vac.end_date);
-                const startMonth = vacStart.getMonth();
-                const endMonth = vacEnd.getMonth();
-                for (let m = startMonth; m <= endMonth; m++) {
-                    if (m >= 0 && m < 12) {
-                        monthVacations[m] = vac;
-                    }
-                }
-            }
-
-            // Создаём ячейки месяцев
-            let months = '';
-            for (let m = 0; m < 12; m++) {
-                const vacation = monthVacations[m];
-                let cellClass = 'month-cell';
-                let cellContent = '';
-                let tooltip = '';
-
-                if (vacation) {
-                    const typeClass = getVacationTypeClass(vacation.type_vacation_id);
-                    cellClass += ` vacation-cell ${typeClass}`;
-
-                    let bgColor = '#1e3a8a';
-                    if (typeClass === 'type-education') bgColor = '#60a5fa';
-                    else if (typeClass === 'type-planned') bgColor = '#fbbf24';
-                    else if (typeClass === 'type-decreetal') bgColor = '#16a34a';
-
-                    const vacStart = new Date(vacation.start_date);
-                    const vacEnd = new Date(vacation.end_date);
+                // Определяем отпуска по месяцам
+                const monthVacations = new Array(12).fill(null);
+                for (const vac of (emp.vacations || [])) {
+                    const vacStart = new Date(vac.start_date);
+                    const vacEnd = new Date(vac.end_date);
                     const startMonth = vacStart.getMonth();
                     const endMonth = vacEnd.getMonth();
-                    const startDay = vacStart.getDate();
-                    const endDay = vacEnd.getDate();
-
-                    let leftPercent = 0;
-                    let widthPercent = 100;
-                    let borderRadius = '0';
-
-                    if (m === startMonth && m === endMonth) {
-                        const daysInMonth = new Date(year, m + 1, 0).getDate();
-                        leftPercent = ((startDay - 1) / daysInMonth) * 100;
-                        widthPercent = ((endDay - startDay + 1) / daysInMonth) * 100;
-                        borderRadius = '4px';
-                    } else if (m === startMonth) {
-                        const daysInMonth = new Date(year, m + 1, 0).getDate();
-                        leftPercent = ((startDay - 1) / daysInMonth) * 100;
-                        widthPercent = 100 - leftPercent;
-                        borderRadius = '4px 0 0 4px';
-                    } else if (m === endMonth) {
-                        const daysInMonth = new Date(year, m + 1, 0).getDate();
-                        widthPercent = (endDay / daysInMonth) * 100;
-                        borderRadius = '0 4px 4px 0';
+                    for (let m = startMonth; m <= endMonth; m++) {
+                        if (m >= 0 && m < 12) {
+                            monthVacations[m] = vac;
+                        }
                     }
-
-                    const daysDiff = Math.round((vacEnd - vacStart) / (1000 * 60 * 60 * 24)) + 1;
-                    const daysWord = declineVacationDays(daysDiff);
-                    const tooltip = `📅 ${formatDate(vacation.start_date)} - ${formatDate(vacation.end_date)} (${daysDiff} ${daysWord})`;
-
-                    cellContent = `<div style="position: absolute; top: 0; left: ${leftPercent}%; width: ${widthPercent}%; height: 100%; background: ${bgColor}; border-radius: ${borderRadius}; pointer-events: none;"></div>`;
                 }
 
-                months += `<td class="${cellClass}" data-month="${m}" data-tooltip="${tooltip}" data-vacation-id="${vacation?.id || ''}" data-vacation-type="${vacation?.type_vacation_id || ''}" style="position: relative;">${cellContent}</td>`;
-            }
+                // Создаём ячейки месяцев
+                let months = '';
+                for (let m = 0; m < 12; m++) {
+                    const vacation = monthVacations[m];
+                    let cellClass = 'month-cell';
+                    let cellContent = '';
+                    let tooltip = '';
 
-            const directionClass = getDirectionClass(emp.direction);
-            tr.innerHTML = `
-                <td class="col-name ${directionClass}">${emp.first_name ?? ''}</td>
-                <td class="col-name ${directionClass}">${emp.last_name ?? ''}</td>
-                <td class="col-position">${emp.position ?? ''}</td>
-                ${months}
-            `;
+                    if (vacation) {
+                        const typeClass = getVacationTypeClass(vacation.type_vacation_id);
+                        cellClass += ` vacation-cell ${typeClass}`;
 
-            tbody.appendChild(tr);
-        });
-        console.log('Render complete');
-    } catch (err) {
-        console.error('Render error:', err);
-        showMessage('Ошибка рендеринга: ' + err.message, 'error');
+                        let bgColor = '#1e3a8a';
+                        if (typeClass === 'type-education') bgColor = '#60a5fa';
+                        else if (typeClass === 'type-planned') bgColor = '#fbbf24';
+                        else if (typeClass === 'type-decreetal') bgColor = '#16a34a';
+
+                        const vacStart = new Date(vacation.start_date);
+                        const vacEnd = new Date(vacation.end_date);
+                        const startMonth = vacStart.getMonth();
+                        const endMonth = vacEnd.getMonth();
+                        const startDay = vacStart.getDate();
+                        const endDay = vacEnd.getDate();
+
+                        let leftPercent = 0;
+                        let widthPercent = 100;
+                        let borderRadius = '0';
+
+                        if (m === startMonth && m === endMonth) {
+                            const daysInMonth = new Date(year, m + 1, 0).getDate();
+                            leftPercent = ((startDay - 1) / daysInMonth) * 100;
+                            widthPercent = ((endDay - startDay + 1) / daysInMonth) * 100;
+                            borderRadius = '4px';
+                        } else if (m === startMonth) {
+                            const daysInMonth = new Date(year, m + 1, 0).getDate();
+                            leftPercent = ((startDay - 1) / daysInMonth) * 100;
+                            widthPercent = 100 - leftPercent;
+                            borderRadius = '4px 0 0 4px';
+                        } else if (m === endMonth) {
+                            const daysInMonth = new Date(year, m + 1, 0).getDate();
+                            widthPercent = (endDay / daysInMonth) * 100;
+                            borderRadius = '0 4px 4px 0';
+                        }
+
+                        const daysDiff = Math.round((vacEnd - vacStart) / (1000 * 60 * 60 * 24)) + 1;
+                        const daysWord = declineVacationDays(daysDiff);
+                        tooltip = `📅 ${formatDate(vacation.start_date)} - ${formatDate(vacation.end_date)} (${daysDiff} ${daysWord})`;
+
+                        cellContent = `<div style="position: absolute; top: 0; left: ${leftPercent}%; width: ${widthPercent}%; height: 100%; background: ${bgColor}; border-radius: ${borderRadius}; pointer-events: none;"></div>`;
+                    }
+
+                    months += `<td class="${cellClass}" data-month="${m}" data-tooltip="${tooltip}" data-vacation-id="${vacation?.id || ''}" data-vacation-type="${vacation?.type_vacation_id || ''}" style="position: relative;">${cellContent}</td>`;
+                }
+
+                const directionClass = getDirectionClass(emp.direction);
+                tr.innerHTML = `
+                    <td class="col-name ${directionClass}">${emp.first_name ?? ''}</td>
+                    <td class="col-name ${directionClass}">${emp.last_name ?? ''}</td>
+                    <td class="col-position">${emp.position ?? ''}</td>
+                    ${months}
+                `;
+
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            console.error('Render error:', err);
+            showMessage('Ошибка рендеринга: ' + err.message, 'error');
+        }
     }
-}
 
     function declineVacationDays(count) {
         const abs = Math.abs(count) % 100;
@@ -345,6 +470,9 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeExportFormatModal();
         });
+
+        // Загрузка текущего пользователя для автозаполнения
+        loadCurrentUser();
     }
 
     window.initExportPage = initExportPage;

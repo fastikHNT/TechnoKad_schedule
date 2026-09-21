@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Добавил страницу экспорта графика, сделал под неё функционал, надо дорабатывать">
-      <change afterPath="$PROJECT_DIR$/static/img/icon_export_excel.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_export_pdf.png" afterDir="false" />
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Добавил кастомные иконки экспорта и hover при наведении">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/export.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/export.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/export.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/export.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/export.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/export.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -222,7 +220,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="16.06.2026" />
     <MESSAGE value="17.06.2026" />
     <MESSAGE value="02.09.2026" />
     <MESSAGE value="04.09.2026" />
@@ -247,6 +244,7 @@
     <MESSAGE value="21.09.2026 Добавил показ уведомления в начало initReportsPage() - при переходе на страницу &quot;Формированание отчетов&quot; сразу показывается showmessage" />
     <MESSAGE value="21.09.2026 Ограничил ширину основных полей формы до 400px, поля периода остались как было." />
     <MESSAGE value="21.09.2026 Добавил страницу экспорта графика, сделал под неё функционал, надо дорабатывать" />
-    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Добавил страницу экспорта графика, сделал под неё функционал, надо дорабатывать" />
+    <MESSAGE value="21.09.2026 Добавил кастомные иконки экспорта и hover при наведении" />
+    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Добавил кастомные иконки экспорта и hover при наведении" />
   </component>
 </project>
