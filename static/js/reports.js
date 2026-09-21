@@ -236,9 +236,7 @@
                         : `<a href="/api/reports/${report.id}/download" class="pdf-link" target="_blank">Открыть PDF</a>`}
                 </td>
                 <td class="col-delete">
-                    ${isErrored 
-                        ? '<span class="disabled-action">—</span>'
-                        : `<button class="btn-delete-report" data-report-id="${report.id}">Удалить</button>`}
+                    <button class="btn-delete-report" data-report-id="${report.id}">Удалить</button>
                 </td>
             `;
             tbody.appendChild(tr);

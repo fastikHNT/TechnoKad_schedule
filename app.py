@@ -2088,7 +2088,7 @@ def delete_report(report_id):
     
     # абсолютный путь
     file_path = report.file_path
-    if os.path.exists(file_path):
+    if file_path and os.path.exists(file_path):
         os.remove(file_path)
     
     db.session.delete(report)
