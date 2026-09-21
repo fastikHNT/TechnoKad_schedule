@@ -496,7 +496,7 @@
 
         // Валидация - проверяем все обязательные поля
         if (!reportName) {
-            showMessage('Заполните поле наименования отчета', 'warning');
+            showMessage('Заполните поле наименования отчета', 'info');
             return;
         }
 
@@ -703,6 +703,7 @@
 
     // Инициализация страницы
     function initReportsPage() {
+        showMessage('Заполните наименование отчета', 'info');
         loadCurrentUser();
         loadReports();
         setupEventListeners();

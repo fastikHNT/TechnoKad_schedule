@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Для формирования служебной записки шрифты тянутся из папки public_html на хостинге, также модальное окно в случае успешного/безуспешного формирования закрывается, чтобы не перекрывало вывод showmessage">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/reports.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/reports.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -240,6 +241,7 @@
     <MESSAGE value="Исправил генерацию отчетов на хостинг: добавил папку со шрифтами и отчетами в public_html, исправил рендеринг и логику формирования отчетов" />
     <MESSAGE value="21.09.2026 Добавил возможность удаления списка несформированных отчетов." />
     <MESSAGE value="21.09.2026 Для формирования служебной записки шрифты тянутся из папки public_html на хостинге, также модальное окно в случае успешного/безуспешного формирования закрывается, чтобы не перекрывало вывод showmessage" />
-    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Для формирования служебной записки шрифты тянутся из папки public_html на хостинге, также модальное окно в случае успешного/безуспешного формирования закрывается, чтобы не перекрывало вывод showmessage" />
+    <MESSAGE value="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки" />
+    <option name="LAST_COMMIT_MESSAGE" value="21.09.2026 Добавил autocomplete=&quot;off&quot; к инпутам в модалке служебной записки" />
   </component>
 </project>
