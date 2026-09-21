@@ -64,6 +64,20 @@ def msk_now():
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# Принудительно используем HTTPS
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+
+@app.before_request
+def force_https():
+    request.environ['wsgi.url_scheme'] = 'https'
+
+@app.after_request
+def fix_redirect_scheme(response):
+    location = response.headers.get('Location')
+    if location and location.startswith('http://'):
+        response.headers['Location'] = location.replace('http://', 'https://')
+    return response
+
 db.init_app(app)
 login_manager.init_app(app)
 # Куда перенаправляем неавторизованных пользователей
@@ -1537,17 +1551,32 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
     
-    # Регистрируем шрифт с поддержкой кириллицы
-    try:
-        pdfmetrics.registerFont(TTFont('TimesNewRoman', 'C:/Windows/Fonts/times.ttf'))
-        pdfmetrics.registerFont(TTFont('TimesNewRomanBold', 'C:/Windows/Fonts/timesbd.ttf'))
-        pdfmetrics.registerFont(TTFont('TimesNewRomanItalic', 'C:/Windows/Fonts/timesi.ttf'))
-        pdfmetrics.registerFont(TTFont('TimesNewRomanBoldItalic', 'C:/Windows/Fonts/timesbi.ttf'))
-    except:
-        pass  # Если шрифт не найден, используем стандартный
+    # Регистрируем шрифт с поддержкой кириллицы из папки проекта
+    font_path_base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts')
+    
+    regular_path = os.path.join(font_path_base, 'times.ttf')
+    bold_path = os.path.join(font_path_base, 'timesbd.ttf')
+    
+    font_registered = False
+    if os.path.exists(regular_path) and os.path.exists(bold_path):
+        try:
+            pdfmetrics.registerFont(TTFont('TimesNewRoman', regular_path))
+            pdfmetrics.registerFont(TTFont('TimesNewRomanBold', bold_path))
+            font_registered = True
+            app.logger.info("Times New Roman fonts loaded successfully")
+        except Exception as e:
+            app.logger.error(f"Font registration error: {e}")
+    
+    # Если шрифт не зарегистрирован, используем стандартный (без кириллицы)
+    font_name = 'TimesNewRomanBold' if font_registered else 'Times-Bold'
+    font_name_regular = 'TimesNewRoman' if font_registered else 'Times-Roman'
+    
+    # Открываем файл с UTF-8 кодировкой для поддержки кириллицы
+    from io import BytesIO
+    file_buffer = BytesIO()
     
     c = SimpleDocTemplate(
-        file_path,
+        file_buffer,
         pagesize=A4,
         rightMargin=1.5*cm,
         leftMargin=1.5*cm,
@@ -1561,7 +1590,7 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles_dict['Normal'],
-        fontName='TimesNewRomanBold',
+        fontName=font_name,
         fontSize=14,
         spaceAfter=12,
         alignment=1
@@ -1570,7 +1599,7 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     base_style = ParagraphStyle(
         'BaseStyle',
         parent=styles_dict['Normal'],
-        fontName='TimesNewRoman',
+        fontName=font_name_regular,
         fontSize=9,
         leading=11
     )
@@ -1578,7 +1607,7 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     header_style = ParagraphStyle(
         'HeaderStyle',
         parent=styles_dict['Normal'],
-        fontName='TimesNewRomanBold',
+        fontName=font_name,
         fontSize=8,
         leading=10,
         textColor=white
@@ -1587,7 +1616,7 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     cell_style = ParagraphStyle(
         'CellStyle',
         parent=styles_dict['Normal'],
-        fontName='TimesNewRoman',
+        fontName=font_name_regular,
         fontSize=8,
         leading=10
     )
@@ -1595,7 +1624,7 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     info_style = ParagraphStyle(
         'UserInfo',
         parent=styles_dict['Normal'],
-        fontName='TimesNewRoman',
+        fontName=font_name_regular,
         fontSize=8,
         leading=10,
         alignment=2,
@@ -1771,6 +1800,19 @@ def generate_pdf(file_path, schedule, date_from, date_to, report_data, report_na
     elements.append(Paragraph(f"Дата формирования: {datetime.now().strftime('%d.%m.%Y %H:%M')}", footer_style))
     
     c.build(elements)
+    
+    # Сохраняем buffer в файл
+    with open(file_path, 'wb') as f:
+        f.write(file_buffer.getvalue())
+    file_buffer.close()
+
+
+@app.route("/api/reports-page")
+@login_required
+@require_permission("view_reports")
+def reports_page_api():
+    """API для загрузки страницы отчетов через AJAX"""
+    return render_template("reports.html")
 
 
 @app.route("/reports")
@@ -1785,6 +1827,7 @@ def reports_page():
 @login_required
 @require_permission("view_reports")
 def generate_report():
+    import traceback as tb
     try:
         data = request.get_json()
         
@@ -1795,6 +1838,8 @@ def generate_report():
         date_from = data.get("date_from")
         date_to = data.get("date_to")
         user_name = data.get("name", "")  # Пользовательское наименование
+        
+        app.logger.info(f"Generating report: schedule={schedule_id}, scope={scope}")
         
         if not schedule_id:
             return jsonify({"error": "Выберите график"}), 400
@@ -1888,17 +1933,45 @@ def generate_report():
                 "vacations": vacations
             })
         
-        # Формируем имя файла
-        report_file_name = f"Отчёт_{schedule.year}"
-        if schedule.department:
-            report_file_name += f"_{schedule.department.name}"
+        # Формируем имя файла (без кириллицы для совместимости с Linux)
+        import unicodedata
         
-        reports_dir = os.path.join("static", "reports")
+        def transliterate(text):
+            """Преобразует кириллицу в латиницу"""
+            symbols = {
+                'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+                'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+                'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+                'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+                'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+                'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+                'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+                'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+                'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+                'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+            }
+            result = ''
+            for char in text:
+                result += symbols.get(char, char)
+            return result
+        
+        # Оригинальное название для отображения в PDF
+        display_report_file_name = f"Отчёт_{schedule.year}"
+        if schedule.department:
+            display_report_file_name += f"_{schedule.department.name}"
+        
+        # Латинизированное имя для файла
+        report_file_name = f"Report_{schedule.year}"
+        if schedule.department:
+            report_file_name += f"_{transliterate(schedule.department.name)}"
+        
+        # Папка для отчетов - вне проекта для shared-хостинга
+        reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_reports")
         os.makedirs(reports_dir, exist_ok=True)
         
         filename = f"{report_file_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
         file_path = os.path.join(reports_dir, filename)
-        abs_file_path = os.path.abspath(file_path)
+        abs_file_path = file_path  # Уже абсолютный путь
         
         # Парсим даты для PDF
         parsed_date_from = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
@@ -1941,13 +2014,15 @@ def generate_report():
         db.session.commit()
         
         try:
-            generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data, user_name if user_name else report_file_name, user_info, scope, extra_info)
+            generate_pdf(abs_file_path, schedule, parsed_date_from, parsed_date_to, report_data, user_name if user_name else display_report_file_name, user_info, scope, extra_info)
         except Exception as e:
+            import traceback
+            error_msg = f"Отчет не был сформирован из-за внутренней ошибки: {str(e)}.\n\n{traceback.format_exc()}"
             report.status = 'error'
             db.session.commit()
             return jsonify({
                 "success": False,
-                "error": "Отчет не был сформирован из-за внутренней ошибки. Попробуйте позже или обратитесь к администратору."
+                "error": error_msg
             }), 500
         
         return jsonify({
@@ -1958,11 +2033,12 @@ def generate_report():
     
     except Exception as e:
         import traceback
-        app.logger.error(f"Error generating report: {str(e)}")
-        app.logger.error(traceback.format_exc())
+        error_details = f"{str(e)}\n\n{traceback.format_exc()}"
+        app.logger.error(f"Error generating report: {error_details}")
         return jsonify({
             "success": False,
-            "error": f"Отчет не был сформирован из-за внутренней ошибки: {str(e)}. Попробуйте позже или обратитесь к администратору."
+            "error": str(e),
+            "traceback": traceback.format_exc()
         }), 500
 
 
@@ -1971,7 +2047,8 @@ def generate_report():
 @require_permission("view_reports")
 def download_report(report_id):
     report = Report.query.get_or_404(report_id)
-    file_path = os.path.join(app.root_path, report.file_path)
+    # абсолютный путь
+    file_path = report.file_path
     
     return send_file(
         file_path,
@@ -2009,7 +2086,8 @@ def get_reports():
 def delete_report(report_id):
     report = Report.query.get_or_404(report_id)
     
-    file_path = os.path.join(app.root_path, report.file_path)
+    # абсолютный путь
+    file_path = report.file_path
     if os.path.exists(file_path):
         os.remove(file_path)
     

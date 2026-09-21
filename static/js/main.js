@@ -49,7 +49,7 @@ const pages = {
 
                 switchPage((wrapper, onComplete) => {
 
-                    fetch("/admin/")
+                    fetch(location.origin + "/admin/")
                         .then(r => {
 
                             if (r.status === 403) {
@@ -84,7 +84,7 @@ const pages = {
 
                 switchPage((wrapper, onComplete) => {
 
-                fetch("/schedule").then(r => r.text()).then(html => {
+                fetch(location.origin + "/schedule").then(r => r.text()).then(html => {
                     wrapper.innerHTML = html
                     // После загрузки HTML кэшируем DOM элементы
                     if (typeof cacheDom === "function") {
@@ -103,8 +103,15 @@ const pages = {
             } else if (page === "reports") {
 
                 switchPage((wrapper, onComplete) => {
-                    fetch("/reports").then(r => r.text()).then(html => {
+                    fetch("/api/reports-page").then(r => {
+                        if (!r.ok) throw new Error("Network error");
+                        return r.text()
+                    }).then(html => {
                         wrapper.innerHTML = html
+                        if (onComplete) onComplete()
+                    }).catch(err => {
+                        console.error("Ошибка :", err)
+                        wrapper.innerHTML = "<h2>Формирование отчетов</h2>"
                         if (onComplete) onComplete()
                     })
                 }, () => {
