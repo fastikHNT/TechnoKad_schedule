@@ -33,7 +33,7 @@ from flask import jsonify, request, url_for, send_file
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm, cm
@@ -2453,7 +2453,7 @@ def export_schedule_pdf(schedule_id):
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
     from reportlab.lib.pagesizes import A4
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, KeepTogether
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     from reportlab.lib.colors import HexColor, white
@@ -2474,8 +2474,6 @@ def export_schedule_pdf(schedule_id):
             app.logger.info("Fonts loaded for export PDF successfully")
         except Exception as e:
             app.logger.error(f"Font load error: {e}")
-            import traceback
-            app.logger.error(traceback.format_exc())
     else:
         if not os.path.exists(regular_path):
             app.logger.error(f"Font not found: {regular_path}")
@@ -2487,13 +2485,17 @@ def export_schedule_pdf(schedule_id):
     app.logger.info(f"Using font: {font_name} (regular: {font_name_regular}), registered: {font_registered}")
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
+    # Используем альбомную ориентацию A4 для размещения всей таблицы
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=1.5*cm, leftMargin=1.5*cm, topMargin=1.5*cm, bottomMargin=1.5*cm)
     styles = getSampleStyleSheet()
 
     # Стили
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=14, alignment=1, spaceAfter=12)
-    cell_style = ParagraphStyle('CellStyle', parent=styles['Normal'], fontName='TimesNewRoman', fontSize=8, leading=10)
-    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=8, leading=10, textColor=white)
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=16, alignment=1, spaceAfter=15)
+    cell_style = ParagraphStyle('CellStyle', parent=styles['Normal'], fontName='TimesNewRoman', fontSize=7, leading=9, alignment=1)
+    cell_style_bold = ParagraphStyle('CellStyleBold', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=7, leading=9)
+    header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=7, leading=9, textColor=white)
+    legend_title_style = ParagraphStyle('LegendTitle', parent=styles['Normal'], fontName='TimesNewRomanBold', fontSize=9, spaceAfter=5, alignment=0)
+    legend_text_style = ParagraphStyle('LegendText', parent=styles['Normal'], fontName='TimesNewRoman', fontSize=8, spaceAfter=3, alignment=0)
 
     elements = []
 
@@ -2502,24 +2504,51 @@ def export_schedule_pdf(schedule_id):
 
     # Данные таблицы
     months = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
-    headers = ["Фамилия", "Имя", "Должность"] + months
+    headers = ["Имя", "Фамилия", "Должность"] + months
 
     # Цвета отпусков
     vac_colors = {
-        1: HexColor('#1e3a8a'),
-        2: HexColor('#60a5fa'),
-        3: HexColor('#fbbf24'),
-        4: HexColor('#16a34a')
+        1: HexColor('#1e3a8a'),  # Основной - тёмно-синий
+        2: HexColor('#60a5fa'),  # Учебный - голубой
+        3: HexColor('#fbbf24'),  # Запланированный - жёлтый
+        4: HexColor('#16a34a')   # Декретный - зелёный
+    }
+
+    # Цвета направлений (hex-строки для использования в <font color>)
+    dir_colors = {
+        "ПО/ЭЦП": '#f97316',
+        "ТЭ/ТГ": '#14b8a6',
+        "ТО/ТМ": '#ec4899',
+        "ГРП": '#8b5cf6'
     }
 
     table_data = [headers]
 
+    # Форматируем дату
+    def format_date(date_obj):
+        if not date_obj:
+            return ""
+        if isinstance(date_obj, str):
+            from datetime import datetime
+            date_obj = datetime.strptime(date_obj, "%Y-%m-%d").date()
+        return date_obj.strftime("%d.%m")
+
+    # Форматируем количество дней
+    def decline_days(count):
+        abs_count = abs(count) % 100
+        last_digit = abs_count % 10
+        if abs_count > 10 and abs_count < 20:
+            return "дней"
+        if last_digit > 1 and last_digit < 5:
+            return "дня"
+        if last_digit == 1:
+            return "день"
+        return "дней"
+
     for se in schedule.employees:
         employee = se.employee
-        name_parts = f"{employee.first_name} {employee.last_name}".split()
-        last_name = name_parts[0] if name_parts else ""
-        first_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
-
+        direction = employee.direction or ""
+        
         # Определяем отпуска по месяцам
         month_vacations = [None] * 12
         for v in se.vacation_entries:
@@ -2531,33 +2560,91 @@ def export_schedule_pdf(schedule_id):
                 if 0 <= m < 12:
                     month_vacations[m] = v
 
-        row = [last_name, first_name, employee.position or ""]
+        # Фамилия и имя с цветом направления
+        name_color = "black"  # По умолчанию
+        if direction in dir_colors:
+            name_color = dir_colors[direction]
 
-        for m in range(12):
+        last_name = employee.last_name or ""
+        first_name = employee.first_name or ""
+        position = employee.position or ""
+
+        row = []
+        
+        # Добавляем имя с цветом
+        if name_color != "black":
+            row.append(Paragraph(f'<font color="{name_color}">{first_name}</font>', cell_style))
+        else:
+            row.append(Paragraph(first_name, cell_style))
+        
+        # Добавляем фамилию с цветом
+        if name_color != "black":
+            row.append(Paragraph(f'<font color="{name_color}">{last_name}</font>', cell_style))
+        else:
+            row.append(Paragraph(last_name, cell_style))
+        
+        # Добавляем должность
+        row.append(Paragraph(position, cell_style))
+
+        # Формируем ячейки месяцев с объединением (colspan) для одного отпуска
+        m = 0
+        while m < 12:
             vacation = month_vacations[m]
             if vacation:
                 color = vac_colors.get(vacation.type_vacation_id, HexColor('#1e3a8a'))
-                # Создаём ячейку с цветным фоном
-                cell = Paragraph("", cell_style)
-                row.append(cell)
+                
+                vac_start = vacation.start_date
+                vac_end = vacation.end_date
+                if isinstance(vac_start, str):
+                    from datetime import datetime
+                    vac_start = datetime.strptime(vac_start, "%Y-%m-%d").date()
+                if isinstance(vac_end, str):
+                    from datetime import datetime
+                    vac_end = datetime.strptime(vac_end, "%Y-%m-%d").date()
+                
+                # Ищем конец подряд идущих месяцев с этим же отпуском
+                end_m = m
+                while end_m + 1 < 12 and month_vacations[end_m + 1] is vacation:
+                    end_m += 1
+                
+                # Определяем colspan
+                colspan = end_m - m + 1
+                
+                if colspan == 1:
+                    # Один месяц — показываем полный интервал
+                    cell_text = f"{format_date(vac_start)}-{format_date(vac_end)}"
+                    cell = Paragraph(f'<font color="white" size="6"><b>{cell_text}</b></font>', cell_style)
+                    row.append(cell)
+                else:
+                    # Несколько месяцев — показываем интервал по центру
+                    cell_text = f"{format_date(vac_start)}-{format_date(vac_end)}"
+                    cell = Paragraph(f'<font color="white" size="6"><b>{cell_text}</b></font>', cell_style)
+                    row.append(cell)
+                    # Добавляем пустые ячейки для colspan
+                    for _ in range(colspan - 1):
+                        row.append("")
+                
+                m = end_m + 1
             else:
                 row.append("")
+                m += 1
 
         table_data.append(row)
 
     # Создаём таблицу
-    col_widths = [3*cm, 3*cm, 4*cm] + [2.5*cm] * 12
+    col_widths = [2*cm, 2*cm, 3.5*cm] + [1.5*cm] * 12
     table = Table(table_data, colWidths=col_widths, repeatRows=1)
 
     # Стили таблицы
     style_commands = [
-        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#1e3a8a')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), white),
+        # Заголовок
         ('FONTNAME', (0, 0), (-1, 0), 'TimesNewRomanBold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('FONTSIZE', (0, 0), (-1, 0), 7),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        # Данные
         ('FONTNAME', (0, 1), (-1, -1), 'TimesNewRoman'),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
         ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#cccccc')),
         ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f9fafb')),
         # Чередование цветов строк
@@ -2566,7 +2653,7 @@ def export_schedule_pdf(schedule_id):
     for i in range(1, len(table_data), 2):
         style_commands.append(('BACKGROUND', (0, i), (-1, i), HexColor('#ffffff')))
 
-    # Раскраска ячеек с отпусками
+    # Раскраска ячеек с отпусками и объединение (colspan)
     for row_idx, se in enumerate(schedule.employees):
         month_vacations = [None] * 12
         for v in se.vacation_entries:
@@ -2578,19 +2665,94 @@ def export_schedule_pdf(schedule_id):
                 if 0 <= m < 12:
                     month_vacations[m] = v
 
-        for m in range(12):
+        m = 0
+        while m < 12:
             if month_vacations[m]:
                 color = vac_colors.get(month_vacations[m].type_vacation_id, HexColor('#1e3a8a'))
-                style_commands.append(('BACKGROUND', (3 + m, row_idx + 1), (3 + m, row_idx + 1), color))
-                style_commands.append(('VALIGN', (3 + m, row_idx + 1), (3 + m, row_idx + 1), 'MIDDLE'))
+                # Ищем конец подряд идущих месяцев с этим же отпуском
+                end_m = m
+                while end_m + 1 < 12 and month_vacations[end_m + 1] is month_vacations[m]:
+                    end_m += 1
+                
+                colspan = end_m - m + 1
+                col_start = 3 + m
+                col_end = 3 + end_m
+                
+                if colspan == 1:
+                    style_commands.append(('BACKGROUND', (col_start, row_idx + 1), (col_start, row_idx + 1), color))
+                else:
+                    # Объединяем ячейки и применяем фон
+                    style_commands.append(('SPAN', (col_start, row_idx + 1), (col_end, row_idx + 1)))
+                    style_commands.append(('BACKGROUND', (col_start, row_idx + 1), (col_end, row_idx + 1), color))
+                style_commands.append(('ALIGN', (col_start, row_idx + 1), (col_end, row_idx + 1), 'CENTER'))
+                
+                m = end_m + 1
+            else:
+                m += 1
 
-    style_commands.append(('TOPPADDING', (0, 0), (-1, -1), 3))
-    style_commands.append(('BOTTOMPADDING', (0, 0), (-1, -1), 3))
-    style_commands.append(('LEFTPADDING', (0, 0), (-1, -1), 4))
-    style_commands.append(('RIGHTPADDING', (0, 0), (-1, -1), 4))
+    style_commands.append(('TOPPADDING', (0, 0), (-1, -1), 4))
+    style_commands.append(('BOTTOMPADDING', (0, 0), (-1, -1), 4))
+    style_commands.append(('LEFTPADDING', (0, 0), (-1, -1), 3))
+    style_commands.append(('RIGHTPADDING', (0, 0), (-1, -1), 3))
 
     table.setStyle(TableStyle(style_commands))
     elements.append(table)
+    elements.append(Spacer(1, 15))
+
+    # ========================
+    # ЛЕГЕНДЫ
+    # ========================
+    
+    from reportlab.platypus.flowables import Flowable
+    
+    _NAMED_COLORS = {
+        'black': '#000000', 'white': '#FFFFFF', 'red': '#FF0000',
+        'green': '#008000', 'blue': '#0000FF',
+    }
+    
+    class LegendItem(Flowable):
+        """Легенда с цветным квадратиком слева, выровненная по левому краю."""
+        def __init__(self, color_hex, text, font_name='TimesNewRoman', font_size=8, text_color='black'):
+            Flowable.__init__(self)
+            self.color_hex = color_hex
+            self.text = text
+            self.font_name = font_name
+            self.font_size = font_size
+            self.text_color = _NAMED_COLORS.get(text_color.lower(), text_color) if text_color else '#000000'
+            self.box_size = 8
+            self.h = self.box_size + 4
+            self.width = 400  # достаточно широкая для левого выравнивания
+        
+        def wrap(self, availWidth, availHeight):
+            return (self.width, self.h)
+        
+        def draw(self):
+            # Цветной квадратик
+            self.canv.setFillColor(HexColor(self.color_hex))
+            self.canv.rect(0, 0, self.box_size, self.box_size, fill=1, stroke=0)
+            self.canv.setStrokeColor(HexColor('#999999'))
+            self.canv.rect(0, 0, self.box_size, self.box_size, fill=0, stroke=1)
+            # Текст
+            self.canv.setFillColor(HexColor(self.text_color))
+            self.canv.setFont(self.font_name, self.font_size)
+            self.canv.drawString(self.box_size + 4, 0, self.text)
+    
+    # Легенда направлений
+    elements.append(Paragraph("<b>Направления:</b>", legend_title_style))
+    for dir_name, dir_color in dir_colors.items():
+        elements.append(LegendItem(dir_color, dir_name))
+    elements.append(Spacer(1, 8))
+
+    # Легенда типов отпусков
+    elements.append(Paragraph("<b>Типы отпуска:</b>", legend_title_style))
+    vacation_types = {
+        1: ("Основной отпуск", '#1e3a8a'),
+        2: ("Учебный отпуск", '#60a5fa'),
+        3: ("Запланированный отпуск", '#fbbf24'),
+        4: ("Декретный отпуск", '#16a34a')
+    }
+    for vac_id, (vac_name, vac_color) in vacation_types.items():
+        elements.append(LegendItem(vac_color, vac_name))
 
     doc.build(elements)
     buffer.seek(0)
@@ -2649,8 +2811,7 @@ def export_schedule_excel(schedule_id):
     ws.title = schedule.name[:31]
 
     # Стили
-    header_font = Font(name='Times New Roman', bold=True, size=11, color='FFFFFF')
-    header_fill = PatternFill(start_color='1E3A8A', end_color='1E3A8A', fill_type='solid')
+    header_font = Font(name='Times New Roman', bold=True, size=11, color='000000')
     normal_font = Font(name='Times New Roman', size=10)
     center_align = Alignment(horizontal='center', vertical='center')
     thin_border = Border(
@@ -2668,11 +2829,27 @@ def export_schedule_excel(schedule_id):
         4: '16A34A'
     }
 
+    # Цвета направлений
+    dir_colors = {
+        "ПО/ЭЦП": 'F97316',
+        "ТЭ/ТГ": '14B8A6',
+        "ТО/ТМ": 'EC4899',
+        "ГРП": '8B5CF6'
+    }
+
+    def format_date_excel(date_obj):
+        if not date_obj:
+            return ""
+        if isinstance(date_obj, str):
+            from datetime import datetime
+            date_obj = datetime.strptime(date_obj, "%Y-%m-%d").date()
+        return date_obj.strftime("%d.%m")
+
     months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
-    headers = ['ФИ', 'Должность'] + months
+    headers = ['Имя', 'Фамилия', 'Должность'] + months
 
     # Заголовок
-    ws.merge_cells('A1:' + get_column_letter(len(headers) + 1) + '1')
+    ws.merge_cells('A1:' + get_column_letter(len(headers)) + '1')
     title_cell = ws['A1']
     title_cell.value = f"{schedule.name} ({schedule.year} г.)"
     title_cell.font = Font(name='Times New Roman', bold=True, size=14)
@@ -2681,14 +2858,13 @@ def export_schedule_excel(schedule_id):
 
     # Заголовки таблицы
     for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=3, column=col, value=header)
+        cell = ws.cell(row=2, column=col, value=header)
         cell.font = header_font
-        cell.fill = header_fill
         cell.alignment = center_align
         cell.border = thin_border
 
     # Данные
-    for row_idx, se in enumerate(schedule.employees, 4):
+    for row_idx, se in enumerate(schedule.employees, 3):
         employee = se.employee
 
         # Определяем отпуска по месяцам
@@ -2702,30 +2878,126 @@ def export_schedule_excel(schedule_id):
                 if 0 <= m < 12:
                     month_vacations[m] = v
 
-        # ФИ
-        ws.cell(row=row_idx, column=1, value=f"{employee.first_name} {employee.last_name}").font = normal_font
-        ws.cell(row=row_idx, column=1).border = thin_border
+        # Определяем цвет направления
+        direction = employee.direction or ""
+        dir_color = dir_colors.get(direction, None)
+
+        # Имя
+        cell_first = ws.cell(row=row_idx, column=1, value=employee.first_name or "")
+        cell_first.border = thin_border
+        cell_first.alignment = center_align
+        cell_first.font = normal_font
+        if dir_color:
+            cell_first.font = Font(name='Times New Roman', size=10, color=dir_color)
+
+        # Фамилия
+        cell_last = ws.cell(row=row_idx, column=2, value=employee.last_name or "")
+        cell_last.border = thin_border
+        cell_last.alignment = center_align
+        cell_last.font = normal_font
+        if dir_color:
+            cell_last.font = Font(name='Times New Roman', size=10, color=dir_color)
 
         # Должность
-        ws.cell(row=row_idx, column=2, value=employee.position or "").font = normal_font
-        ws.cell(row=row_idx, column=2).border = thin_border
+        cell_pos = ws.cell(row=row_idx, column=3, value=employee.position or "")
+        cell_pos.border = thin_border
+        cell_pos.alignment = center_align
+        cell_pos.font = normal_font
 
-        # Месяцы
-        for m in range(12):
-            cell = ws.cell(row=row_idx, column=3 + m)
-            cell.border = thin_border
-            cell.alignment = center_align
-
+        # Месяцы — объединяем ячейки для многомесячных отпусков
+        m = 0
+        while m < 12:
             vacation = month_vacations[m]
             if vacation:
                 color = vac_colors.get(vacation.type_vacation_id, '1E3A8A')
-                cell.fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
+                
+                vac_start = vacation.start_date
+                vac_end = vacation.end_date
+                if isinstance(vac_start, str):
+                    from datetime import datetime
+                    vac_start = datetime.strptime(vac_start, "%Y-%m-%d").date()
+                if isinstance(vac_end, str):
+                    from datetime import datetime
+                    vac_end = datetime.strptime(vac_end, "%Y-%m-%d").date()
+                
+                # Ищем конец подряд идущих месяцев с этим же отпуском
+                end_m = m
+                while end_m + 1 < 12 and month_vacations[end_m + 1] is vacation:
+                    end_m += 1
+                
+                col_start = 4 + m
+                col_end = 4 + end_m
+                
+                if col_start == col_end:
+                    # Один месяц
+                    cell = ws.cell(row=row_idx, column=col_start)
+                    cell.border = thin_border
+                    cell.alignment = center_align
+                    cell.fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
+                    cell.font = Font(name='Times New Roman', size=10, color='FFFFFF')
+                    cell.value = f"{format_date_excel(vac_start)}-{format_date_excel(vac_end)}"
+                else:
+                    # Несколько месяцев — объединяем ячейки
+                    merge_range = f"{get_column_letter(col_start)}{row_idx}:{get_column_letter(col_end)}{row_idx}"
+                    ws.merge_cells(merge_range)
+                    merged_cell = ws.cell(row=row_idx, column=col_start)
+                    merged_cell.border = thin_border
+                    merged_cell.alignment = center_align
+                    merged_cell.fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
+                    merged_cell.font = Font(name='Times New Roman', size=10, color='FFFFFF')
+                    merged_cell.value = f"{format_date_excel(vac_start)}-{format_date_excel(vac_end)}"
+                
+                m = end_m + 1
+            else:
+                cell = ws.cell(row=row_idx, column=4 + m)
+                cell.border = thin_border
+                m += 1
 
     # Ширина колонок
-    ws.column_dimensions['A'].width = 20
-    ws.column_dimensions['B'].width = 25
-    for col in range(3, 15):
+    ws.column_dimensions['A'].width = 15
+    ws.column_dimensions['B'].width = 15
+    ws.column_dimensions['C'].width = 25
+    for col in range(4, 16):
         ws.column_dimensions[get_column_letter(col)].width = 12
+
+    # ========================
+    # ЛЕГЕНДЫ
+    # ========================
+    last_data_row = 2 + len(schedule.employees) + 2  # title + header + data
+
+    # Легенда направлений
+    ws.cell(row=last_data_row, column=1, value="Направления:").font = Font(name='Times New Roman', bold=True, size=10)
+    last_data_row += 1
+    for dir_name, dir_color in dir_colors.items():
+        # Цветной квадратик
+        cell = ws.cell(row=last_data_row, column=1)
+        cell.fill = PatternFill(start_color=dir_color, end_color=dir_color, fill_type='solid')
+        cell.border = thin_border
+        cell.alignment = center_align
+        cell = ws.cell(row=last_data_row, column=2, value=dir_name)
+        cell.font = normal_font
+        last_data_row += 1
+
+    last_data_row += 1
+
+    # Легенда типов отпусков
+    ws.cell(row=last_data_row, column=1, value="Типы отпуска:").font = Font(name='Times New Roman', bold=True, size=10)
+    last_data_row += 1
+    vacation_type_names = {
+        1: "Основной отпуск",
+        2: "Учебный отпуск",
+        3: "Запланированный отпуск",
+        4: "Декретный отпуск"
+    }
+    for vac_id, vac_name in vacation_type_names.items():
+        vac_color = vac_colors[vac_id]
+        cell = ws.cell(row=last_data_row, column=1)
+        cell.fill = PatternFill(start_color=vac_color, end_color=vac_color, fill_type='solid')
+        cell.border = thin_border
+        cell.alignment = center_align
+        cell = ws.cell(row=last_data_row, column=2, value=vac_name)
+        cell.font = normal_font
+        last_data_row += 1
 
     buffer = BytesIO()
     wb.save(buffer)

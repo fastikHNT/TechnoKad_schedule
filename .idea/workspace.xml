@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Добавлены уведомления на страницу &quot;Экспорт&quot;, подправил уведомления для страницы &quot;Администрирование&quot;, некоторые косметические изменения в разделах и кнопках">
-      <change afterPath="$PROJECT_DIR$/static/img/icon_hide_password.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/img/icon_show_password.png" afterDir="false" />
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Поменял иконки скрытия/показа пароля на странице авторизации, изменил формирование наименования документов для pdf/excel при экспорте графика">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/auth.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/auth.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/auth.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -224,7 +219,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="04.09.2026" />
     <MESSAGE value="04.09.2026 (2)" />
     <MESSAGE value="05.09.2026" />
     <MESSAGE value="07.09.2026" />
@@ -249,6 +243,7 @@
     <MESSAGE value="21.09.2026 Добавил кастомные иконки экспорта и hover при наведении" />
     <MESSAGE value="Легенды спустил вниз, сделал логику доступа в зависимости от роли, добавил наименование графика" />
     <MESSAGE value="Добавлены уведомления на страницу &quot;Экспорт&quot;, подправил уведомления для страницы &quot;Администрирование&quot;, некоторые косметические изменения в разделах и кнопках" />
-    <option name="LAST_COMMIT_MESSAGE" value="Добавлены уведомления на страницу &quot;Экспорт&quot;, подправил уведомления для страницы &quot;Администрирование&quot;, некоторые косметические изменения в разделах и кнопках" />
+    <MESSAGE value="Поменял иконки скрытия/показа пароля на странице авторизации, изменил формирование наименования документов для pdf/excel при экспорте графика" />
+    <option name="LAST_COMMIT_MESSAGE" value="Поменял иконки скрытия/показа пароля на странице авторизации, изменил формирование наименования документов для pdf/excel при экспорте графика" />
   </component>
 </project>
