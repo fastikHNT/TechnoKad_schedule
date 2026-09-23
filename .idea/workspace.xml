@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Реализована адаптивная вёрстка для формы авторизации через медиазапросы" />
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Добавил в форму восстановления пароля мета-тег viewport">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/email/token_invalid.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/email/token_invalid.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -216,7 +220,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="07.09.2026 (2)" />
     <MESSAGE value="08.09.2026" />
     <MESSAGE value="09.09.2026" />
     <MESSAGE value="10.09.2026" />
@@ -241,6 +244,7 @@
     <MESSAGE value="Улучшил формирование для экспорта графика в pdf/excel, теперь для многомесячных отпусков ячейки объединяются (merge_cells). Интервал дат отображается по центру объединённой области. Добавлены легенды + косметические исправления" />
     <MESSAGE value="Добавлена страница &quot;О сервисе&quot;" />
     <MESSAGE value="Реализована адаптивная вёрстка для формы авторизации через медиазапросы" />
-    <option name="LAST_COMMIT_MESSAGE" value="Реализована адаптивная вёрстка для формы авторизации через медиазапросы" />
+    <MESSAGE value="Добавил в форму восстановления пароля мета-тег viewport" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавил в форму восстановления пароля мета-тег viewport" />
   </component>
 </project>
