@@ -1,0 +1,77 @@
+<div class="about-page">
+    <h1>О сервисе</h1>
+    
+    <div class="about-section">
+        <h2>Назначение системы</h2>
+        <p>
+            Данное веб-приложение — это система управления графиками отпускных периодов сотрудников,
+            предназначенная для автоматизации планирования и учёта отпусков.
+            Система позволяет эффективно организовывать рабочий процесс, избегая конфликтов 
+            и обеспечивая непрерывность бизнес-процессов.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>Основной функционал</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='img/icon_administration.png') }}" alt="Администрирование" class="feature-icon">
+                <h3>Администрирование сотрудников</h3>
+                <p>Добавление, редактирование и удаление сотрудников, управление ролевым доступом</p>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='img/icon_shedule.png') }}" alt="Графики" class="feature-icon">
+                <h3>Графики отпусков</h3>
+                <p>Создание и управление графиками отпусков по отделам и подразделениям</p>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='img/icon_shedule.png') }}" alt="Графики" class="feature-icon">
+                <h3>Учёт отпусков</h3>
+                <p>Добавление, редактирование и удаление записей об отпусках сотрудников</p>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='img/icon_report.png') }}" alt="Отчёты" class="feature-icon">
+                <h3>Формирование отчётов</h3>
+                <p>Генерация отчётов по выбранному графику: по отделу, сотруднику, подразделению</p>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='img/icon_print.png') }}" alt="Экспорт" class="feature-icon">
+                <h3>Экспорт данных</h3>
+                <p>Выгрузка графиков отпусков в форматах PDF и Excel</p>
+            </div>
+            <div class="feature-card">
+                <img src="{{ url_for('static', filename='img/icon_shedule.png') }}" alt="Графики" class="feature-icon">
+                <h3>Служебные записки</h3>
+                <p>Формирование служебных записок на перенос отпуска</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Ролевой доступ</h2>
+        <div class="roles-list">
+            <div class="role-item">
+                <strong>Пользователь</strong> — просмотр общего графика отпусков отдела, планирование и редактирование своего отпуска, выгрузка актуального графика в удобном формате
+            </div>
+            <div class="role-item">
+                <strong>Админ</strong> — администрирование списка новых сотрудников и сотрудников своего отдела, создание и редактирование графика отпусков, формирование служебной записки, отчеты по графику, выгрузка
+            </div>
+            <div class="role-item">
+                <strong>Супер-админ</strong> — полный доступ ко всем отделам и функциям системы
+            </div>
+            <div class="role-item">
+                <strong>Разработчик</strong> — полный доступ для администрирования и тестирования
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Технологии</h2>
+        <p>
+            Система разработана с использованием Python (Flask) для серверной части, 
+            HTML/CSS/JavaScript для клиентской части. Для генерации PDF используется ReportLab, 
+            для работы с Excel — openpyxl. Процесс авторизации обеспечивается через Flask-Login
+            с поддержкой токенов активации и восстановления пароля c использованием SMTP.
+        </p>
+    </div>
+</div>

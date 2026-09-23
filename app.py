@@ -2386,6 +2386,12 @@ def export_page():
     return render_template("export.html")
 
 
+@app.route("/api/pages/about")
+@login_required
+def about_page_api():
+    return render_template("about.html")
+
+
 @app.route("/api/export/schedules/<int:department_id>")
 @login_required
 def get_export_schedules(department_id):

@@ -8,7 +8,7 @@ const pages = {
     export:`<h2>Выгрузка данных</h2>`,
     "user-guide":`<h2>Руководство пользователя</h2>`,
     "admin-guide":`<h2>Руководство администратора</h2>`,
-    about:`<h2>О сервисе</h2><p>Система управления графиком отпусков.</p>`
+    about: null
     }
 
     const links = document.querySelectorAll(".menu a")
@@ -137,11 +137,21 @@ const pages = {
                     }
                 })
 
-            } else if (pages[page]) {
+            } else if (page in pages) {
 
                 switchPage((wrapper, onComplete) => {
-                wrapper.innerHTML = pages[page]
-                if (onComplete) onComplete()
+                    if (pages[page] !== null) {
+                        wrapper.innerHTML = pages[page]
+                    } else {
+                        fetch(`/api/pages/about`).then(r => r.text()).then(html => {
+                            wrapper.innerHTML = html
+                            if (onComplete) onComplete()
+                        }).catch(err => {
+                            console.error("Ошибка :", err)
+                            wrapper.innerHTML = "<h2>Страница не найдена</h2>"
+                            if (onComplete) onComplete()
+                        })
+                    }
                 })
             }
         })
