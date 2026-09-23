@@ -124,6 +124,14 @@ select:focus {
     color: #555;
 }
 
+.password-toggle-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: none;
+}
+
 /* ---------- Кнопки ---------- */
 
 button {

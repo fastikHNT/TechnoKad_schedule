@@ -46,6 +46,17 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Показ / скрытие пароля ---
     document.querySelectorAll(".password-toggle-icon").forEach(icon => {
 
+        // Устанавливаем начальные иконки
+        const hideIcon = document.createElement("img");
+        hideIcon.src = "/static/img/icon_hide_password.png";
+        hideIcon.alt = "Скрыть пароль";
+        hideIcon.className = "toggle-icon";
+
+        const showIcon = document.createElement("img");
+        showIcon.src = "/static/img/icon_show_password.png";
+        showIcon.alt = "Показать пароль";
+        showIcon.className = "toggle-icon";
+
         icon.addEventListener("click", function () {
 
             const input = this.parentElement.querySelector("input");
@@ -53,9 +64,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!input) return;
 
             input.type = input.type === "password" ? "text" : "password";
-            this.textContent = input.type === "password" ? "👁" : "🔒";
+
+            if (input.type === "password") {
+                icon.innerHTML = '';
+                icon.appendChild(hideIcon.cloneNode(false));
+            } else {
+                icon.innerHTML = '';
+                icon.appendChild(showIcon.cloneNode(false));
+            }
 
         });
+
+        // Устанавливаем иконку скрытия по умолчанию
+        icon.appendChild(hideIcon.cloneNode(false));
 
     });
 

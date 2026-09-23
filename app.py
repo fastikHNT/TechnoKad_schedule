@@ -2595,14 +2595,42 @@ def export_schedule_pdf(schedule_id):
     doc.build(elements)
     buffer.seek(0)
 
-    safe_name = "".join(c for c in schedule.name if c.isalnum() or c in ' _-').rstrip()
-    download_name = f"График_{safe_name}_{schedule.year}.pdf"
-
+    # Формируем имя файла с транслитерацией для совместимости
+    def transliterate_cyrillic(text):
+        """Преобразует кириллицу в латиницу для корректного отображения имён файлов"""
+        symbols = {
+            'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+            'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+            'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+            'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+            'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+            'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+            'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+            'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+            'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+        }
+        result = ''
+        for char in text:
+            result += symbols.get(char, char)
+        return result
+    
+    department_name = schedule.department.name.lower().replace(" ", "_") if schedule.department else "bez_otdela"
+    
+    if schedule.name:
+        schedule_name = schedule.name
+    else:
+        schedule_name = f"Grafit_{schedule.year}"
+    
+    # Создаём два имени: кириллица для отображения, транслит для файла
+    display_name = f"{schedule_name}_{department_name}.pdf"
+    file_name = f"{transliterate_cyrillic(schedule_name).replace(' ', '_')}_{transliterate_cyrillic(department_name)}.pdf"
+    
     return send_file(
         buffer,
         mimetype='application/pdf',
         as_attachment=True,
-        download_name=download_name
+        download_name=file_name
     )
 
 
@@ -2703,14 +2731,43 @@ def export_schedule_excel(schedule_id):
     wb.save(buffer)
     buffer.seek(0)
 
-    safe_name = "".join(c for c in schedule.name if c.isalnum() or c in ' _-').rstrip()
-    download_name = f"График_{safe_name}_{schedule.year}.xlsx"
-
+    # Формируем имя файла с транслитерацией для совместимости
+    def transliterate_cyrillic(text):
+        """Преобразует кириллицу в латиницу для корректного отображения имён файлов"""
+        symbols = {
+            'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+            'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+            'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+            'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+            'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+            'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+            'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+            'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+            'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+        }
+        result = ''
+        for char in text:
+            result += symbols.get(char, char)
+        return result
+    
+    department_name = schedule.department.name.lower().replace(" ", "_") if schedule.department else "bez_otdela"
+    
+    if schedule.name:
+        schedule_name = schedule.name
+    else:
+        schedule_name = f"Grafit_{schedule.year}"
+    
+    # Создаём два имени: кириллица для отображения, транслит для файла
+    display_name = f"{schedule_name}_{department_name}.xlsx"
+    file_name = f"{transliterate_cyrillic(schedule_name).replace(' ', '_')}_{transliterate_cyrillic(department_name)}.xlsx"
+    
     return send_file(
         buffer,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name=download_name
+        download_name=file_name,
+        conditional=True
     )
 
 
