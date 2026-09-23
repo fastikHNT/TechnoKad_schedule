@@ -223,3 +223,126 @@ button:hover {
     width: auto;
     padding: 10px 25px;
 }
+
+/* ==================================================
+   АДАПТИВНЫЙ ИНТЕРФЕЙС
+================================================== */
+
+/* Планшеты (до 768px) */
+@media (max-width: 768px) {
+    .container {
+        padding: 30px 35px;
+        max-width: 420px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    input,
+    select {
+        padding: 11px 14px;
+        font-size: 15px;
+    }
+
+    button {
+        padding: 11px 22px;
+        font-size: 16px;
+    }
+}
+
+/* Мобильные устройства (до 480px) */
+@media (max-width: 480px) {
+
+    .container {
+        padding: 25px 20px;
+        max-width: 100%;
+        margin: 0 15px;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    label {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    input,
+    select {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 15px;
+    }
+
+    .auth-links {
+        margin-top: 16px;
+        font-size: 14px;
+    }
+
+    .password-toggle-icon {
+        font-size: 16px;
+        right: 12px;
+    }
+
+    #show-forgot-password {
+        font-size: 13px;
+    }
+
+    /* Модальное окно */
+    .modal-box {
+        padding: 25px 20px;
+        margin: 0 10px;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .modal-box h2 {
+        font-size: 18px;
+    }
+
+    .modal-box p {
+        font-size: 14px;
+        margin: 15px 0;
+    }
+}
+
+/* Очень маленькие экраны (до 360px) */
+@media (max-width: 360px) {
+    .container {
+        padding: 20px 15px;
+        margin: 0 10px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    input,
+    select {
+        padding: 9px 10px;
+        font-size: 13px;
+    }
+
+    button {
+        padding: 9px 18px;
+        font-size: 14px;
+    }
+}

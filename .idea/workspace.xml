@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Улучшил формирование для экспорта графика в pdf/excel, теперь для многомесячных отпусков ячейки объединяются (merge_cells). Интервал дат отображается по центру объединённой области. Добавлены легенды + косметические исправления">
-      <change afterPath="$PROJECT_DIR$/static/css/about.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/about.html" afterDir="false" />
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Добавлена страница &quot;О сервисе&quot;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/main.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/report.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/auth.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/auth.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -224,7 +219,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="05.09.2026" />
     <MESSAGE value="07.09.2026" />
     <MESSAGE value="07.09.2026 (2)" />
     <MESSAGE value="08.09.2026" />
@@ -249,6 +243,7 @@
     <MESSAGE value="Добавлены уведомления на страницу &quot;Экспорт&quot;, подправил уведомления для страницы &quot;Администрирование&quot;, некоторые косметические изменения в разделах и кнопках" />
     <MESSAGE value="Поменял иконки скрытия/показа пароля на странице авторизации, изменил формирование наименования документов для pdf/excel при экспорте графика" />
     <MESSAGE value="Улучшил формирование для экспорта графика в pdf/excel, теперь для многомесячных отпусков ячейки объединяются (merge_cells). Интервал дат отображается по центру объединённой области. Добавлены легенды + косметические исправления" />
-    <option name="LAST_COMMIT_MESSAGE" value="Улучшил формирование для экспорта графика в pdf/excel, теперь для многомесячных отпусков ячейки объединяются (merge_cells). Интервал дат отображается по центру объединённой области. Добавлены легенды + косметические исправления" />
+    <MESSAGE value="Добавлена страница &quot;О сервисе&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавлена страница &quot;О сервисе&quot;" />
   </component>
 </project>
