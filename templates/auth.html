@@ -123,6 +123,7 @@
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 <script>
 window.userRole = "{{ current_user.role.name if current_user.is_authenticated else '' }}";
+window.STATIC_URL_PREFIX = "{{ url_for('static', filename='') }}";
 </script>
 
 

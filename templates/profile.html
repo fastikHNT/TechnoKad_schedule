@@ -6,7 +6,7 @@
 
 
       {% if current_user.avatar %}
-      <img class="avatar" src="{{ url_for('static', filename=current_user.avatar) }}" onclick="toggleProfileMenu()">
+      <img class="avatar" src="{{ url_for('serve_avatar', filename=current_user.avatar) }}" onclick="toggleProfileMenu()">
       {% else %}
       <div class="avatar-initials" onclick="toggleProfileMenu()">
         {{ current_user.first_name[0]|upper }}{{ current_user.last_name[0]|upper }}

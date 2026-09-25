@@ -48,12 +48,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Устанавливаем начальные иконки
         const hideIcon = document.createElement("img");
-        hideIcon.src = "/static/img/icon_hide_password.png";
+        hideIcon.src = window.STATIC_URL_PREFIX + "img/icon_hide_password.png";
         hideIcon.alt = "Скрыть пароль";
         hideIcon.className = "toggle-icon";
 
         const showIcon = document.createElement("img");
-        showIcon.src = "/static/img/icon_show_password.png";
+        showIcon.src = window.STATIC_URL_PREFIX + "img/icon_show_password.png";
         showIcon.alt = "Показать пароль";
         showIcon.className = "toggle-icon";
 

@@ -29,7 +29,7 @@ from services.email_validator import email_exists
 import os
 from permissions import require_permission, can_edit_user, can_assign_role
 
-from flask import jsonify, request, url_for, send_file
+from flask import jsonify, request, url_for, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 
@@ -464,7 +464,8 @@ def reset_password(token):
 
     return render_template("email/reset_password.html", token=token)
 
-@app.route("/upload-avatar", methods=["POST"])
+
+@app.route('/upload-avatar', methods=['POST'], endpoint='upload_user_avatar')
 @login_required
 def upload_avatar():
     """
@@ -472,58 +473,61 @@ def upload_avatar():
 
         Логика:
         - Проверяет наличие файла в запросе
-        - Проверяет, что имя файла не пустое
-        - Проверяет расширение файла и сравнивает с разрешёнными форматами
+        - Проверяет, что это PNG/JPG/JPEG
         - Генерирует уникальное имя файла
-        - Создаёт папку avatars при необходимости
-        - Сохраняет файл на сервер
-        - Удаляет старый аватар пользователя, если он был установлен
-        - Обновляет путь к аватару в базе
-        - Возвращает URL нового аватара
-
-        Доступ: только авторизованные пользователи.
+        - Сохраняет в папку static/avatars/
+        - Обновляет поле avatar в базе данных
+        - Возвращает URL для отображения
     """
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB
 
-    if "avatar" not in request.files:
-        return {"error": "no file"}
+    if 'avatar' not in request.files:
+        return jsonify({'error': 'Файл не найден'}), 400
 
-    file = request.files["avatar"]
+    file = request.files['avatar']
 
-    if file.filename == "":
-        return {"error": "empty"}
+    if file.filename == '':
+        return jsonify({'error': 'Файл не выбран'}), 400
 
-    filename = secure_filename(file.filename)
+    if file:
+        # Проверяем расширение
+        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if ext not in ALLOWED_EXTENSIONS:
+            return jsonify({'error': 'Неподдерживаемый формат файла'}), 400
 
-    ext = filename.split(".")[-1].lower()
+        # Генерируем уникальное имя файла
+        filename = f"{current_user.id}_{uuid4().hex[:8]}.{ext}"
 
-    allowed = {"png", "jpg", "jpeg", "webp"}
+        # Создаём папку если не существует
+        avatar_dir = os.path.join(app.static_folder, 'avatars')
+        os.makedirs(avatar_dir, exist_ok=True)
 
-    if ext not in allowed:
-        return {"error": "invalid file"}
+        # Сохраняем файл
+        filepath = os.path.join(avatar_dir, filename)
+        file.save(filepath)
 
-    new_filename = f"{uuid4()}.{ext}"
+        # Обновляем пользователя
+        current_user.avatar = f'avatars/{filename}'
+        db.session.commit()
 
-    upload_folder = os.path.join("static", "avatars")
+        # Возвращаем URL
+        avatar_url = url_for('static', filename=current_user.avatar, _external=False)
 
-    os.makedirs(upload_folder, exist_ok=True)
+        return jsonify({'avatar_url': avatar_url})
 
-    path = os.path.join(upload_folder, new_filename)
+    return jsonify({'error': 'Ошибка загрузки файла'}), 500
 
-    file.save(path)
 
-    # удаляем старый аватар
-    if current_user.avatar:
-        old_path = os.path.join("static", current_user.avatar)
-        if os.path.exists(old_path):
-            os.remove(old_path)
+@app.route('/avatars/<path:filename>', endpoint='serve_avatar')
+@login_required
+def serve_avatar(filename):
+    """
+       Serve аватары из папки avatars.
 
-    current_user.avatar = f"avatars/{new_filename}"
-
-    db.session.commit()
-
-    return {
-        "avatar_url": url_for("static", filename=current_user.avatar)
-    }
+        Обеспечивает доступ только авторизованным пользователям.
+    """
+    return send_from_directory(os.path.join(app.static_folder, 'avatars'), filename)
 
 
 @app.route("/save-phone", methods=["POST"])
@@ -3049,7 +3053,7 @@ def export_schedule_excel(schedule_id):
     )
 
 
-@app.route('/api/pages/<page_name>')
+@app.route('/api/pages/<page_name>', endpoint='get_page_content')
 def get_page_content(page_name):
     """
         Возвращает HTML-контент для страниц-руководств.
@@ -3062,6 +3066,7 @@ def get_page_content(page_name):
     elif page_name == 'admin-guide':
         return render_template('guide_admin.html')
     return '', 404
+
 
 
 if __name__ == "__main__":
