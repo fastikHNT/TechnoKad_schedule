@@ -2440,7 +2440,7 @@ function renderSchedule(data){
                 // Ячейка с отпуском
                 const typeClass = getVacationTypeClass(vacation.type_vacation_id);
                 cellClass += ` vacation-cell ${typeClass}`;
-                if(state.editMode) cellClass += " editable-vacation";
+                if(state.editMode && (!state.suggestMode || isCurrentUser)) cellClass += " editable-vacation";
                 
                 // Определяем цвет
                 let bgColor = '#1e3a8a';
