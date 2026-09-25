@@ -22,6 +22,7 @@
     --button-bg: linear-gradient(135deg,#667eea,#764ba2);
     --button-hover: linear-gradient(135deg,#5a67d8,#6b46c1);
     --menu-active: linear-gradient(135deg,#667eea,#764ba2);
+    --accent: #667eea;
 }
 
 /* ==================================================

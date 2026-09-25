@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Добавил адаптив для страницы main с бургер-меню">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Добавил адаптив для страницы администрирования">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/administration.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/administration.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/about.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/about.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,7 +219,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="10.09.2026" />
     <MESSAGE value="11.09.2026" />
     <MESSAGE value="14.09.2026 Убрал min-height: 400px из .page-anim. Блок должен растягиваться по мере заполнения контентом" />
     <MESSAGE value="14.09.2026 Добавил кнопку с модалкой на страницу &quot;График отпусков&quot; - &quot;Служебная записка&quot;, данные должны заполняться пользователем (валидация полей на фронте), декоратор /api/memo/generate формирует записку в соответствии с внутренним шаблоном" />
@@ -244,6 +243,7 @@
     <MESSAGE value="Добавил в форму восстановления пароля мета-тег viewport" />
     <MESSAGE value="Добавил адаптив для страницы token_invalid.html, когда токен не валиден" />
     <MESSAGE value="Добавил адаптив для страницы main с бургер-меню" />
-    <option name="LAST_COMMIT_MESSAGE" value="Добавил адаптив для страницы main с бургер-меню" />
+    <MESSAGE value="Добавил адаптив для страницы администрирования" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавил адаптив для страницы администрирования" />
   </component>
 </project>
