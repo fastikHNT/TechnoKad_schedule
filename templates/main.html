@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>ТехноКад</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260923_13">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/administration.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}">
@@ -23,9 +23,12 @@
         </div>
     </header>
 
+    <button class="menu-toggle" id="menuToggle"></button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="app">
 
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
 
             <div class="logo">
                 <span class="techno">Техно</span>

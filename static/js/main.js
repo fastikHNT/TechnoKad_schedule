@@ -1,5 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    /* ===== БУРГЕР-МЕНЮ ===== */
+    const menuToggle = document.getElementById("menuToggle");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+    function toggleMenu() {
+        sidebar.classList.toggle("open");
+        sidebarOverlay.classList.toggle("active");
+    }
+
+    function closeMenu() {
+        sidebar.classList.remove("open");
+        sidebarOverlay.classList.remove("active");
+    }
+
+    if (menuToggle) {
+        menuToggle.addEventListener("click", toggleMenu);
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener("click", closeMenu);
+    }
+
+    // Закрываем меню при клике на пункт меню
+    document.querySelectorAll(".menu a").forEach(link => {
+        link.addEventListener("click", closeMenu);
+    });
+
 const pages = {
 
     admin:`<h2>Администрирование</h2><p>Управление системой</p>`,

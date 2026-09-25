@@ -169,11 +169,8 @@ html, body{
     flex-direction:column;
     min-height: 100vh;
     box-sizing:border-box;
-
     opacity:0;
     transform:translateX(-30px);
-    animation:sidebarShow 0.5s ease forwards;
-    animation-delay:0.2s;
     position: fixed;
     top: 0;
     left: 0;
@@ -185,6 +182,14 @@ html, body{
     to{
         opacity:1;
         transform:translateX(0);
+    }
+}
+
+/* Анимация только на десктопе */
+@media (min-width: 769px) {
+    .sidebar {
+        animation: sidebarShow 0.5s ease forwards;
+        animation-delay: 0.2s;
     }
 }
 
@@ -585,4 +590,190 @@ header{
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+/* ==================================================
+   АДАПТИВНЫЙ ИНТЕРФЕЙС
+================================================== */
+
+/* Бургер-кнопка для мобильных */
+.menu-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: var(--bg-sidebar);
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    color: white;
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.menu-toggle::before {
+    content: "☰";
+    font-size: 22px;
+}
+
+/* Оверлей при открытом меню */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    header {
+        left: 220px;
+        padding: 0 40px;
+    }
+
+    .content {
+        padding-left: 240px;
+    }
+
+    .logo {
+        font-size: 44px;
+        margin-top: 20px;
+        margin-bottom: 40px;
+    }
+
+    .circle {
+        width: 120px;
+        height: 120px;
+        left: -22px;
+        top: -30px;
+    }
+}
+
+/* Мобильные устройства (до 768px) */
+@media screen and (max-width: 768px), (hover: none) {
+    .menu-toggle {
+        display: flex !important;
+    }
+
+    .sidebar {
+        display: flex !important;
+        width: 280px !important;
+        transform: translateX(-100%) !important;
+        opacity: 1 !important;
+        animation: none !important;
+        transition: transform 0.3s ease !important;
+        box-shadow: none !important;
+    }
+
+    .sidebar.open {
+        transform: translateX(0) !important;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.3) !important;
+    }
+
+    header {
+        left: 0;
+        padding: 0 60px 0 70px;
+    }
+
+    .content {
+        padding: 90px 20px 30px 20px;
+    }
+
+    .logo {
+        font-size: 44px;
+        margin-top: 20px;
+        margin-bottom: 40px;
+        transform: scale(0.85);
+    }
+
+    .menu a {
+        padding: 14px 16px;
+        font-size: 16px;
+    }
+
+    .page {
+        padding: 20px;
+    }
+}
+
+/* Мобильные (до 480px) */
+@media (max-width: 480px) {
+    .menu-toggle {
+        top: 10px;
+        left: 10px;
+        width: 48px;
+        height: 48px;
+    }
+
+    header {
+        padding: 0 55px 0 65px;
+        height: 55px;
+    }
+
+    .content {
+        padding: 85px 20px 30px 20px;
+    }
+
+    .logo {
+        font-size: 40px;
+        transform: scale(0.8);
+        margin-top: 15px;
+        margin-bottom: 35px;
+    }
+
+    .page {
+        padding: 20px;
+    }
+
+    .menu {
+        gap: 12px;
+    }
+
+    .menu a {
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+
+    .icon {
+        width: 20px;
+    }
+
+    .icon img {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* (до 360px) */
+@media (max-width: 360px) {
+    .sidebar {
+        width: 260px;
+    }
+
+    .logo {
+        font-size: 28px;
+        transform: scale(0.6);
+    }
+
+    .page {
+        padding: 12px;
+    }
+
+    .content {
+        padding: 70px 10px 20px 10px;
+    }
 }
