@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Добавлены страницы руководства">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Исправлен путь до файла с иконками + доработана функция загрузки и отображения аватара в профиле">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/auth.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,7 +219,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="14.09.2026 Формирование служебной записки по шаблону (доделано)" />
     <MESSAGE value="14.09.2026 Убран непонятный скролл модального окна и приведены первые символы полей ввода: memoHeadPosition, memoHeadDepartment, memoEmployeePosition, memoEmployeeDepartment, memoReason в нижний регистр" />
     <MESSAGE value="14.09.2026 Уменьшил модалку &quot;Служебная записка&quot;.Кнопка доступна всем администраторам и выше" />
     <MESSAGE value="17.09 README.md" />
@@ -247,6 +243,7 @@
     <MESSAGE value="Отредактирована страница &quot;О сервисе&quot;" />
     <MESSAGE value="При нажатии на кнопку &quot;Запланировать отпуск&quot; иконки редактирования в графике отпусков теперь отображаются только у текущего пользователя" />
     <MESSAGE value="Добавлены страницы руководства" />
-    <option name="LAST_COMMIT_MESSAGE" value="Добавлены страницы руководства" />
+    <MESSAGE value="Исправлен путь до файла с иконками + доработана функция загрузки и отображения аватара в профиле" />
+    <option name="LAST_COMMIT_MESSAGE" value="Исправлен путь до файла с иконками + доработана функция загрузки и отображения аватара в профиле" />
   </component>
 </project>
