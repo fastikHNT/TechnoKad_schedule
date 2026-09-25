@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Отредактирована страница &quot;О сервисе&quot;" />
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="При нажатии на кнопку &quot;Запланировать отпуск&quot; иконки редактирования в графике отпусков теперь отображаются только у текущего пользователя">
+      <change afterPath="$PROJECT_DIR$/static/css/guide_admin.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css/guide_user.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/guide_admin.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/guide_user.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/main.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -216,7 +225,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="14.09.2026 Убрал min-height: 400px из .page-anim. Блок должен растягиваться по мере заполнения контентом" />
     <MESSAGE value="14.09.2026 Добавил кнопку с модалкой на страницу &quot;График отпусков&quot; - &quot;Служебная записка&quot;, данные должны заполняться пользователем (валидация полей на фронте), декоратор /api/memo/generate формирует записку в соответствии с внутренним шаблоном" />
     <MESSAGE value="14.09.2026 Формирование служебной записки по шаблону (доделано)" />
     <MESSAGE value="14.09.2026 Убран непонятный скролл модального окна и приведены первые символы полей ввода: memoHeadPosition, memoHeadDepartment, memoEmployeePosition, memoEmployeeDepartment, memoReason в нижний регистр" />
@@ -241,6 +249,7 @@
     <MESSAGE value="Добавил адаптив для страницы main с бургер-меню" />
     <MESSAGE value="Добавил адаптив для страницы администрирования" />
     <MESSAGE value="Отредактирована страница &quot;О сервисе&quot;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Отредактирована страница &quot;О сервисе&quot;" />
+    <MESSAGE value="При нажатии на кнопку &quot;Запланировать отпуск&quot; иконки редактирования в графике отпусков теперь отображаются только у текущего пользователя" />
+    <option name="LAST_COMMIT_MESSAGE" value="При нажатии на кнопку &quot;Запланировать отпуск&quot; иконки редактирования в графике отпусков теперь отображаются только у текущего пользователя" />
   </component>
 </project>

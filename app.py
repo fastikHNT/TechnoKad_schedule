@@ -3049,6 +3049,21 @@ def export_schedule_excel(schedule_id):
     )
 
 
+@app.route('/api/pages/<page_name>')
+def get_page_content(page_name):
+    """
+        Возвращает HTML-контент для страниц-руководств.
+        
+        Используется для динамической загрузки страниц
+        "Руководство пользователя" и "Руководство администратора".
+    """
+    if page_name == 'user-guide':
+        return render_template('guide_user.html')
+    elif page_name == 'admin-guide':
+        return render_template('guide_admin.html')
+    return '', 404
+
+
 if __name__ == "__main__":
     """
         Точка входа для запуска приложения в режиме разработки.

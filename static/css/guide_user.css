@@ -1,0 +1,216 @@
+/* ==================================================
+   СТРАНИЦА "РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ"
+================================================== */
+.guide-page {
+    max-width: 900px;
+    margin: 0;
+}
+
+.guide-page h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: var(--text-color);
+}
+
+.guide-section {
+    margin-bottom: 35px;
+}
+
+.guide-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+}
+
+.guide-section h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    margin-top: 15px;
+    color: var(--text-color);
+}
+
+.guide-section p {
+    line-height: 1.7;
+    color: var(--text-color);
+    opacity: 0.85;
+    margin-bottom: 12px;
+}
+
+.guide-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+.guide-list li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    line-height: 1.6;
+    color: var(--text-color);
+    opacity: 0.85;
+}
+
+.guide-list li::before {
+    content: "•";
+    position: absolute;
+    left: 8px;
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Цветовая легенда */
+.guide-colors {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 15px 0;
+}
+
+.color-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+}
+
+.color-block {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.color-main {
+    background: #1e3a8a;
+}
+
+.color-education {
+    background: #60a5fa;
+}
+
+.color-planned {
+    background: #fbbf24;
+}
+
+.color-decreetal {
+    background: #16a34a;
+}
+
+/* Адаптивный дизайн */
+
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .guide-page h1 {
+        font-size: 24px;
+    }
+
+    .guide-section h2 {
+        font-size: 18px;
+    }
+
+    .guide-colors {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+/* Мобильные устройства (до 768px) */
+@media screen and (max-width: 768px), (hover: none) {
+    .guide-page h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .guide-section {
+        margin-bottom: 25px;
+    }
+
+    .guide-section h2 {
+        font-size: 17px;
+        padding-bottom: 6px;
+    }
+
+    .guide-section h3 {
+        font-size: 15px;
+    }
+
+    .guide-section p {
+        font-size: 14px;
+    }
+
+    .guide-list li {
+        font-size: 13px;
+    }
+
+    .guide-colors {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .color-item {
+        padding: 8px;
+    }
+}
+
+/* Маленькие мобильные (до 480px) */
+@media (max-width: 480px) {
+    .guide-page h1 {
+        font-size: 20px;
+    }
+
+    .guide-section h2 {
+        font-size: 16px;
+    }
+
+    .guide-section h3 {
+        font-size: 14px;
+    }
+
+    .guide-section p {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .guide-list li {
+        font-size: 12px;
+        padding-left: 20px;
+    }
+
+    .color-item {
+        padding: 7px;
+        gap: 8px;
+    }
+
+    .color-block {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Очень маленькие экраны (до 360px) */
+@media (max-width: 360px) {
+    .guide-page h1 {
+        font-size: 18px;
+    }
+
+    .guide-section h2 {
+        font-size: 15px;
+    }
+
+    .guide-section p {
+        font-size: 12px;
+    }
+
+    .guide-list li {
+        font-size: 11px;
+    }
+
+    .color-item {
+        padding: 6px;
+    }
+}

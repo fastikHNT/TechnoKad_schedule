@@ -1,0 +1,219 @@
+/* ==================================================
+   СТРАНИЦА "РУКОВОДСТВО АДМИНИСТРАТОРА"
+================================================== */
+.guide-page {
+    max-width: 900px;
+    margin: 0;
+}
+
+.guide-page h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: var(--text-color);
+}
+
+.guide-section {
+    margin-bottom: 35px;
+}
+
+.guide-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+}
+
+.guide-section h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    margin-top: 15px;
+    color: var(--text-color);
+}
+
+.guide-section p {
+    line-height: 1.7;
+    color: var(--text-color);
+    opacity: 0.85;
+    margin-bottom: 12px;
+}
+
+.guide-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+.guide-list li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    line-height: 1.6;
+    color: var(--text-color);
+    opacity: 0.85;
+}
+
+.guide-list li::before {
+    content: "•";
+    position: absolute;
+    left: 8px;
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Цветовая легенда направлений */
+.direction-legend-guide {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+    padding: 15px;
+    background: var(--bg-card);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+}
+
+.direction-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.direction-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.direction-po-ecp {
+    background: #ea580c;
+}
+
+.direction-te-tg {
+    background: #0d9488;
+}
+
+.direction-to-tm {
+    background: #ec4899;
+}
+
+.direction-grp {
+    background: #7c3aed;
+}
+
+/* Адаптивный дизайн */
+
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .guide-page h1 {
+        font-size: 24px;
+    }
+
+    .guide-section h2 {
+        font-size: 18px;
+    }
+
+    .direction-legend-guide {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+/* Мобильные устройства (до 768px) */
+@media screen and (max-width: 768px), (hover: none) {
+    .guide-page h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .guide-section {
+        margin-bottom: 25px;
+    }
+
+    .guide-section h2 {
+        font-size: 17px;
+        padding-bottom: 6px;
+    }
+
+    .guide-section h3 {
+        font-size: 15px;
+    }
+
+    .guide-section p {
+        font-size: 14px;
+    }
+
+    .guide-list li {
+        font-size: 13px;
+    }
+
+    .direction-legend-guide {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .direction-item {
+        font-size: 13px;
+    }
+}
+
+/* Маленькие мобильные (до 480px) */
+@media (max-width: 480px) {
+    .guide-page h1 {
+        font-size: 20px;
+    }
+
+    .guide-section h2 {
+        font-size: 16px;
+    }
+
+    .guide-section h3 {
+        font-size: 14px;
+    }
+
+    .guide-section p {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .guide-list li {
+        font-size: 12px;
+        padding-left: 20px;
+    }
+
+    .direction-item {
+        font-size: 12px;
+        gap: 8px;
+    }
+
+    .direction-dot {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Очень маленькие экраны (до 360px) */
+@media (max-width: 360px) {
+    .guide-page h1 {
+        font-size: 18px;
+    }
+
+    .guide-section h2 {
+        font-size: 15px;
+    }
+
+    .guide-section p {
+        font-size: 12px;
+    }
+
+    .guide-list li {
+        font-size: 11px;
+    }
+
+    .direction-item {
+        font-size: 11px;
+    }
+}
