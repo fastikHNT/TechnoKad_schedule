@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Исправлен путь до файла с иконками + доработана функция загрузки и отображения аватара в профиле">
+    <list default="true" id="60416b08-f91c-429e-8596-f40550de358a" name="Changes" comment="Обновлён файл с зависимостями">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,9 +219,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="14.09.2026 Убран непонятный скролл модального окна и приведены первые символы полей ввода: memoHeadPosition, memoHeadDepartment, memoEmployeePosition, memoEmployeeDepartment, memoReason в нижний регистр" />
-    <MESSAGE value="14.09.2026 Уменьшил модалку &quot;Служебная записка&quot;.Кнопка доступна всем администраторам и выше" />
-    <MESSAGE value="17.09 README.md" />
     <MESSAGE value="Исправил генерацию отчетов на хостинг: добавил папку со шрифтами и отчетами в public_html, исправил рендеринг и логику формирования отчетов" />
     <MESSAGE value="21.09.2026 Добавил возможность удаления списка несформированных отчетов." />
     <MESSAGE value="21.09.2026 Для формирования служебной записки шрифты тянутся из папки public_html на хостинге, также модальное окно в случае успешного/безуспешного формирования закрывается, чтобы не перекрывало вывод showmessage" />
@@ -244,6 +241,9 @@
     <MESSAGE value="При нажатии на кнопку &quot;Запланировать отпуск&quot; иконки редактирования в графике отпусков теперь отображаются только у текущего пользователя" />
     <MESSAGE value="Добавлены страницы руководства" />
     <MESSAGE value="Исправлен путь до файла с иконками + доработана функция загрузки и отображения аватара в профиле" />
-    <option name="LAST_COMMIT_MESSAGE" value="Исправлен путь до файла с иконками + доработана функция загрузки и отображения аватара в профиле" />
+    <MESSAGE value="Обновлён README.md" />
+    <MESSAGE value="Добавлена страница 404.html и переадресация на неё" />
+    <MESSAGE value="Обновлён файл с зависимостями" />
+    <option name="LAST_COMMIT_MESSAGE" value="Обновлён файл с зависимостями" />
   </component>
 </project>
