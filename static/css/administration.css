@@ -409,3 +409,141 @@ tbody tr.selected-row:hover{
     padding: 18px 0;
     opacity: 0.9;
 }
+
+/* =====================================================
+   АДАПТИВНЫЙ ИНТЕРФЕЙС
+===================================================== */
+
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .search-box {
+        width: 250px;
+    }
+
+    .custom-modal-content {
+        width: 380px;
+    }
+}
+
+/* Мобильные (до 768px) */
+@media (max-width: 768px) {
+    .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .actions-left,
+    .actions-right {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .search-wrapper {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .admin-topbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .button-group {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    button {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    #deleteBtn {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Таблица — горизонтальный скролл */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    /* Модалка */
+    .custom-modal-content {
+        width: calc(100% - 30px);
+        padding: 20px 24px;
+        margin: 0 15px;
+    }
+
+    .custom-modal-content h3 {
+        font-size: 16px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+
+    /* Уведомления */
+    .admin-message {
+        width: calc(100% - 30px);
+        right: 15px;
+        left: 15px;
+    }
+}
+
+/* Маленькие мобильные (до 480px) */
+@media (max-width: 480px) {
+    .actions {
+        gap: 8px;
+    }
+
+    .actions-left,
+    .actions-right {
+        gap: 6px;
+    }
+
+    button {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 100px;
+    }
+
+    th, td {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+
+    .table-title {
+        font-size: 16px;
+        margin: 15px 0 8px;
+    }
+
+    .custom-modal-content {
+        padding: 16px 20px;
+    }
+
+    .custom-modal-content h3 {
+        font-size: 15px;
+    }
+
+    .custom-modal-content p {
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+}
